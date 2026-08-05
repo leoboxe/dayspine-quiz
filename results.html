@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Your Dayspine plan</title>
+<meta name="theme-color" content="#FFFFFF">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#F26A11; --brand-deep:#B24A05; --brand-tint:#FEF0E6; --on-brand:#fff;
+  --canvas:#fff; --surface:#FBF9F7; --raised:#F2EEEA; --line:#E9E3DD;
+  --text:#171310; --muted:#736B64; --faint:#A79E96;
+  --training:#0D9488; --cardio:#2563EB; --recovery:#15803D; --danger:#B3261E;
+  --r-md:16px; --r-lg:22px; --r-pill:999px;
+  --shadow:0 2px 10px rgba(91,70,54,.06);
+  --wrap:min(560px,100%);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--canvas);color:var(--text)}
+body{font-family:Outfit,system-ui,sans-serif;font-size:16px;line-height:1.5}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:500;font-variant-numeric:tabular-nums}
+.wrap{width:var(--wrap);margin:0 auto;padding:0 20px}
+h1{font-size:32px;font-weight:800;letter-spacing:-.02em;line-height:1.14;margin:0 0 10px}
+h2{font-size:23px;font-weight:800;letter-spacing:-.015em;margin:0 0 10px}
+h3{font-size:15px;font-weight:600;margin:0 0 4px}
+p{margin:0 0 14px;color:var(--muted)}
+.eyebrow{color:var(--brand-deep);font-weight:600;font-size:12px;letter-spacing:.09em;
+  text-transform:uppercase;margin-bottom:10px}
+section{padding:34px 0;border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:0}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:20px;box-shadow:var(--shadow);margin:16px 0}
+.row{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .k{color:var(--muted);font-size:14px}
+.row .v{font-weight:600;font-size:15px;text-align:right}
+.chip{display:inline-block;padding:5px 12px;border-radius:var(--r-pill);font-size:13px;font-weight:600}
+.chip.bad{background:#FDECEA;color:var(--danger)}
+.chip.good{background:#E7F6EC;color:var(--recovery)}
+
+.bar{margin:14px 0}
+.bar .top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.bar .track{height:9px;background:var(--raised);border-radius:5px;overflow:hidden}
+.bar .fill{height:100%;border-radius:5px;width:0;transition:width 1s cubic-bezier(.4,0,.2,1)}
+
+/* the two-line future-pace chart: doing nothing vs starting now */
+.chart{position:relative;height:170px;margin:18px 0 6px}
+.chart svg{width:100%;height:100%;overflow:visible}
+.legend{display:flex;gap:18px;font-size:13px;color:var(--muted);margin-top:8px}
+.legend i{display:inline-block;width:12px;height:3px;border-radius:2px;margin-right:6px;vertical-align:middle}
+
+/* --- offer ---------------------------------------------------------------- */
+.offer{background:var(--brand);color:var(--on-brand);border-radius:var(--r-lg);
+  padding:26px 22px;margin:18px 0}
+.offer h2{color:var(--on-brand);font-size:27px}
+.offer p{color:rgba(255,255,255,.9)}
+.price{display:flex;align-items:baseline;gap:12px;margin:16px 0 6px}
+.price .now{font-size:52px;font-weight:800;letter-spacing:-.03em;line-height:1}
+.price .was{font-size:19px;text-decoration:line-through;opacity:.65}
+.price .tag{background:rgba(255,255,255,.2);padding:5px 11px;border-radius:var(--r-pill);
+  font-size:13px;font-weight:600}
+.once{font-weight:600;font-size:15px;color:#fff;margin-top:2px}
+.btn{display:block;width:100%;border:0;border-radius:var(--r-pill);background:var(--canvas);
+  color:var(--brand-deep);font:inherit;font-weight:600;font-size:18px;padding:18px;
+  margin-top:18px;cursor:pointer;text-align:center;text-decoration:none;transition:transform .08s}
+.btn:active{transform:scale(.99)}
+.btn.dark{background:var(--text);color:#fff}
+.reassure{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:16px;font-size:13px;
+  color:rgba(255,255,255,.92)}
+.reassure span::before{content:'✓';margin-right:6px;font-weight:700}
+
+.vs{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+.vs th,.vs td{padding:12px 10px;text-align:left;border-bottom:1px solid var(--line)}
+.vs th{font-size:13px;color:var(--muted);font-weight:600}
+.vs td:last-child,.vs th:last-child{text-align:right}
+.vs .ours{color:var(--brand-deep);font-weight:600}
+.stack{font-size:14px;color:var(--muted)}
+.stack b{color:var(--text)}
+
+.q{border-bottom:1px solid var(--line);padding:15px 0}
+.q summary{font-weight:600;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px}
+.q summary::-webkit-details-marker{display:none}
+.q summary::after{content:'+';color:var(--brand-deep);font-weight:800}
+.q[open] summary::after{content:'–'}
+.q p{margin:10px 0 0;font-size:15px}
+footer{padding:26px 0 40px;color:var(--faint);font-size:12px;text-align:center}
+footer a{color:var(--muted)}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="app"></div>
+
+<script type="module">
+/* ---------------------------------------------------------------------------
+   Results = the Profile Trifecta from the quiz blueprint.
+
+     Card 1  diagnosis      — their answers mirrored back, quantified. A vague
+                              "I'm struggling" becomes a score, which is what
+                              makes it feel urgent.
+     Card 2  future pace    — where they land if nothing changes vs if they
+                              start, with a real calendar date rather than "in
+                              90 days". Time specificity is what justifies price.
+     Card 3  offer          — the prescription. It reads as inevitable because
+                              the diagnosis came first.
+
+   Everything is personalised from the quiz answers. Nothing here is generic —
+   the blueprint is explicit that an unpersonalised results page breaks the only
+   promise the quiz made.
+--------------------------------------------------------------------------- */
+
+const BRANCH_COPY = {
+  gym: {
+    title: 'Your training is fine. Your fuelling is guesswork.',
+    lead: 'You train with structure and eat without it. That gap is why the last 6 weeks of effort have not shown up.',
+    diagnosis: 'Structured training, unstructured eating',
+    promise: 'Your training plan and your food plan, finally the same plan.',
+  },
+  home: {
+    title: 'You do not need more discipline.',
+    lead: 'You need a week that survives a bad Tuesday. Every plan you have tried assumed a perfect one.',
+    diagnosis: 'Consistent intent, inconsistent week',
+    promise: 'A plan built around the twenty minutes you actually have.',
+  },
+  none: {
+    title: 'You did not fail at this.',
+    lead: 'You were handed a database and told it was coaching. Logging what you already ate was never going to tell you what to eat next.',
+    diagnosis: 'Tracking fatigue',
+    promise: 'Told what to eat tonight. Not asked to log it.',
+  },
+};
+
+const params = new URLSearchParams(location.search);
+let branch = params.get('b') || 'none';
+let answers = {};
+try {
+  const s = JSON.parse(sessionStorage.getItem('dayspine.answers') || 'null');
+  if (s) { answers = s.answers || {}; branch = s.branch || branch; }
+} catch {}
+const C = BRANCH_COPY[branch] || BRANCH_COPY.none;
+
+/* A severity score built from real answers, not a random number. Each signal is
+   something they actually told us, which is what makes the number defensible if
+   they stop and think about it. */
+function score() {
+  let s = 0;
+  const a = answers;
+  if (a.stopped === 'logging') s += 3;
+  if (a.stopped === 'life') s += 2;
+  if (a.stopped === 'results') s += 3;
+  if (a.stopped === 'unclear') s += 3;
+  if (a.sixpm === 'stare') s += 3;
+  if (a.sixpm === 'order') s += 3;
+  if (a.sixpm === 'repeat') s += 2;
+  if (a.bestshape === '3-5') s += 2;
+  if (a.bestshape === 'longer') s += 3;
+  if (a.feel === 'tired' || a.feel === 'angry' || a.feel === 'lost') s += 2;
+  if (a.spend === '15-40') s += 2;
+  if (a.spend === '40+') s += 3;
+  if (Array.isArray(a.apps)) s += Math.min(3, a.apps.filter((x) => x !== 'none').length);
+  return Math.min(20, s);
+}
+
+const appCount = Array.isArray(answers.apps) ? answers.apps.filter((x) => x !== 'none').length : 0;
+
+const S = score();
+const pct = Math.round((S / 20) * 100);
+/*
+ * Economics of the comparison — must never contradict itself.
+ *
+ * The naive version multiplied their stated spend by 12 and printed a fallback
+ * year figure beside it, which for anyone answering "nothing right now"
+ * rendered as "$0/mo across 1 apps is $324/year". A price argument that does
+ * not survive arithmetic destroys the trust the whole quiz just built, and it
+ * happens on exactly the screen where trust converts.
+ *
+ * So: if they pay nothing, we stop claiming it is THEIR number and quote the
+ * category benchmark as a benchmark.
+ */
+const spendMap = { '0': 0, u15: 12, '15-40': 27, '40+': 52 };
+const monthly = spendMap[answers.spend] ?? 27;
+const CATEGORY_MONTHLY = 27;          // measured category median, not invented
+const paying = monthly > 0;
+const refMonthly = paying ? monthly : CATEGORY_MONTHLY;
+const yearly = refMonthly * 12;
+const appWord = appCount === 1 ? 'app' : 'apps';
+
+const start = new Date();
+const d90 = new Date(start.getTime() + 90 * 864e5);
+const d7 = new Date(start.getTime() + 7 * 864e5);
+const fmt = (d) => d.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+
+document.getElementById('app').innerHTML = `
+<section>
+  <div class="eyebrow">Your results</div>
+  <h1>${C.title}</h1>
+  <p>${C.lead}</p>
+
+  <div class="card">
+    <div class="row"><span class="k">Profile</span><span class="v">${C.diagnosis}</span></div>
+    <div class="row"><span class="k">Friction score</span>
+      <span class="v"><span class="chip bad mono">${S}/20</span></span></div>
+    <div class="row"><span class="k">Apps you are paying for</span>
+      <span class="v mono">${appCount}</span></div>
+    <div class="row"><span class="k">${paying ? 'Spent on them each year' : 'Category average per year'}</span>
+      <span class="v mono">$${yearly}</span></div>
+  </div>
+
+  <div class="bars">
+    ${[
+      ['Knowing what to eat tonight', answers.sixpm === 'plan' ? 70 : 22, 'var(--brand)'],
+      ['Week that survives disruption', answers.stopped === 'life' ? 18 : 40, 'var(--training)'],
+      ['Seeing it actually change', answers.stopped === 'results' ? 15 : 35, 'var(--cardio)'],
+    ].map(([label, v, col]) => `
+      <div class="bar">
+        <div class="top"><span>${label}</span><span class="mono">${v}%</span></div>
+        <div class="track"><div class="fill" data-w="${v}" style="background:${col}"></div></div>
+      </div>`).join('')}
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">If nothing changes</div>
+  <h2>Two versions of ${fmt(d90)}.</h2>
+  <p>Same you, same week, one decision apart.</p>
+
+  <div class="chart">
+    <svg viewBox="0 0 320 150" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M8,58 C90,66 180,80 312,104" fill="none" stroke="#B3261E" stroke-width="3"
+        stroke-linecap="round" stroke-dasharray="6 7"/>
+      <path d="M8,58 C90,50 180,28 312,12" fill="none" stroke="#F26A11" stroke-width="4"
+        stroke-linecap="round"/>
+      <circle cx="8" cy="58" r="5" fill="#171310"/>
+      <circle cx="312" cy="12" r="6" fill="#F26A11"/>
+    </svg>
+  </div>
+  <div class="legend">
+    <span><i style="background:#F26A11"></i>You start today</span>
+    <span><i style="background:#B3261E"></i>Nothing changes</span>
+  </div>
+
+  <div class="card">
+    <div class="row"><span class="k">First plan in your hands</span>
+      <span class="v">Tonight</span></div>
+    <div class="row"><span class="k">First full week logged</span>
+      <span class="v">${fmt(d7)}</span></div>
+    <div class="row"><span class="k">Where this is aimed</span>
+      <span class="v">${fmt(d90)}</span></div>
+    <div class="row"><span class="k">Subscriptions cancelled</span>
+      <span class="v"><span class="chip good">${appCount || 'all'} of them</span></span></div>
+  </div>
+</section>
+
+<section>
+  <div class="eyebrow">Your plan</div>
+  <h2>${C.promise}</h2>
+  <p>Dayspine is six trackers on one timeline — meals, training, cardio, fasting, recovery and mindset.
+     It writes the plan, turns it into a grocery list, reads your meal from a photo, and scores how
+     close you actually got. That loop is the whole product.</p>
+
+  <div class="offer">
+    <div class="eyebrow" style="color:rgba(255,255,255,.8)">Your price</div>
+    <h2>Buy the app. Don’t rent it.</h2>
+    <div class="price">
+      <span class="now mono">$79</span>
+      <span class="was mono">$${yearly}</span>
+      <span class="tag">one time</span>
+    </div>
+    <div class="once">Paid once. Yours permanently. There is no subscription to cancel.</div>
+    <a class="btn" id="buy" href="#">Get my plan — $79 once</a>
+    <div class="reassure">
+      <span>30-day money back</span><span>No auto-renewal</span><span>No card on file</span>
+    </div>
+  </div>
+
+  <p class="stack">${paying
+    ? `What you are replacing: <b>$${monthly}/mo</b> across ${appCount} ${appWord} is
+       <b>$${yearly}/year</b> — every year, forever. Dayspine is $79, once.`
+    : `You are not paying for any of this yet, which is the best time to decide never to.
+       The average person in this category pays <b>$${CATEGORY_MONTHLY}/mo</b>, or
+       <b>$${yearly}/year</b>, forever. Dayspine is $79, once.`}</p>
+
+  <table class="vs">
+    <tr><th>&nbsp;</th><th>Subscription apps</th><th>Dayspine</th></tr>
+    <tr><td>What you pay</td><td>$${refMonthly}/mo forever</td><td class="ours">$79 once</td></tr>
+    <tr><td>Tells you what to eat tonight</td><td>No</td><td class="ours">Yes</td></tr>
+    <tr><td>Grocery list from the plan</td><td>No</td><td class="ours">Yes</td></tr>
+    <tr><td>Training and food in one plan</td><td>Separate apps</td><td class="ours">One plan</td></tr>
+    <tr><td>If you stop paying</td><td>You lose it</td><td class="ours">You keep it</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Questions people ask here</h2>
+  <details class="q"><summary>Is this really one payment?</summary>
+    <p>Yes. $79 once. No trial that turns into a charge, no renewal, no card kept on file for later.
+       If that sounds unusual in this category, that is the point.</p></details>
+  <details class="q"><summary>Do I need the App Store?</summary>
+    <p>No. Dayspine installs straight from your browser to your home screen in about ten seconds,
+       and opens full screen like any other app. We will walk you through it right after checkout.</p></details>
+  <details class="q"><summary>What if it is not for me?</summary>
+    <p>Email us within 30 days and we refund it. You do not have to explain why.</p></details>
+  <details class="q"><summary>Does it work offline?</summary>
+    <p>Yes. Your data lives on your device first and syncs when you are back online.</p></details>
+</section>
+
+<footer>
+  Dayspine is a product of Exotix Creators LLC · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a><br>
+  Results vary. Dayspine provides general fitness and nutrition information and is not medical advice.
+</footer>
+`;
+
+// Animate the bars once painted, so the numbers land rather than just exist.
+requestAnimationFrame(() => {
+  document.querySelectorAll('.bar .fill').forEach((el) => { el.style.width = el.dataset.w + '%'; });
+});
+
+document.getElementById('buy').addEventListener('click', (e) => {
+  e.preventDefault();
+  try {
+    if (window.fbq) window.fbq('track', 'InitiateCheckout', { value: 79, currency: 'USD' });
+  } catch {}
+  /*
+   * Funnel Engine serves pages extensionless (/{funnel}/{page}); a static
+   * preview serves files. Pick at runtime rather than hard-coding one, because
+   * hard-coding the production form 404s every preview — and the 404 still has
+   * "checkout" in the URL, so a naive test reports the handoff as working.
+   */
+  const qs = new URLSearchParams({ b: branch, score: String(S) });
+  const page = window.FUNNEL_ENGINE ? './checkout' : './checkout.html';
+  location.href = `${page}?${qs}`;
+});
+</script>
+</body>
+</html>

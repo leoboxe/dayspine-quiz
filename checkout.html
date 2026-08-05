@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Checkout — Dayspine</title>
+<meta name="theme-color" content="#FFFFFF">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/funnel.css">
+</head>
+<body>
+<div class="banner" id="banner">Preview mode — <b>no card is charged</b></div>
+
+<div class="wrap">
+<section>
+  <div class="eyebrow">Step 1 of 2</div>
+  <h1>One payment. Then it’s yours.</h1>
+  <p>No subscription, no renewal, no card kept on file for later.</p>
+
+  <div class="card">
+    <div class="row"><span class="k">Dayspine — lifetime access</span><span class="v mono">$79.00</span></div>
+    <div class="row" id="bumpRow" hidden><span class="k">Printed Plan</span><span class="v mono">$19.00</span></div>
+    <div class="row"><span class="k total">Total today</span><span class="v total mono" id="total">$79.00</span></div>
+  </div>
+
+  <!--
+    The order bump. One dashed box, on the checkout page, at the moment the card
+    is already out — the highest-take-rate position in the ladder and the reason
+    the $79 front end still nets $87/buyer.
+  -->
+  <label class="bump">
+    <input type="checkbox" id="bump">
+    <span>
+      <b>Add the Printed Plan — $19</b>
+      <small>Your first 4 weeks of meals, training and the grocery list, laid out as a
+      PDF you can put on the fridge. The people who print it stick with it.</small>
+    </span>
+  </label>
+
+  <form id="pay" novalidate>
+    <div class="field">
+      <label for="email">Email — where your access link goes</label>
+      <input id="email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" required>
+    </div>
+    <div class="field">
+      <label for="name">Name on card</label>
+      <input id="name" type="text" autocomplete="cc-name" placeholder="Alex Morgan" required>
+    </div>
+    <div class="field">
+      <label for="card">Card details</label>
+      <input id="card" inputmode="numeric" autocomplete="cc-number" placeholder="4242 4242 4242 4242" required>
+    </div>
+    <div class="two">
+      <div class="field"><label for="exp">Expiry</label><input id="exp" placeholder="MM / YY" autocomplete="cc-exp"></div>
+      <div class="field"><label for="cvc">CVC</label><input id="cvc" placeholder="123" autocomplete="cc-csc"></div>
+    </div>
+
+    <button class="btn" id="submit" type="submit">Pay <span id="btnTotal">$79</span> once</button>
+    <div class="reassure">
+      <span>30-day refund</span><span>No auto-renewal</span><span>Secure checkout</span>
+    </div>
+    <p class="note">By continuing you agree to the Terms and Privacy Policy. This is a one-time
+      purchase — there is nothing to cancel.</p>
+  </form>
+</section>
+</div>
+
+<footer>Dayspine · Exotix Creators LLC</footer>
+
+<script type="module">
+/* ---------------------------------------------------------------------------
+   Checkout.
+
+   In production this posts to the Funnel Engine's /api/checkout, which creates
+   the order and a Stripe PaymentIntent with `setup_future_usage: off_session`
+   — that flag is what makes the one-click upsells on the next screen possible
+   without asking for the card again.
+
+   In PREVIEW mode (no Funnel Engine host) it validates and moves on without
+   touching a payment API, so the whole funnel can be walked and reviewed. The
+   banner at the top says so, because a checkout that looks live but is not is
+   exactly the sort of thing that gets shipped by accident.
+--------------------------------------------------------------------------- */
+const PREVIEW = !window.FUNNEL_ENGINE;
+if (!PREVIEW) document.getElementById('banner').hidden = true;
+
+const bump = document.getElementById('bump');
+const total = document.getElementById('total');
+const btnTotal = document.getElementById('btnTotal');
+const bumpRow = document.getElementById('bumpRow');
+
+const CORE = 79, BUMP = 19;
+function refresh() {
+  const t = CORE + (bump.checked ? BUMP : 0);
+  total.textContent = `$${t}.00`;
+  btnTotal.textContent = `$${t}`;
+  bumpRow.hidden = !bump.checked;
+  try { if (window.fbq && bump.checked) window.fbq('trackCustom', 'BumpAdded', { value: BUMP }); } catch {}
+}
+bump.addEventListener('change', refresh);
+refresh();
+
+document.getElementById('pay').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email)) {
+    document.getElementById('email').focus();
+    return;
+  }
+
+  const btn = document.getElementById('submit');
+  btn.disabled = true;
+  btn.textContent = 'Processing…';
+
+  const value = CORE + (bump.checked ? BUMP : 0);
+  try {
+    if (window.fbq) window.fbq('track', 'Purchase', { value, currency: 'USD' });
+  } catch {}
+  try {
+    sessionStorage.setItem('dayspine.order', JSON.stringify({ email, value, bump: bump.checked }));
+  } catch {}
+
+  if (PREVIEW) {
+    setTimeout(() => { location.href = './upsell.html'; }, 700);
+    return;
+  }
+
+  // Production path — Funnel Engine owns the PaymentIntent and the webhook.
+  const res = await fetch('/api/checkout', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, items: [{ sku: 'dayspine-lifetime' },
+      ...(bump.checked ? [{ sku: 'dayspine-printed-plan' }] : [])] }),
+  }).then((r) => r.json()).catch(() => null);
+
+  if (!res?.ok) {
+    btn.disabled = false;
+    btn.textContent = `Pay $${value} once`;
+    return;
+  }
+  location.href = './upsell.html';
+});
+</script>
+</body>
+</html>

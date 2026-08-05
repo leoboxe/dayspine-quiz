@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Dayspine — build my plan</title>
+<meta name="description" content="Two-minute quiz. One payment, no subscription. Your training plan and your food plan, finally the same plan.">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* ---------------------------------------------------------------------------
+   Dayspine design tokens — lifted verbatim from src/theme/tokens.ts so the
+   funnel and the app are the same product to look at. The two rules that keep a
+   light UI from going flat apply here too: accents are darker than their
+   dark-theme equivalents, and hierarchy comes from weight, hairlines and one
+   soft shadow rather than from background darkness.
+--------------------------------------------------------------------------- */
+:root{
+  --brand:#F26A11; --brand-deep:#B24A05; --brand-tint:#FEF0E6; --on-brand:#fff;
+  --canvas:#fff; --surface:#FBF9F7; --raised:#F2EEEA; --line:#E9E3DD;
+  --text:#171310; --muted:#736B64; --faint:#A79E96;
+  --training:#0D9488; --cardio:#2563EB; --recovery:#15803D;
+  --r-sm:10px; --r-md:16px; --r-lg:22px; --r-pill:999px;
+  --shadow:0 2px 10px rgba(91,70,54,.06);
+  --wrap:min(520px,100%);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;background:var(--canvas);color:var(--text)}
+body{font-family:Outfit,system-ui,sans-serif;font-size:16px;line-height:1.45;
+  min-height:100svh;display:flex;flex-direction:column;overflow-x:hidden}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:500;font-variant-numeric:tabular-nums}
+
+/* --- the Day Spine, used as the progress rail --------------------------------
+   The product's own idea reused as navigation: one rail carrying the session's
+   events, with the current step drawn as a ring exactly like the app icon. It
+   makes the funnel unmistakably the same thing as the app.                    */
+header{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.92);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.hbar{width:var(--wrap);margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:14px}
+.back{border:0;background:none;color:var(--muted);font-size:22px;line-height:1;
+  padding:4px 6px;cursor:pointer;visibility:hidden}
+.back.on{visibility:visible}
+.spine{flex:1;height:22px;position:relative}
+.spine .rail{position:absolute;left:0;right:0;top:10px;height:3px;background:var(--line);border-radius:2px}
+.spine .fill{position:absolute;left:0;top:10px;height:3px;background:var(--brand);
+  border-radius:2px;transition:width .35s cubic-bezier(.4,0,.2,1)}
+.spine .now{position:absolute;top:3px;width:16px;height:16px;border-radius:50%;
+  background:var(--canvas);border:3px solid var(--brand);margin-left:-8px;
+  transition:left .35s cubic-bezier(.4,0,.2,1)}
+.count{font-size:12px;color:var(--faint);letter-spacing:.04em}
+
+/* --- screen ---------------------------------------------------------------- */
+main{flex:1;display:flex;flex-direction:column}
+.screen{width:var(--wrap);margin:0 auto;padding:26px 20px 32px;flex:1;
+  display:flex;flex-direction:column;animation:in .28s cubic-bezier(.4,0,.2,1)}
+@keyframes in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.screen{animation:none}*{transition:none!important}}
+
+.kicker{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;
+  background:var(--brand-tint);color:var(--brand-deep);font-weight:600;font-size:13px;
+  padding:6px 12px;border-radius:var(--r-pill);margin-bottom:18px}
+h1{font-size:34px;font-weight:800;letter-spacing:-.02em;line-height:1.12;margin:0 0 10px}
+h2{font-size:25px;font-weight:800;letter-spacing:-.015em;line-height:1.2;margin:0 0 8px}
+.sub{color:var(--muted);margin:0 0 22px;font-size:15px}
+.hint{color:var(--faint);font-size:13px;margin:-4px 0 16px}
+
+/* --- options --------------------------------------------------------------- */
+.opts{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.opt{display:flex;align-items:center;gap:14px;width:100%;text-align:left;
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);
+  padding:17px 16px;font:inherit;color:var(--text);cursor:pointer;
+  box-shadow:var(--shadow);transition:border-color .15s,background .15s,transform .08s}
+.opt:active{transform:scale(.985)}
+.opt:hover{border-color:var(--brand)}
+.opt .lbl{flex:1;font-weight:600;font-size:16px}
+.opt .sub2{display:block;font-weight:400;font-size:13px;color:var(--muted);margin-top:2px}
+.opt .box{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);flex:0 0 auto;
+  display:grid;place-items:center}
+.opt.multi .box{border-radius:6px}
+.opt.sel{border-color:var(--brand);background:var(--brand-tint)}
+.opt.sel .box{border-color:var(--brand);background:var(--brand)}
+.opt.sel .box::after{content:'';width:9px;height:5px;border-left:2px solid #fff;
+  border-bottom:2px solid #fff;transform:rotate(-45deg) translate(1px,-1px)}
+
+/* --- footer cta ------------------------------------------------------------ */
+.foot{position:sticky;bottom:0;background:linear-gradient(to top,var(--canvas) 68%,transparent);
+  padding:14px 20px calc(18px + env(safe-area-inset-bottom));margin-top:auto}
+.foot .in{width:var(--wrap);margin:0 auto}
+.btn{width:100%;border:0;border-radius:var(--r-pill);background:var(--brand);color:var(--on-brand);
+  font:inherit;font-weight:600;font-size:17px;padding:17px;cursor:pointer;
+  transition:opacity .15s,transform .08s}
+.btn:active{transform:scale(.99)}
+.btn[disabled]{opacity:.35;cursor:default}
+.legal{text-align:center;color:var(--faint);font-size:12px;margin-top:12px}
+
+/* --- interstitial ---------------------------------------------------------- */
+.inter{flex:1;display:flex;flex-direction:column;justify-content:center}
+.inter .eyebrow{color:var(--brand-deep);font-weight:600;font-size:13px;
+  letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}
+.inter p{color:var(--muted);font-size:16px;white-space:pre-line;margin:0}
+.inter.brand{background:var(--brand);margin:-26px -20px 0;padding:44px 20px;
+  border-radius:0;color:var(--on-brand);justify-content:center}
+.inter.brand .eyebrow{color:rgba(255,255,255,.8)}
+.inter.brand h2{color:var(--on-brand);font-size:32px}
+.inter.brand p{color:rgba(255,255,255,.92)}
+
+/* --- loading --------------------------------------------------------------- */
+.load{flex:1;display:flex;flex-direction:column;justify-content:center;gap:26px}
+.ring{width:96px;height:96px;align-self:center;position:relative}
+.ring svg{transform:rotate(-90deg)}
+.ring .pct{position:absolute;inset:0;display:grid;place-items:center;
+  font-weight:800;font-size:22px}
+.steps{display:flex;flex-direction:column;gap:12px}
+.step{display:flex;align-items:center;gap:12px;color:var(--faint);font-size:15px;
+  transition:color .3s}
+.step.on{color:var(--text);font-weight:600}
+.step .tick{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);
+  flex:0 0 auto;display:grid;place-items:center;font-size:11px}
+.step.on .tick{border-color:var(--brand);background:var(--brand);color:#fff}
+
+/* --- result cards ---------------------------------------------------------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:20px;box-shadow:var(--shadow);margin-bottom:14px}
+.row{display:flex;justify-content:space-between;align-items:baseline;
+  padding:11px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .k{color:var(--muted);font-size:14px}
+.row .v{font-weight:600;font-size:15px;text-align:right}
+.sev{display:inline-block;padding:5px 11px;border-radius:var(--r-pill);
+  font-size:13px;font-weight:600;background:#FDECEA;color:#B3261E}
+.bars{margin-top:6px}
+.bar{margin:12px 0}
+.bar .top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.bar .track{height:8px;background:var(--raised);border-radius:4px;overflow:hidden}
+.bar .fill{height:100%;border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hbar">
+    <button class="back" id="back" aria-label="Go back">&#8592;</button>
+    <div class="spine" aria-hidden="true">
+      <div class="rail"></div><div class="fill" id="fill"></div><div class="now" id="now"></div>
+    </div>
+    <div class="count mono" id="count"></div>
+  </div>
+</header>
+
+<main id="main"></main>
+<div class="foot" id="foot" hidden><div class="in">
+  <button class="btn" id="cta">Continue</button>
+  <div class="legal" id="legal"></div>
+</div></div>
+
+<script type="module">
+import { SCREENS, BRANCHES, LOADING_STEPS } from './quiz-content.js';
+
+/* ---------------------------------------------------------------------------
+   Engine.
+
+   Deliberately dependency-free and rendered one screen at a time with no
+   scrolling inside a question. The blueprint is explicit that if a user has not
+   scrolled once during the quiz, suddenly needing to scroll breaks the flow —
+   so every question screen must fit a phone.
+--------------------------------------------------------------------------- */
+
+const main = document.getElementById('main');
+const foot = document.getElementById('foot');
+const cta = document.getElementById('cta');
+const legal = document.getElementById('legal');
+const backBtn = document.getElementById('back');
+
+const answers = {};
+let i = 0;
+let pending = null;      // current screen's selection, before Continue
+let branch = 'none';
+
+const TOTAL = SCREENS.length;
+
+/** Persisted so a refresh mid-quiz does not throw the work away. */
+const SAVE = 'dayspine.quiz.v1';
+try {
+  const s = JSON.parse(sessionStorage.getItem(SAVE) || 'null');
+  if (s && typeof s.i === 'number') { Object.assign(answers, s.answers); i = s.i; branch = s.branch; }
+} catch { /* ignore corrupt state */ }
+const save = () => {
+  try { sessionStorage.setItem(SAVE, JSON.stringify({ i, answers, branch })); } catch {}
+};
+
+/* Track into the Funnel Engine's first-party endpoint when present. Silent by
+   design: an analytics failure must never block the funnel. */
+function track(event, data = {}) {
+  try {
+    if (window.fbq) window.fbq('trackCustom', event, data);
+    navigator.sendBeacon?.('/t', new Blob([JSON.stringify({ event, data, ts: Date.now() })],
+      { type: 'application/json' }));
+  } catch {}
+}
+
+function progress() {
+  const pct = Math.min(100, (i / TOTAL) * 100);
+  document.getElementById('fill').style.width = pct + '%';
+  document.getElementById('now').style.left = pct + '%';
+  document.getElementById('count').textContent = i < TOTAL ? `${i + 1}/${TOTAL}` : '';
+  backBtn.classList.toggle('on', i > 0 && i < TOTAL);
+}
+
+function showFoot(label, enabled, note = '') {
+  foot.hidden = false;
+  cta.textContent = label;
+  cta.disabled = !enabled;
+  legal.textContent = note;
+}
+
+function render() {
+  progress();
+  save();
+
+  if (i >= SCREENS.length) return renderLoading();
+
+  const s = SCREENS[i];
+  pending = s.type === 'multi' ? [] : null;
+  main.innerHTML = '';
+
+  const wrap = document.createElement('section');
+  wrap.className = 'screen';
+
+  if (s.type === 'interstitial') return renderInterstitial(s, wrap);
+
+  if (s.kicker) {
+    const k = document.createElement('div');
+    k.className = 'kicker';
+    k.textContent = s.kicker;
+    wrap.appendChild(k);
+  }
+  if (s.title) {
+    const h = document.createElement('h1');
+    h.textContent = s.title;
+    wrap.appendChild(h);
+  }
+  if (s.sub) {
+    const p = document.createElement('p');
+    p.className = 'sub';
+    p.textContent = s.sub;
+    wrap.appendChild(p);
+  }
+
+  const q = document.createElement('h2');
+  q.textContent = s.question;
+  wrap.appendChild(q);
+
+  if (s.hint) {
+    const h = document.createElement('p');
+    h.className = 'hint';
+    h.textContent = s.hint;
+    wrap.appendChild(h);
+  }
+
+  const list = document.createElement('div');
+  list.className = 'opts';
+
+  s.options.forEach((o) => {
+    const b = document.createElement('button');
+    b.className = 'opt' + (s.type === 'multi' ? ' multi' : '');
+    b.innerHTML =
+      `<span class="lbl">${o.label}${o.hint ? `<span class="sub2">${o.hint}</span>` : ''}</span>` +
+      `<span class="box"></span>`;
+
+    b.onclick = () => {
+      if (s.type === 'multi') {
+        // An exclusive option ("None of them") clears the rest, and picking any
+        // other option clears it — otherwise people submit contradictions.
+        const isEx = !!o.exclusive;
+        if (isEx) pending = pending.includes(o.v) ? [] : [o.v];
+        else {
+          pending = pending.filter((v) => !s.options.find((x) => x.v === v)?.exclusive);
+          pending = pending.includes(o.v) ? pending.filter((v) => v !== o.v) : [...pending, o.v];
+        }
+        [...list.children].forEach((el, idx) =>
+          el.classList.toggle('sel', pending.includes(s.options[idx].v)));
+        cta.disabled = pending.length === 0;
+      } else {
+        pending = o.v;
+        [...list.children].forEach((el, idx) =>
+          el.classList.toggle('sel', s.options[idx].v === o.v));
+        // Single-select advances on tap. Waiting for a second tap on Continue is
+        // pure friction on a one-choice screen.
+        setTimeout(commit, 180);
+      }
+    };
+    list.appendChild(b);
+  });
+
+  wrap.appendChild(list);
+  main.appendChild(wrap);
+
+  if (s.type === 'multi') showFoot('Continue', false);
+  else foot.hidden = true;
+
+  track('QuizScreen', { screen: s.id, n: i + 1 });
+}
+
+function renderInterstitial(s, wrap) {
+  const box = document.createElement('div');
+  box.className = 'inter' + (s.variant === 'brand' ? ' brand' : '');
+  box.innerHTML =
+    `<div class="eyebrow">${s.eyebrow}</div><h2>${s.title}</h2><p>${s.body}</p>`;
+  wrap.appendChild(box);
+  main.appendChild(wrap);
+  showFoot(s.cta || 'Continue', true);
+  track('QuizScreen', { screen: s.id, n: i + 1 });
+}
+
+function commit() {
+  const s = SCREENS[i];
+  if (s && s.key) {
+    answers[s.key] = pending;
+    if (s.branch) branch = pending;
+  }
+  i++;
+  render();
+}
+
+cta.onclick = commit;
+backBtn.onclick = () => { if (i > 0) { i--; render(); } };
+
+/* ------------------------------------------------------------- LOADING ----
+   Never a dead spinner. These are the only seconds where the visitor cannot
+   click away, so they carry the plan being built in their name.              */
+function renderLoading() {
+  foot.hidden = true;
+  backBtn.classList.remove('on');
+  main.innerHTML = '';
+
+  const wrap = document.createElement('section');
+  wrap.className = 'screen';
+  wrap.innerHTML = `
+    <div class="load">
+      <div class="ring">
+        <svg width="96" height="96"><circle cx="48" cy="48" r="42" fill="none"
+          stroke="#F2EEEA" stroke-width="8"></circle>
+          <circle id="arc" cx="48" cy="48" r="42" fill="none" stroke="#F26A11"
+            stroke-width="8" stroke-linecap="round"
+            stroke-dasharray="264" stroke-dashoffset="264"></circle></svg>
+        <div class="pct mono" id="pct">0%</div>
+      </div>
+      <h2 style="text-align:center">Building your plan</h2>
+      <div class="steps" id="steps"></div>
+    </div>`;
+  main.appendChild(wrap);
+
+  const stepsEl = wrap.querySelector('#steps');
+  LOADING_STEPS.forEach((t) => {
+    const d = document.createElement('div');
+    d.className = 'step';
+    d.innerHTML = `<span class="tick">&#10003;</span><span>${t}</span>`;
+    stepsEl.appendChild(d);
+  });
+
+  track('QuizComplete', { branch, answers: Object.keys(answers).length });
+
+  const arc = wrap.querySelector('#arc');
+  const pctEl = wrap.querySelector('#pct');
+  const DURATION = 5200;
+  const t0 = performance.now();
+
+  (function tick(now) {
+    const p = Math.min(1, (now - t0) / DURATION);
+    arc.style.strokeDashoffset = String(264 * (1 - p));
+    pctEl.textContent = Math.round(p * 100) + '%';
+    const active = Math.min(LOADING_STEPS.length - 1, Math.floor(p * LOADING_STEPS.length));
+    [...stepsEl.children].forEach((el, idx) => el.classList.toggle('on', idx <= active));
+    if (p < 1) requestAnimationFrame(tick);
+    else location.href = `./results.html?b=${encodeURIComponent(branch)}`;
+  })(t0);
+
+  try { sessionStorage.setItem('dayspine.answers', JSON.stringify({ answers, branch })); } catch {}
+}
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+/* Dayspine funnel — shared styles.
+   Tokens are copied verbatim from the app's src/theme/tokens.ts so the funnel
+   and the product are visibly one thing. */
+:root{
+  --brand:#F26A11; --brand-deep:#B24A05; --brand-tint:#FEF0E6; --on-brand:#fff;
+  --canvas:#fff; --surface:#FBF9F7; --raised:#F2EEEA; --line:#E9E3DD;
+  --text:#171310; --muted:#736B64; --faint:#A79E96;
+  --training:#0D9488; --recovery:#15803D; --danger:#B3261E;
+  --r-sm:10px; --r-md:16px; --r-lg:22px; --r-pill:999px;
+  --shadow:0 2px 10px rgba(91,70,54,.06);
+  --wrap:min(560px,100%);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--canvas);color:var(--text)}
+body{font-family:Outfit,system-ui,sans-serif;font-size:16px;line-height:1.5}
+.mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-weight:500;font-variant-numeric:tabular-nums}
+.wrap{width:var(--wrap);margin:0 auto;padding:0 20px}
+h1{font-size:31px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin:0 0 10px}
+h2{font-size:22px;font-weight:800;letter-spacing:-.015em;margin:0 0 10px}
+p{margin:0 0 14px;color:var(--muted)}
+.eyebrow{color:var(--brand-deep);font-weight:600;font-size:12px;letter-spacing:.09em;
+  text-transform:uppercase;margin-bottom:10px}
+section{padding:30px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:20px;box-shadow:var(--shadow);margin:14px 0}
+.row{display:flex;justify-content:space-between;gap:14px;padding:11px 0;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row .k{color:var(--muted);font-size:14px}
+.row .v{font-weight:600;font-size:15px;text-align:right}
+.total{font-size:19px;font-weight:800}
+.btn{display:block;width:100%;border:0;border-radius:var(--r-pill);background:var(--brand);
+  color:var(--on-brand);font:inherit;font-weight:600;font-size:18px;padding:18px;
+  cursor:pointer;text-align:center;text-decoration:none;transition:transform .08s,opacity .15s}
+.btn:active{transform:scale(.99)}
+.btn[disabled]{opacity:.4;cursor:default}
+.btn.ghost{background:none;color:var(--muted);font-size:15px;font-weight:400;
+  text-decoration:underline;padding:14px}
+.reassure{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:14px;font-size:13px;color:var(--muted)}
+.reassure span::before{content:'✓';margin-right:6px;color:var(--recovery);font-weight:700}
+.field{margin:12px 0}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:6px}
+.field input{width:100%;padding:15px 14px;border:1px solid var(--line);border-radius:var(--r-md);
+  font:inherit;background:var(--canvas);color:var(--text)}
+.field input:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:var(--brand)}
+.two{display:flex;gap:10px}.two>*{flex:1}
+/* order bump — deliberately the one dashed box on the page */
+.bump{border:2px dashed var(--brand);background:var(--brand-tint);border-radius:var(--r-md);
+  padding:16px;margin:18px 0;display:flex;gap:13px;align-items:flex-start;cursor:pointer}
+.bump input{width:22px;height:22px;accent-color:var(--brand);margin-top:2px;flex:0 0 auto}
+.bump b{display:block;color:var(--brand-deep)}
+.bump small{color:var(--muted)}
+.note{font-size:12px;color:var(--faint);text-align:center;margin-top:14px}
+.banner{background:var(--text);color:#fff;text-align:center;font-size:13px;padding:9px 16px}
+.banner b{color:#FFB27A}
+footer{padding:26px 0 40px;color:var(--faint);font-size:12px;text-align:center}

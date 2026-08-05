@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Last one — Dayspine</title>
+<meta name="theme-color" content="#FFFFFF">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/funnel.css">
+</head>
+<body>
+<div class="banner">Last screen before your plan</div>
+<div class="wrap">
+<section>
+  <div class="eyebrow">Optional</div>
+  <h1>Grocery Pro — $29</h1>
+  <p>Your weekly plan becomes a grocery list automatically. Grocery Pro sorts that
+     list by supermarket aisle, keeps a running pantry so you stop re-buying olive
+     oil, and swaps any ingredient you do not like for one that hits the same macros.</p>
+  <div class="card">
+    <div class="row"><span class="k">Aisle-sorted lists</span><span class="v">Included</span></div>
+    <div class="row"><span class="k">Pantry tracking</span><span class="v">Included</span></div>
+    <div class="row"><span class="k">One-tap ingredient swaps</span><span class="v">Included</span></div>
+    <div class="row"><span class="k total">One time</span><span class="v total mono">$29.00</span></div>
+  </div>
+  <button class="btn" id="yes">Add Grocery Pro — $29</button>
+  <button class="btn ghost" id="no">No thanks, take me to my plan</button>
+</section>
+</div>
+<footer>Dayspine · Exotix Creators LLC</footer>
+<script type="module">
+document.getElementById('yes').addEventListener('click', async () => {
+  try { if (window.fbq) window.fbq('trackCustom', 'DownsellAccepted', { value: 29 }); } catch {}
+  if (window.FUNNEL_ENGINE) {
+    await fetch('/api/upsell', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sku: 'dayspine-grocery-pro' }) }).catch(() => {});
+  }
+  location.href = './install.html';
+});
+document.getElementById('no').addEventListener('click', () => { location.href = './install.html'; });
+</script>
+</body>
+</html>

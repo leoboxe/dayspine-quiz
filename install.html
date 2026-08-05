@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Install Dayspine</title>
+<meta name="theme-color" content="#FFFFFF">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/funnel.css">
+<style>
+.steps{counter-reset:s;margin:18px 0}
+.st{counter-increment:s;display:flex;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
+.st:last-child{border-bottom:0}
+.st::before{content:counter(s);flex:0 0 auto;width:30px;height:30px;border-radius:50%;
+  background:var(--brand);color:#fff;font-weight:700;display:grid;place-items:center;font-size:15px}
+.st b{display:block;margin-bottom:2px}
+.st small{color:var(--muted);font-size:14px}
+.glyph{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;
+  border:1.5px solid var(--brand-deep);border-radius:6px;color:var(--brand-deep);
+  vertical-align:-7px;margin:0 3px;font-size:15px}
+.url{display:flex;align-items:center;gap:10px;background:var(--raised);border-radius:var(--r-md);
+  padding:14px 16px;margin:14px 0;font-weight:600;justify-content:space-between}
+.url button{border:0;background:var(--text);color:#fff;border-radius:var(--r-pill);
+  padding:9px 15px;font:inherit;font-size:14px;font-weight:600;cursor:pointer}
+.warn{background:#FFF6EC;border:1px solid #F6C89A;border-radius:var(--r-md);padding:14px 16px;
+  font-size:14px;color:var(--brand-deep);margin:16px 0}
+</style>
+</head>
+<body>
+<div class="banner">You’re in — <b>one last step</b></div>
+<div class="wrap">
+<section>
+  <div class="eyebrow">Final step</div>
+  <h1 id="head">Put Dayspine on your home screen.</h1>
+  <p id="lede">It installs straight from the browser — no App Store, no download,
+     about ten seconds. Then it opens full screen like any other app and works offline.</p>
+
+  <div id="body"></div>
+
+  <div class="url">
+    <span class="mono" id="urlText">app.dayspine.com</span>
+    <button id="copy">Copy</button>
+  </div>
+
+  <p class="note">Your access is tied to the email you used at checkout, so you can install it on
+    as many of your own devices as you like.</p>
+</section>
+</div>
+<footer>Dayspine · Exotix Creators LLC</footer>
+
+<script type="module">
+/* ---------------------------------------------------------------------------
+   The install handoff.
+
+   This is the step the whole business rests on and the one no competitor has to
+   solve, because they all hand off to an App Store button. A PWA has no such
+   button: on iOS there is NO install API at all — the only route is the user
+   opening the share sheet themselves. So the instruction has to be exact,
+   platform-correct, and impossible to misread, or the purchase never becomes a
+   user.
+
+   Three distinct paths, because getting this wrong is silent: the buyer simply
+   never installs, and nothing anywhere reports a problem.
+--------------------------------------------------------------------------- */
+const APP_URL = 'https://app.dayspine.com/';
+const ua = navigator.userAgent;
+const isIOS = /iPad|iPhone|iPod/.test(ua);
+const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|Chrome/.test(ua);
+const isAndroid = /Android/.test(ua);
+const body = document.getElementById('body');
+
+let deferred = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferred = e;
+  const b = document.getElementById('androidBtn');
+  if (b) b.hidden = false;
+});
+
+if (isIOS && !isSafari) {
+  // The one genuinely broken case: iOS, but not Safari. Chrome and Firefox on
+  // iOS cannot install to the home screen at all, so telling them to tap Share
+  // would send them round a loop with no exit.
+  body.innerHTML = `
+    <div class="warn"><b>Open this page in Safari first.</b><br>
+      On iPhone, only Safari can add an app to the home screen — Chrome and Firefox can’t.
+      Copy the link below, paste it into Safari, and this page will show you the two taps.</div>`;
+} else if (isIOS) {
+  body.innerHTML = `
+    <div class="steps">
+      <div class="st"><span><b>Tap the Share button</b>
+        <small>The square with an arrow pointing up <span class="glyph">↑</span> — at the bottom of Safari.</small></span></div>
+      <div class="st"><span><b>Scroll down, tap “Add to Home Screen”</b>
+        <small>It sits below the row of app icons, next to a <span class="glyph">＋</span>.</small></span></div>
+      <div class="st"><span><b>Tap “Add”</b>
+        <small>The orange Dayspine icon appears on your home screen. Open it from there from now on.</small></span></div>
+    </div>`;
+} else if (isAndroid) {
+  body.innerHTML = `
+    <button class="btn" id="androidBtn" hidden>Install Dayspine</button>
+    <div class="steps">
+      <div class="st"><span><b>Tap the menu</b><small>The three dots in the top right of Chrome.</small></span></div>
+      <div class="st"><span><b>Tap “Install app” or “Add to Home screen”</b>
+        <small>Chrome may also offer this as a banner at the bottom of the screen.</small></span></div>
+      <div class="st"><span><b>Confirm</b><small>The Dayspine icon lands on your home screen.</small></span></div>
+    </div>`;
+  document.addEventListener('click', async (e) => {
+    if (e.target.id !== 'androidBtn' || !deferred) return;
+    await deferred.prompt();
+    await deferred.userChoice;
+    deferred = null;
+    e.target.hidden = true;
+  });
+} else {
+  document.getElementById('head').textContent = 'Open this on your phone.';
+  document.getElementById('lede').textContent =
+    'Dayspine is built for your phone — that is where you will log meals and run sessions. ' +
+    'Send yourself this link, open it on your phone, and it will walk you through the two taps.';
+  body.innerHTML = `
+    <div class="steps">
+      <div class="st"><span><b>Copy the link below</b><small>Or email it to yourself.</small></span></div>
+      <div class="st"><span><b>Open it on your phone</b><small>Safari on iPhone, Chrome on Android.</small></span></div>
+      <div class="st"><span><b>Add it to your home screen</b><small>That page shows the exact taps for your device.</small></span></div>
+    </div>
+    <a class="btn" href="${APP_URL}" target="_blank" rel="noopener">Open Dayspine in this browser anyway</a>`;
+}
+
+document.getElementById('urlText').textContent = APP_URL.replace(/^https:\/\//, '').replace(/\/$/, '');
+document.getElementById('copy').addEventListener('click', async (e) => {
+  try {
+    await navigator.clipboard.writeText(APP_URL);
+    e.target.textContent = 'Copied';
+    setTimeout(() => { e.target.textContent = 'Copy'; }, 1800);
+  } catch {
+    // Clipboard is blocked in some in-app browsers; select the text instead so
+    // a long-press copy still works.
+    const r = document.createRange();
+    r.selectNodeContents(document.getElementById('urlText'));
+    getSelection().removeAllRanges();
+    getSelection().addRange(r);
+  }
+});
+
+try { if (window.fbq) window.fbq('trackCustom', 'InstallStepShown', { platform: isIOS ? 'ios' : isAndroid ? 'android' : 'desktop' }); } catch {}
+</script>
+</body>
+</html>

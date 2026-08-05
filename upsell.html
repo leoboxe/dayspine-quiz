@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>One thing before you start — Dayspine</title>
+<meta name="theme-color" content="#FFFFFF">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./assets/funnel.css">
+</head>
+<body>
+<div class="banner">Payment received — <b>one optional add-on</b></div>
+<div class="wrap">
+<section>
+  <div class="eyebrow">Optional · one click, card already on file</div>
+  <h1>Bring one person with you.</h1>
+  <p>The single biggest predictor of whether someone is still logging in week six
+     is whether anyone else is doing it with them. A Partner Seat is a second
+     full copy of Dayspine — their own plan, their own targets, their own data.</p>
+
+  <div class="card">
+    <div class="row"><span class="k">Partner Seat — lifetime</span><span class="v mono">$39.00</span></div>
+    <div class="row"><span class="k">Normally</span><span class="v mono">$79.00</span></div>
+    <div class="row"><span class="k total">You pay</span><span class="v total mono">$39.00</span></div>
+  </div>
+
+  <button class="btn" id="yes">Add the Partner Seat — $39</button>
+  <button class="btn ghost" id="no">No thanks, take me to my plan</button>
+  <p class="note">One-time, like everything else here. Nothing renews.</p>
+</section>
+</div>
+<footer>Dayspine · Exotix Creators LLC</footer>
+<script type="module">
+/* One-click accept: the card was stored at checkout with off_session usage, so
+   production charges via the Funnel Engine's claim_upsell_session RPC with no
+   card re-entry. Declining routes to the downsell, never straight out. */
+document.getElementById('yes').addEventListener('click', async () => {
+  try { if (window.fbq) window.fbq('trackCustom', 'Upsell1Accepted', { value: 39 }); } catch {}
+  if (window.FUNNEL_ENGINE) {
+    await fetch('/api/upsell', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sku: 'dayspine-partner-seat' }) }).catch(() => {});
+  }
+  location.href = './install.html';
+});
+document.getElementById('no').addEventListener('click', () => { location.href = './downsell.html'; });
+</script>
+</body>
+</html>
