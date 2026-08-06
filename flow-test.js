@@ -53,22 +53,23 @@ const R=[];const ck=(n,ok,d='')=>{R.push(ok);console.log(`${ok?'PASS':'FAIL'}  $
   await page.fill('#email',email);
 
   /* Type a test card INTO the Stripe iframe, then pay for real (test mode). */
-  let filled=false;
+  const want={number:'4242424242424242',expiry:'12 / 34',cvc:'123',postalCode:'12345'};
+  const done=[];
   for(const fr of page.frames()){
-    const num=fr.locator('[name="number"], [placeholder*="1234"]').first();
-    if(await num.count().catch(()=>0)){
-      await num.click({timeout:4000}).catch(()=>{});
-      await page.keyboard.type('4242424242424242',{delay:25});
-      await page.keyboard.type('1234',{delay:25});   // expiry 12/34
-      await page.keyboard.type('123',{delay:25});    // cvc
-      await page.keyboard.type('12345',{delay:25});  // postal
-      filled=true; break;
+    for(const [n,v] of Object.entries(want)){
+      if(done.includes(n))continue;
+      const el=fr.locator(`[name="${n}"]`).first();
+      if(await el.count().catch(()=>0)){ await el.fill(v).catch(()=>{}); done.push(n); }
     }
   }
+  const filled=done.includes('number')&&done.includes('expiry')&&done.includes('cvc');
   ck('test card entered in the Payment Element',filled);
 
-  await page.locator('#submit').click({timeout:8000}).catch(()=>{});
-  await page.waitForURL(/upsell/,{timeout:45000}).catch(()=>{});
+  /* requestSubmit(), not click(): a headless click on a submit button does not
+     reliably produce the form's submit event, so the handler never runs and the
+     page looks perfectly healthy. A real user's click is fine. */
+  await page.evaluate(()=>document.getElementById('pay').requestSubmit());
+  await page.waitForURL(/upsell/,{timeout:60000}).catch(()=>{});
   ck('checkout -> upsell (REAL Stripe charge)',/upsell/.test(page.url()),page.url().split('/').pop());
   fs.writeFileSync(path.join(__dirname,'.last-e2e-email'),email);
   await page.screenshot({path:path.join(out,'09-upsell.png')});

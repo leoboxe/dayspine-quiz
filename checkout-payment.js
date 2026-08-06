@@ -23,8 +23,13 @@
 
 const SUPABASE_URL = 'https://guixatihuqwfhzvnrkvb.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_HsWRfggaqcEPxG5CHT1wvg_9ImA8qZc';
+/*
+ * LIVE publishable key. Safe in the bundle by design — it can only create
+ * payment methods and confirm intents the server already authorised, which is
+ * why Stripe publishes it. The secret key never leaves the edge function.
+ */
 const STRIPE_PK =
-  'pk_test_51U0tDh7RFiAEM4DfVoqrojiCxeYm8Mr4eC7yBqG2XDwOPpW3nYxWR4jTWWdhTU4TZk6X1K69NnQVgJUNaq24ZLvP00VeUlwUUO';
+  'pk_live_51SM9r7CV0B2KOmXXq0LDIO174zhFEaMqO3slq8HW8yFoZKedWrwIAYczzxCxQPYrVxoV6M3h1pjdUFoeMBAo71vL00coL89fee';
 
 const CORE = 79;
 const BUMP = 9;
