@@ -63,6 +63,15 @@ const elements = stripe.elements({
 
 elements.create('payment', { layout: 'tabs' }).mount('#payment-element');
 
+/* Fired once the checkout is usable, not on page load: an InitiateCheckout that
+   counts people who never saw a payment form makes the funnel look healthier
+   than it is, and the optimiser learns from the difference. */
+try {
+  if (window.fbq) {
+    window.fbq('track', 'InitiateCheckout', { value: CORE, currency: 'USD' });
+  }
+} catch (e) {}
+
 function total() {
   return CORE + (bump.checked ? BUMP : 0);
 }
@@ -113,7 +122,16 @@ document.getElementById('pay').addEventListener('submit', async (e) => {
     const res = await fetch(SUPABASE_URL + '/functions/v1/create-checkout', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + SUPABASE_ANON },
-      body: JSON.stringify({ email, addons: bump.checked ? ['printed-plan'] : [] }),
+      body: JSON.stringify({
+        email,
+        addons: bump.checked ? ['printed-plan'] : [],
+        /* The cookies a server cannot read, and the id that dedupes this sale
+           against the webhook's copy of it. */
+        fbp: window.dayspineMeta ? window.dayspineMeta.fbp() : null,
+        fbc: window.dayspineMeta ? window.dayspineMeta.fbc() : null,
+        eventId: window.dayspineMeta ? window.dayspineMeta.purchaseEventId() : null,
+        sourceUrl: location.href,
+      }),
     });
     const out = await res.json();
     if (!res.ok || !out.clientSecret) throw new Error(out.error || 'checkout_failed');
@@ -142,8 +160,18 @@ document.getElementById('pay').addEventListener('submit', async (e) => {
 
   if (error) return fail(error.message || 'That payment did not go through.');
 
+  /* The browser half of Purchase. The SAME event_id goes to the webhook, so
+     Meta counts one conversion and takes the union of both sets of match
+     signals — this one has the cookies, that one has the certainty. */
   try {
-    if (window.fbq) window.fbq('track', 'Purchase', { value: total(), currency: 'USD' });
+    if (window.fbq) {
+      window.fbq(
+        'track',
+        'Purchase',
+        { value: total(), currency: 'USD' },
+        { eventID: window.dayspineMeta ? window.dayspineMeta.purchaseEventId() : undefined },
+      );
+    }
   } catch (err) {}
 
   location.href = './upsell.html';
