@@ -15,7 +15,7 @@ const R=[];const ck=(n,ok,d='')=>{R.push(ok);console.log(`${ok?'PASS':'FAIL'}  $
   const errs=[];page.on('pageerror',e=>errs.push(e.message));
   const out=path.join(__dirname,'shots');fs.mkdirSync(out,{recursive:true});
 
-  await page.goto('http://localhost:8090/',{waitUntil:'load'});
+  await page.goto('https://leoboxe.github.io/dayspine-quiz/',{waitUntil:'load'});
   await page.waitForTimeout(800);
   for(let i=0;i<26;i++){
     const h=await page.evaluate(()=>{const q=document.querySelector('h2')||document.querySelector('h1');return q?q.textContent.trim():''});
