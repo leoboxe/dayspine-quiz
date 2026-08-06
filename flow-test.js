@@ -50,6 +50,26 @@ const R=[];const ck=(n,ok,d='')=>{R.push(ok);console.log(`${ok?'PASS':'FAIL'}  $
   ck('checkout -> upsell',/upsell/.test(page.url()));
   await page.screenshot({path:path.join(out,'09-upsell.png')});
 
+  /* Accepting the seat must ASK who it is for, and must not proceed without a
+     usable address — a seat granted to a typo is granted to nobody, and the
+     buyer finds out weeks later. */
+  await page.locator('#yes').click({timeout:5000}).catch(()=>{});
+  await page.waitForTimeout(600);
+  const asked=await page.locator('#seatEmail').isVisible().catch(()=>false);
+  ck('accepting the seat prompts for the partner email',asked);
+
+  await page.locator('#confirmSeat').click({timeout:5000}).catch(()=>{});
+  await page.waitForTimeout(500);
+  ck('a blank address is refused',/upsell/.test(page.url()));
+
+  await page.fill('#seatEmail','partner@example.com').catch(()=>{});
+  await page.locator('#confirmSeat').click({timeout:5000}).catch(()=>{});
+  await page.waitForURL(/install/,{timeout:15000}).catch(()=>{});
+  const seatStored=await page.evaluate(()=>sessionStorage.getItem('dayspine.partnerEmail'));
+  ck('the partner email is carried to the handoff',seatStored==='partner@example.com',String(seatStored));
+
+  await page.goBack().catch(()=>{});
+  await page.waitForTimeout(800);
   await page.locator('#no').click({timeout:5000}).catch(()=>{});
   await page.waitForURL(/downsell/,{timeout:15000}).catch(()=>{});
   ck('decline -> downsell',/downsell/.test(page.url()));

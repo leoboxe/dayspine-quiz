@@ -26,6 +26,35 @@
   </div>
 
   <button class="btn" id="yes">Add the Partner Seat — $39</button>
+
+  <!--
+    Their email, asked at the moment of purchase and nowhere else.
+
+    The seat is granted to THEIR address, not the buyer's, so they sign in as
+    themselves on their own phone and own what they were given — that is the
+    difference between a seat and a shared password, and it is the referral
+    mechanic too, because the second person has to be told they are on it.
+
+    Revealed by the buy button rather than sitting on the page from the start:
+    an email field beside a price is a signup form, and it suppresses the click
+    it is attached to. Asked after the decision, it is just delivery.
+  -->
+  <div id="seatBox" hidden>
+    <div class="card" style="margin-top:14px">
+      <label for="seatEmail" style="display:block;font-weight:600;margin-bottom:6px">
+        Who is the seat for?
+      </label>
+      <input id="seatEmail" type="email" inputmode="email" autocomplete="email"
+             placeholder="their@email.com"
+             style="width:100%;box-sizing:border-box;font:inherit;padding:12px 14px;
+                    border:1px solid #E3DDD6;border-radius:10px">
+      <p class="note" id="seatNote" style="margin-top:8px">
+        We send their seat straight to them — they sign in with this address on their own phone.
+      </p>
+    </div>
+    <button class="btn" id="confirmSeat">Confirm — $39</button>
+  </div>
+
   <button class="btn ghost" id="no">No thanks, take me to my plan</button>
   <p class="note">One-time, like everything else here. Nothing renews.</p>
 </section>
@@ -48,15 +77,42 @@ function grantAddon(id) {
 /* One-click accept: the card was stored at checkout with off_session usage, so
    production charges via the Funnel Engine's claim_upsell_session RPC with no
    card re-entry. Declining routes to the downsell, never straight out. */
-document.getElementById('yes').addEventListener('click', async () => {
+const seatBox = document.getElementById('seatBox');
+const seatEmail = document.getElementById('seatEmail');
+const seatNote = document.getElementById('seatNote');
+const yesBtn = document.getElementById('yes');
+
+/* Step one: take the decision, then ask who it is for. */
+yesBtn.addEventListener('click', () => {
   try { if (window.fbq) window.fbq('trackCustom', 'Upsell1Accepted', { value: 39 }); } catch {}
+  yesBtn.hidden = true;
+  seatBox.hidden = false;
+  seatEmail.focus();
+});
+
+async function completeSeat() {
+  const email = (seatEmail.value || '').trim().toLowerCase();
+  /* Loose on purpose: this is a delivery address, not an identity claim — the
+     magic link is what proves it is real. But an obviously malformed one has to
+     be caught here, because a seat granted to a typo is granted to nobody and
+     the buyer finds out weeks later. */
+  if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+    seatNote.textContent = 'That does not look like an email address — check it and try again.';
+    seatNote.style.color = '#B4271B';
+    seatEmail.focus();
+    return;
+  }
   if (window.FUNNEL_ENGINE) {
     await fetch('/api/upsell', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sku: 'dayspine-partner-seat' }) }).catch(() => {});
+      body: JSON.stringify({ sku: 'dayspine-partner-seat', partnerEmail: email }) }).catch(() => {});
   }
+  try { sessionStorage.setItem('dayspine.partnerEmail', email); } catch (e) {}
   grantAddon('partner-seat');
   location.href = './install.html';
-});
+}
+
+document.getElementById('confirmSeat').addEventListener('click', completeSeat);
+seatEmail.addEventListener('keydown', (e) => { if (e.key === 'Enter') completeSeat(); });
 document.getElementById('no').addEventListener('click', () => { location.href = './downsell.html'; });
 </script>
 </body>

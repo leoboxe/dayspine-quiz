@@ -70,6 +70,37 @@
    ships, the app reads ownership from Stripe and this parameter is deleted on
    both sides. Until then it is what makes a completed checkout produce the
    features the buyer just bought. */
+/*
+ * Record the purchase against the buyer's email, and the seat against the
+ * partner's, so both survive a cleared browser or a new phone.
+ *
+ * `?unlock=` below only ever grants on THIS device. That is enough to walk out
+ * of the funnel with what you bought, and worth nothing the day someone
+ * reinstalls — which on a lifetime product is the whole promise. This is what
+ * makes the magic-link sign-in able to give it back.
+ *
+ * Fire-and-forget: the buyer already paid, and a failed write must never hold
+ * up the install step the whole funnel is aimed at.
+ */
+(function recordPurchase() {
+  try {
+    const order = JSON.parse(sessionStorage.getItem('dayspine.order') || '{}');
+    const addons = JSON.parse(sessionStorage.getItem('dayspine.addons') || '[]');
+    const partnerEmail = sessionStorage.getItem('dayspine.partnerEmail') || null;
+    if (!order.email) return;
+    fetch('https://guixatihuqwfhzvnrkvb.supabase.co/functions/v1/record-purchase', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: order.email,
+        addons: addons,
+        partnerEmail: partnerEmail,
+        note: 'Dayspine funnel',
+      }),
+    }).catch(function () {});
+  } catch (e) {}
+})();
+
 const APP_URL = (function () {
   const base = 'https://app.dayspine.com/';
   try {
