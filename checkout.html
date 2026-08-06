@@ -20,7 +20,7 @@
 
   <div class="card">
     <div class="row"><span class="k">Dayspine — lifetime access</span><span class="v mono">$79.00</span></div>
-    <div class="row" id="bumpRow" hidden><span class="k">Printed Plan</span><span class="v mono">$19.00</span></div>
+    <div class="row" id="bumpRow" hidden><span class="k">Printed Plan</span><span class="v mono">$9.00</span></div>
     <div class="row"><span class="k total">Total today</span><span class="v total mono" id="total">$79.00</span></div>
   </div>
 
@@ -32,7 +32,7 @@
   <label class="bump">
     <input type="checkbox" id="bump">
     <span>
-      <b>Add the Printed Plan — $19</b>
+      <b>Add the Printed Plan — $9</b>
       <small>Your first 4 weeks of meals, training and the grocery list, laid out as a
       PDF you can put on the fridge. The people who print it stick with it.</small>
     </span>
@@ -103,7 +103,7 @@ const total = document.getElementById('total');
 const btnTotal = document.getElementById('btnTotal');
 const bumpRow = document.getElementById('bumpRow');
 
-const CORE = 79, BUMP = 19;
+const CORE = 79, BUMP = 9;
 function refresh() {
   const t = CORE + (bump.checked ? BUMP : 0);
   total.textContent = `$${t}.00`;

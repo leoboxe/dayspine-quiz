@@ -39,7 +39,7 @@ const R=[];const ck=(n,ok,d='')=>{R.push(ok);console.log(`${ok?'PASS':'FAIL'}  $
   await page.locator('#bump').check({timeout:5000}).catch(()=>{});
   await page.waitForTimeout(300);
   const t1=await page.locator('#total').textContent().catch(()=>'');
-  ck('order bump updates the total',t0==='$79.00'&&t1==='$98.00',`${t0} -> ${t1}`);
+  ck('order bump updates the total',t0==='$79.00'&&t1==='$88.00',`${t0} -> ${t1}`);
   await page.screenshot({path:path.join(out,'08-checkout.png')});
 
   await page.fill('#email','leo@example.com');
@@ -64,7 +64,7 @@ const R=[];const ck=(n,ok,d='')=>{R.push(ok);console.log(`${ok?'PASS':'FAIL'}  $
   await page.screenshot({path:path.join(out,'11-install.png')});
 
   /* The handoff. A buyer who ticked the bump must arrive at the app carrying
-     `printed-plan`, or they paid $19 for something the app never turns on —
+     `printed-plan`, or they paid $9 for something the app never turns on —
      and nothing anywhere would report it, because both pages look correct. */
   const handoff=await page.evaluate(()=>{
     const link=document.querySelector('a[href*="app.dayspine.com"]');
