@@ -63,7 +63,21 @@
    Three distinct paths, because getting this wrong is silent: the buyer simply
    never installs, and nothing anywhere reports a problem.
 --------------------------------------------------------------------------- */
-const APP_URL = 'https://app.dayspine.com/';
+/* The app URL, carrying whatever add-ons this buyer actually paid for.
+   ⚠️ This is a HANDOFF, not an authorisation. `?unlock=` is a client-supplied
+   string and the app treats it as a preview grant — there is no payment code
+   anywhere yet, so there is nothing for it to bypass. When the entitlement gate
+   ships, the app reads ownership from Stripe and this parameter is deleted on
+   both sides. Until then it is what makes a completed checkout produce the
+   features the buyer just bought. */
+const APP_URL = (function () {
+  const base = 'https://app.dayspine.com/';
+  try {
+    const owned = JSON.parse(sessionStorage.getItem('dayspine.addons') || '[]');
+    if (owned.length) return base + '?unlock=' + encodeURIComponent(owned.join(','));
+  } catch (e) {}
+  return base;
+})();
 const ua = navigator.userAgent;
 const isIOS = /iPad|iPhone|iPod/.test(ua);
 const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|Chrome/.test(ua);

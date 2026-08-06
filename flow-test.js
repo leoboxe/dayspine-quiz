@@ -15,7 +15,7 @@ const R=[];const ck=(n,ok,d='')=>{R.push(ok);console.log(`${ok?'PASS':'FAIL'}  $
   const errs=[];page.on('pageerror',e=>errs.push(e.message));
   const out=path.join(__dirname,'shots');fs.mkdirSync(out,{recursive:true});
 
-  await page.goto('https://leoboxe.github.io/dayspine-quiz/',{waitUntil:'load'});
+  await page.goto(process.env.FUNNEL_URL||'https://quiz.dayspine.com/',{waitUntil:'load'});
   await page.waitForTimeout(800);
   for(let i=0;i<26;i++){
     const h=await page.evaluate(()=>{const q=document.querySelector('h2')||document.querySelector('h1');return q?q.textContent.trim():''});
@@ -62,6 +62,17 @@ const R=[];const ck=(n,ok,d='')=>{R.push(ok);console.log(`${ok?'PASS':'FAIL'}  $
   const txt=await page.evaluate(()=>document.body.innerText);
   ck('iOS instructions shown',/Add to Home Screen/i.test(txt));
   await page.screenshot({path:path.join(out,'11-install.png')});
+
+  /* The handoff. A buyer who ticked the bump must arrive at the app carrying
+     `printed-plan`, or they paid $19 for something the app never turns on —
+     and nothing anywhere would report it, because both pages look correct. */
+  const handoff=await page.evaluate(()=>{
+    const link=document.querySelector('a[href*="app.dayspine.com"]');
+    return {href:link?link.href:'', stored:sessionStorage.getItem('dayspine.addons')||'[]'};
+  });
+  ck('checkout bump recorded as an add-on',/printed-plan/.test(handoff.stored),handoff.stored);
+  ck('install handoff carries the add-ons',/unlock=/.test(handoff.href)&&/printed-plan/.test(handoff.href),
+     handoff.href.split('?')[1]||'no unlock param');
 
   ck('no page errors',errs.length===0,errs[0]||'');
   await ctx.close();

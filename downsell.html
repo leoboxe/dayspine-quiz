@@ -29,6 +29,19 @@
 </section>
 </div>
 <footer>Dayspine · Exotix Creators LLC</footer>
+<script>
+/* Records an add-on the buyer just paid for, so install.html can hand the list
+   to the app. sessionStorage, not a query string, because the buyer walks
+   through three more pages before the handoff and a lost parameter is a lost
+   purchase. */
+function grantAddon(id) {
+  try {
+    var owned = JSON.parse(sessionStorage.getItem('dayspine.addons') || '[]');
+    if (owned.indexOf(id) === -1) owned.push(id);
+    sessionStorage.setItem('dayspine.addons', JSON.stringify(owned));
+  } catch (e) {}
+}
+</script>
 <script type="module">
 document.getElementById('yes').addEventListener('click', async () => {
   try { if (window.fbq) window.fbq('trackCustom', 'DownsellAccepted', { value: 29 }); } catch {}
@@ -36,6 +49,7 @@ document.getElementById('yes').addEventListener('click', async () => {
     await fetch('/api/upsell', { method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ sku: 'dayspine-grocery-pro' }) }).catch(() => {});
   }
+  grantAddon('grocery-pro');
   location.href = './install.html';
 });
 document.getElementById('no').addEventListener('click', () => { location.href = './install.html'; });
