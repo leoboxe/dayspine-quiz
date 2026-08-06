@@ -101,8 +101,17 @@ if (isIOS && !isSafari) {
       On iPhone, only Safari can add an app to the home screen — Chrome and Firefox can’t.
       Copy the link below, paste it into Safari, and this page will show you the two taps.</div>`;
 } else if (isIOS) {
+  /* Step 0 exists because of how the add-on handoff actually works.
+     `?unlock=` has to be VISITED once — the app writes the grant against the
+     account the moment it loads, and from then on it lives in the database and
+     survives any later install. It cannot ride along on an add-to-home-screen:
+     iOS installs from whatever the manifest declares as start_url, so a buyer
+     who only follows the Share-sheet steps arrives with nothing bought. */
   body.innerHTML = `
+    <a class="btn" href="${APP_URL}">Open Dayspine</a>
     <div class="steps">
+      <div class="st"><span><b>Open Dayspine once, with the button above</b>
+        <small>This is what unlocks everything you just bought on this device.</small></span></div>
       <div class="st"><span><b>Tap the Share button</b>
         <small>The square with an arrow pointing up <span class="glyph">↑</span> — at the bottom of Safari.</small></span></div>
       <div class="st"><span><b>Scroll down, tap “Add to Home Screen”</b>
@@ -112,8 +121,12 @@ if (isIOS && !isSafari) {
     </div>`;
 } else if (isAndroid) {
   body.innerHTML = `
+    <a class="btn" href="${APP_URL}">Open Dayspine</a>
     <button class="btn" id="androidBtn" hidden>Install Dayspine</button>
     <div class="steps">
+      <div class="st"><span><b>Open Dayspine once, with the button above</b>
+        <small>This is what unlocks everything you just bought. Chrome's install prompt does not
+        carry it — only opening the link does.</small></span></div>
       <div class="st"><span><b>Tap the menu</b><small>The three dots in the top right of Chrome.</small></span></div>
       <div class="st"><span><b>Tap “Install app” or “Add to Home screen”</b>
         <small>Chrome may also offer this as a banner at the bottom of the screen.</small></span></div>
@@ -140,7 +153,10 @@ if (isIOS && !isSafari) {
     <a class="btn" href="${APP_URL}" target="_blank" rel="noopener">Open Dayspine in this browser anyway</a>`;
 }
 
-document.getElementById('urlText').textContent = APP_URL.replace(/^https:\/\//, '').replace(/\/$/, '');
+/* Shown short, copied long: the visible text stays readable while the clipboard
+   carries the unlock parameter, so mailing yourself the link does not silently
+   drop what you bought. */
+document.getElementById('urlText').textContent = 'app.dayspine.com';
 document.getElementById('copy').addEventListener('click', async (e) => {
   try {
     await navigator.clipboard.writeText(APP_URL);
