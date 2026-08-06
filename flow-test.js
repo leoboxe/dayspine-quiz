@@ -37,17 +37,40 @@ const R=[];const ck=(n,ok,d='')=>{R.push(ok);console.log(`${ok?'PASS':'FAIL'}  $
 
   const t0=await page.locator('#total').textContent().catch(()=>'');
   await page.locator('#bump').check({timeout:5000}).catch(()=>{});
-  await page.waitForTimeout(300);
+  await page.waitForTimeout(600);
   const t1=await page.locator('#total').textContent().catch(()=>'');
   ck('order bump updates the total',t0==='$79.00'&&t1==='$88.00',`${t0} -> ${t1}`);
+
+  /* The Payment Element is a cross-origin iframe. Its presence IS the Apple
+     Pay / Google Pay surface — dynamic payment methods render the wallets
+     inside it, so if this never mounts there is no wallet either. */
+  await page.waitForTimeout(3500);
+  const frames=page.frames().filter(f=>/js\.stripe\.com/.test(f.url()));
+  ck('Stripe Payment Element mounts',frames.length>0,`${frames.length} stripe frames`);
   await page.screenshot({path:path.join(out,'08-checkout.png')});
 
-  await page.fill('#email','leo@example.com');
-  await page.fill('#name','Leo B');
-  await page.fill('#card','4242 4242 4242 4242');
-  await page.locator('#submit').click({timeout:5000}).catch(()=>{});
-  await page.waitForURL(/upsell/,{timeout:15000}).catch(()=>{});
-  ck('checkout -> upsell',/upsell/.test(page.url()));
+  const email='e2e-'+Date.now()+'@example.com';
+  await page.fill('#email',email);
+
+  /* Type a test card INTO the Stripe iframe, then pay for real (test mode). */
+  let filled=false;
+  for(const fr of page.frames()){
+    const num=fr.locator('[name="number"], [placeholder*="1234"]').first();
+    if(await num.count().catch(()=>0)){
+      await num.click({timeout:4000}).catch(()=>{});
+      await page.keyboard.type('4242424242424242',{delay:25});
+      await page.keyboard.type('1234',{delay:25});   // expiry 12/34
+      await page.keyboard.type('123',{delay:25});    // cvc
+      await page.keyboard.type('12345',{delay:25});  // postal
+      filled=true; break;
+    }
+  }
+  ck('test card entered in the Payment Element',filled);
+
+  await page.locator('#submit').click({timeout:8000}).catch(()=>{});
+  await page.waitForURL(/upsell/,{timeout:45000}).catch(()=>{});
+  ck('checkout -> upsell (REAL Stripe charge)',/upsell/.test(page.url()),page.url().split('/').pop());
+  fs.writeFileSync(path.join(__dirname,'.last-e2e-email'),email);
   await page.screenshot({path:path.join(out,'09-upsell.png')});
 
   /* Accepting the seat must ASK who it is for, and must not proceed without a

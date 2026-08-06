@@ -82,24 +82,19 @@
  * Fire-and-forget: the buyer already paid, and a failed write must never hold
  * up the install step the whole funnel is aimed at.
  */
-(function recordPurchase() {
-  try {
-    const order = JSON.parse(sessionStorage.getItem('dayspine.order') || '{}');
-    const addons = JSON.parse(sessionStorage.getItem('dayspine.addons') || '[]');
-    const partnerEmail = sessionStorage.getItem('dayspine.partnerEmail') || null;
-    if (!order.email) return;
-    fetch('https://guixatihuqwfhzvnrkvb.supabase.co/functions/v1/record-purchase', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: order.email,
-        addons: addons,
-        partnerEmail: partnerEmail,
-        note: 'Dayspine funnel',
-      }),
-    }).catch(function () {});
-  } catch (e) {}
-})();
+/*
+ * Fulfilment is the WEBHOOK's job now, not this page's.
+ *
+ * This used to POST to `record-purchase`, which was unauthenticated: anybody
+ * could grant themselves a lifetime licence with one curl. Now a row in
+ * `addon_grants` means Stripe confirmed a charge, which is what turns the
+ * sign-in wall from a formality into an actual gate.
+ *
+ * The page keeps `?unlock=` below purely so the buyer's CURRENT device lights
+ * up immediately without waiting on webhook delivery. It grants nothing the
+ * webhook has not already granted server-side — sign-in is what restores the
+ * purchase anywhere else.
+ */
 
 const APP_URL = (function () {
   const base = 'https://app.dayspine.com/';

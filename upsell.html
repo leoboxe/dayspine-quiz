@@ -74,6 +74,29 @@ function grantAddon(id) {
 }
 </script>
 <script type="module">
+/* Charge an upsell against the card the checkout saved.
+   `orderId` comes from the order sessionStorage kept at checkout; the SERVER
+   re-checks that the order is paid and that this add-on has not already been
+   accepted, so a double-tap cannot become a double-charge. */
+async function chargeUpsell(addon, partnerEmail) {
+  const SUPABASE_URL = 'https://guixatihuqwfhzvnrkvb.supabase.co';
+  const SUPABASE_ANON = 'sb_publishable_HsWRfggaqcEPxG5CHT1wvg_9ImA8qZc';
+  let order = {};
+  try { order = JSON.parse(sessionStorage.getItem('dayspine.order') || '{}'); } catch (e) {}
+  if (!order.orderId) return { ok: false, error: 'no_order' };
+  try {
+    const res = await fetch(SUPABASE_URL + '/functions/v1/charge-upsell', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + SUPABASE_ANON },
+      body: JSON.stringify({ orderId: order.orderId, addon: addon, partnerEmail: partnerEmail || null }),
+    });
+    const out = await res.json();
+    return res.ok ? { ok: true, out } : { ok: false, error: out.error || 'charge_failed' };
+  } catch (e) {
+    return { ok: false, error: 'network' };
+  }
+}
+
 /* One-click accept: the card was stored at checkout with off_session usage, so
    production charges via the Funnel Engine's claim_upsell_session RPC with no
    card re-entry. Declining routes to the downsell, never straight out. */
@@ -102,10 +125,21 @@ async function completeSeat() {
     seatEmail.focus();
     return;
   }
-  if (window.FUNNEL_ENGINE) {
-    await fetch('/api/upsell', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sku: 'dayspine-partner-seat', partnerEmail: email }) }).catch(() => {});
+  const confirmBtn = document.getElementById('confirmSeat');
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = 'Charging…';
+
+  const result = await chargeUpsell('partner-seat', email);
+  if (!result.ok) {
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = 'Confirm — $39';
+    seatNote.style.color = '#B4271B';
+    seatNote.textContent = result.error === 'charge_declined'
+      ? 'That card was declined. You still have Dayspine — carry on and add the seat later.'
+      : 'We could not add the seat just now. You still have Dayspine — carry on.';
+    return;
   }
+
   try { sessionStorage.setItem('dayspine.partnerEmail', email); } catch (e) {}
   grantAddon('partner-seat');
   location.href = './install.html';

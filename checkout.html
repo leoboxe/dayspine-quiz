@@ -8,15 +8,17 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./assets/funnel.css">
+<script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
-<div class="banner" id="banner">Preview mode — <b>no card is charged</b></div>
+<div class="banner">Secure checkout — <b>one payment, no subscription</b></div>
 
 <div class="wrap">
 <section>
   <div class="eyebrow">Step 1 of 2</div>
   <h1>One payment. Then it’s yours.</h1>
-  <p>No subscription, no renewal, no card kept on file for later.</p>
+  <p>No subscription and no renewal. Your card is stored securely by Stripe so the
+     next step is one tap — nothing is ever charged without you choosing it.</p>
 
   <div class="card">
     <div class="row"><span class="k">Dayspine — lifetime access</span><span class="v mono">$79.00</span></div>
@@ -47,14 +49,22 @@
       <label for="name">Name on card</label>
       <input id="name" type="text" autocomplete="cc-name" placeholder="Alex Morgan" required>
     </div>
+    <!--
+      The Payment Element, not a hand-rolled card form.
+
+      This is where Apple Pay and Google Pay come from. Because the
+      PaymentIntent is created WITHOUT `payment_method_types`, Stripe turns on
+      dynamic payment methods and renders whatever the buyer's device and
+      country support - the Apple Pay sheet on Safari, Google Pay on Chrome,
+      Link, card. Funnel Engine needed a separate Payment Request Button
+      mounted above the email field for the same thing, kept in sync with the
+      bump total by hand.
+    -->
     <div class="field">
-      <label for="card">Card details</label>
-      <input id="card" inputmode="numeric" autocomplete="cc-number" placeholder="4242 4242 4242 4242" required>
+      <label for="payment-element">Payment</label>
+      <div id="payment-element"></div>
     </div>
-    <div class="two">
-      <div class="field"><label for="exp">Expiry</label><input id="exp" placeholder="MM / YY" autocomplete="cc-exp"></div>
-      <div class="field"><label for="cvc">CVC</label><input id="cvc" placeholder="123" autocomplete="cc-csc"></div>
-    </div>
+    <div id="payErr" class="note" style="color:#B4271B" hidden></div>
 
     <button class="btn" id="submit" type="submit">Pay <span id="btnTotal">$79</span> once</button>
     <div class="reassure">
@@ -81,83 +91,6 @@ function grantAddon(id) {
   } catch (e) {}
 }
 </script>
-<script type="module">
-/* ---------------------------------------------------------------------------
-   Checkout.
-
-   In production this posts to the Funnel Engine's /api/checkout, which creates
-   the order and a Stripe PaymentIntent with `setup_future_usage: off_session`
-   — that flag is what makes the one-click upsells on the next screen possible
-   without asking for the card again.
-
-   In PREVIEW mode (no Funnel Engine host) it validates and moves on without
-   touching a payment API, so the whole funnel can be walked and reviewed. The
-   banner at the top says so, because a checkout that looks live but is not is
-   exactly the sort of thing that gets shipped by accident.
---------------------------------------------------------------------------- */
-const PREVIEW = !window.FUNNEL_ENGINE;
-if (!PREVIEW) document.getElementById('banner').hidden = true;
-
-const bump = document.getElementById('bump');
-const total = document.getElementById('total');
-const btnTotal = document.getElementById('btnTotal');
-const bumpRow = document.getElementById('bumpRow');
-
-const CORE = 79, BUMP = 9;
-function refresh() {
-  const t = CORE + (bump.checked ? BUMP : 0);
-  total.textContent = `$${t}.00`;
-  btnTotal.textContent = `$${t}`;
-  bumpRow.hidden = !bump.checked;
-  try { if (window.fbq && bump.checked) window.fbq('trackCustom', 'BumpAdded', { value: BUMP }); } catch {}
-}
-bump.addEventListener('change', refresh);
-refresh();
-
-document.getElementById('pay').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('email').value.trim();
-  if (!/^[^@\s]+@[^@\s]+\.[^@\s]{2,}$/.test(email)) {
-    document.getElementById('email').focus();
-    return;
-  }
-
-  const btn = document.getElementById('submit');
-  btn.disabled = true;
-  btn.textContent = 'Processing…';
-
-  const value = CORE + (bump.checked ? BUMP : 0);
-  try {
-    if (window.fbq) window.fbq('track', 'Purchase', { value, currency: 'USD' });
-  } catch {}
-  try {
-    sessionStorage.setItem('dayspine.order', JSON.stringify({ email, value, bump: bump.checked }));
-    /* The add-on ids the APP knows, not the funnel's own SKU names. The install
-       handoff replays these to app.dayspine.com, and a mismatch here would mean
-       a buyer paid for the Printed Plan and never received it. */
-    if (bump.checked) grantAddon('printed-plan');
-  } catch {}
-
-  if (PREVIEW) {
-    setTimeout(() => { location.href = './upsell.html'; }, 700);
-    return;
-  }
-
-  // Production path — Funnel Engine owns the PaymentIntent and the webhook.
-  const res = await fetch('/api/checkout', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, items: [{ sku: 'dayspine-lifetime' },
-      ...(bump.checked ? [{ sku: 'dayspine-printed-plan' }] : [])] }),
-  }).then((r) => r.json()).catch(() => null);
-
-  if (!res?.ok) {
-    btn.disabled = false;
-    btn.textContent = `Pay $${value} once`;
-    return;
-  }
-  location.href = './upsell.html';
-});
-</script>
+<script type="module" src="./checkout-payment.js"></script>
 </body>
 </html>

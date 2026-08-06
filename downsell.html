@@ -43,11 +43,41 @@ function grantAddon(id) {
 }
 </script>
 <script type="module">
+/* Charge an upsell against the card the checkout saved.
+   `orderId` comes from the order sessionStorage kept at checkout; the SERVER
+   re-checks that the order is paid and that this add-on has not already been
+   accepted, so a double-tap cannot become a double-charge. */
+async function chargeUpsell(addon, partnerEmail) {
+  const SUPABASE_URL = 'https://guixatihuqwfhzvnrkvb.supabase.co';
+  const SUPABASE_ANON = 'sb_publishable_HsWRfggaqcEPxG5CHT1wvg_9ImA8qZc';
+  let order = {};
+  try { order = JSON.parse(sessionStorage.getItem('dayspine.order') || '{}'); } catch (e) {}
+  if (!order.orderId) return { ok: false, error: 'no_order' };
+  try {
+    const res = await fetch(SUPABASE_URL + '/functions/v1/charge-upsell', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + SUPABASE_ANON },
+      body: JSON.stringify({ orderId: order.orderId, addon: addon, partnerEmail: partnerEmail || null }),
+    });
+    const out = await res.json();
+    return res.ok ? { ok: true, out } : { ok: false, error: out.error || 'charge_failed' };
+  } catch (e) {
+    return { ok: false, error: 'network' };
+  }
+}
+
 document.getElementById('yes').addEventListener('click', async () => {
   try { if (window.fbq) window.fbq('trackCustom', 'DownsellAccepted', { value: 29 }); } catch {}
-  if (window.FUNNEL_ENGINE) {
-    await fetch('/api/upsell', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sku: 'dayspine-grocery-pro' }) }).catch(() => {});
+  const yes = document.getElementById('yes');
+  yes.disabled = true;
+  yes.textContent = 'Charging…';
+
+  const result = await chargeUpsell('grocery-pro', null);
+  if (!result.ok) {
+    // Never block the install on a failed upsell — they have already paid for
+    // the thing this funnel exists to deliver.
+    location.href = './install.html';
+    return;
   }
   grantAddon('grocery-pro');
   location.href = './install.html';
