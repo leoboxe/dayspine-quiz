@@ -8,6 +8,16 @@
  *
  * A request to `facebook.com/tr` with the right `ev=` is the only proof that an
  * event left the browser.
+ *
+ * ⚠️ **RUNS HEADED, AND MUST.** Meta's pixel downloads its config in headless
+ * Chromium and then transmits nothing — almost certainly bot suppression. Run
+ * headless, this test reports a perfectly working pixel as completely dead, and
+ * it did: it produced a confident, wrong diagnosis that the dataset refused
+ * browser events. The window is positioned offscreen so nothing flashes.
+ *
+ * The same trap makes an *unconfigured* pixel id look like a working control —
+ * with no config it falls back to the image beacon, which is not suppressed. So
+ * "a different id fired, ours didn't" proves nothing at all.
  */
 const fs = require('node:fs');
 const os = require('node:os');
@@ -40,7 +50,10 @@ const BASE = process.env.FUNNEL_URL || 'https://quiz.dayspine.com';
   const prof = path.join(os.tmpdir(), 'ds-pixel');
   fs.rmSync(prof, { recursive: true, force: true });
   const ctx = await playwright().chromium.launchPersistentContext(prof, {
-    headless: true, executablePath: chromium(), viewport: { width: 414, height: 1000 },
+    headless: false,
+    executablePath: chromium(),
+    viewport: { width: 414, height: 1000 },
+    args: ['--window-position=-2400,-2400'],
   });
   const page = await ctx.newPage();
 
@@ -58,7 +71,10 @@ const BASE = process.env.FUNNEL_URL || 'https://quiz.dayspine.com';
   await page.goto(`${BASE}/checkout.html?fbclid=TEST_CLICK_${Date.now()}`, {
     waitUntil: 'load', timeout: 60000,
   });
-  await page.waitForTimeout(6000);
+  await page.waitForTimeout(9000);
+  // The pixel batches; navigating away flushes whatever is still queued.
+  await page.goto(`${BASE}/install.html`, { waitUntil: 'load', timeout: 45000 }).catch(() => {});
+  await page.waitForTimeout(5000);
 
   ck('pixel base code loads and fires PageView',
     fired.some((f) => f.ev === 'PageView'),
