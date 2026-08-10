@@ -36,9 +36,10 @@
      next page. `_fbc` is how that click is attributed to the sale three pages
      later, so it is written to a cookie the moment it is seen.
 
-     Only written if Meta's pixel has not already set one — Funnel Engine hit
-     exactly this bug and had to fix it: overwriting Meta's own `_fbc` destroys
-     the attribution it was trying to preserve.
+     A new fbclid always replaces an existing `_fbc`. The neighbouring rule --
+     never clobber Meta's own `_fbc` -- applies when we have nothing better to
+     write; it does not apply when the URL is carrying the very click being
+     attributed.
   ------------------------------------------------------------------------- */
   function cookie(name) {
     /* Split, not a regex.
