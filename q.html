@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dayspine — build my plan</title>
+<meta name="theme-color" content="#FFFFFF">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="./pixel.js"></script>
+<style>
+/*
+ * The quiz engine, second version.
+ *
+ * The first one rendered radio lists and nothing else, which is most of why it
+ * felt like a form. The reference teardown showed the winner changes input type
+ * six times across its flow, so this supports sliders, steppers, tile grids,
+ * a two-number comparison and a computed payoff -- and the variety is doing
+ * real work, not decoration. Monotony is what makes a long quiz feel long.
+ *
+ * It also has to build a plan, not just sell one. Any answer whose key starts
+ * `p.` is a field the app's plan builder needs; those are collected under a
+ * separate namespace so the handoff can be validated on its own.
+ */
+:root{
+  --brand:#F26A11; --brand-deep:#B24A05; --brand-tint:#FEF0E6; --on-brand:#fff;
+  --canvas:#fff; --surface:#FBF9F7; --raised:#F2EEEA; --line:#E9E3DD;
+  --text:#171310; --muted:#736B64; --faint:#A79E96;
+  --good:#0D9488; --danger:#B3261E;
+  --r-sm:10px; --r-md:16px; --r-lg:22px; --r-pill:999px;
+  --wrap:min(520px,100%);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--canvas)}
+body{color:var(--text);font:16px/1.5 Outfit,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;display:flex;flex-direction:column;min-height:100dvh}
+h1,h2{margin:0;letter-spacing:-.03em;line-height:1.1;font-weight:800;text-wrap:balance}
+p{margin:0}
+.mono{font-family:"JetBrains Mono",ui-monospace,monospace}
+.wrap{width:var(--wrap);margin:0 auto;padding:0 20px}
+
+/* progress */
+.bar{position:sticky;top:0;z-index:10;background:var(--canvas);padding:14px 0 10px;
+  border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;gap:12px}
+.back{width:32px;height:32px;border:0;background:none;cursor:pointer;color:var(--muted);
+  font-size:20px;line-height:1;padding:0}
+.track{flex:1;height:4px;background:var(--raised);border-radius:99px;overflow:hidden}
+.fill{height:100%;background:var(--brand);border-radius:99px;transition:width .3s ease}
+.count{font:600 12px/1 Outfit,sans-serif;color:var(--faint);font-variant-numeric:tabular-nums}
+
+main{flex:1;padding:26px 0 12px}
+.kicker{display:inline-block;font-size:12px;font-weight:700;color:var(--brand-deep);
+  background:var(--brand-tint);padding:6px 11px;border-radius:var(--r-pill);margin-bottom:14px}
+h1.big{font-size:clamp(28px,7.5vw,36px);margin-bottom:8px}
+.sub{color:var(--muted);font-size:16px;margin-bottom:22px}
+h2.q{font-size:clamp(21px,5.4vw,26px);margin-bottom:8px}
+.why{color:var(--muted);font-size:14.5px;margin-bottom:18px;line-height:1.45}
+
+/* option lists */
+.opts{display:flex;flex-direction:column;gap:9px}
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
+  background:var(--surface);border:1.5px solid transparent;border-radius:var(--r-md);
+  padding:16px 16px;font:600 16px/1.35 Outfit,sans-serif;color:var(--text);transition:.12s}
+.opt:hover{border-color:var(--line)}
+.opt.on{border-color:var(--brand);background:var(--brand-tint)}
+.opt .txt{flex:1}
+.opt small{display:block;font-weight:400;color:var(--muted);font-size:13.5px;margin-top:2px}
+.dot{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line);flex:0 0 auto}
+.opt.on .dot{border-color:var(--brand);background:var(--brand);
+  box-shadow:inset 0 0 0 3px var(--brand-tint)}
+
+/* tiles */
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.tile{cursor:pointer;background:var(--surface);border:1.5px solid transparent;
+  border-radius:var(--r-md);padding:18px 8px;font:700 14px/1.25 Outfit,sans-serif;
+  color:var(--text);text-align:center;transition:.12s;min-height:74px;
+  display:flex;align-items:center;justify-content:center}
+.tile:hover{border-color:var(--line)}
+.tile.on{border-color:var(--brand);background:var(--brand-tint);color:var(--brand-deep)}
+@media(max-width:380px){.tiles{grid-template-columns:repeat(2,1fr)}}
+
+/* slider */
+.sl{padding:22px 0 8px;text-align:center}
+.sl .val{font:800 clamp(44px,13vw,60px)/1 "JetBrains Mono",monospace;letter-spacing:-.04em}
+.sl .unit{display:block;font:600 14px/1 Outfit,sans-serif;color:var(--muted);margin-top:10px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:34px;background:none;
+  margin-top:22px;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:6px;border-radius:99px;background:var(--raised)}
+input[type=range]::-moz-range-track{height:6px;border-radius:99px;background:var(--raised)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;
+  border-radius:50%;background:var(--brand);border:3px solid #fff;margin-top:-12px;
+  box-shadow:0 2px 8px rgba(242,106,17,.4)}
+input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;background:var(--brand);
+  border:3px solid #fff;box-shadow:0 2px 8px rgba(242,106,17,.4)}
+.ends{display:flex;justify-content:space-between;font-size:12.5px;color:var(--faint);margin-top:4px}
+
+/* steppers */
+.step{display:flex;align-items:center;justify-content:space-between;gap:14px;
+  background:var(--surface);border-radius:var(--r-md);padding:16px;margin-bottom:10px}
+.step .lab{font-weight:700;font-size:15.5px}
+.step .lab small{display:block;font-weight:400;color:var(--muted);font-size:13px;margin-top:1px}
+.pm{display:flex;align-items:center;gap:14px}
+.pm button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);
+  background:var(--canvas);font-size:21px;line-height:1;cursor:pointer;color:var(--text)}
+.pm button:disabled{opacity:.35;cursor:default}
+.pm .n{min-width:26px;text-align:center;font:800 21px/1 "JetBrains Mono",monospace}
+
+/* interstitials, gap, payoff */
+.card{background:var(--surface);border-radius:var(--r-lg);padding:24px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--brand);margin-bottom:12px}
+.card h2{font-size:clamp(23px,6vw,29px);margin-bottom:12px}
+.card p{color:var(--muted);font-size:15.5px;line-height:1.55}
+.bars{display:flex;align-items:flex-end;gap:26px;justify-content:center;margin:26px 0 8px;height:170px}
+.col{display:flex;flex-direction:column;align-items:center;gap:10px;flex:0 0 96px}
+.col .n{font:800 24px/1 "JetBrains Mono",monospace}
+.col .bx{width:84px;border-radius:12px 12px 0 0;transition:height .8s cubic-bezier(.2,.8,.2,1)}
+.col.us .bx{background:var(--brand)} .col.us .n{color:var(--brand-deep)}
+.col.them .bx{background:var(--raised)} .col.them .n{color:var(--faint)}
+.col .lb{font-size:12.5px;color:var(--muted);text-align:center}
+.big-num{font:800 clamp(46px,14vw,66px)/1 Outfit,sans-serif;color:var(--brand);
+  letter-spacing:-.04em;margin:14px 0 6px;text-align:center}
+.centre{text-align:center}
+
+/* profile: sex + two sliders on one screen */
+.seg{display:flex;gap:9px;margin-bottom:8px}
+.seg button{flex:1;cursor:pointer;background:var(--surface);border:1.5px solid transparent;
+  border-radius:var(--r-md);padding:15px;font:700 15.5px/1 Outfit,sans-serif;color:var(--text)}
+.seg button.on{border-color:var(--brand);background:var(--brand-tint);color:var(--brand-deep)}
+.mini{margin-top:18px}
+.mini .row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
+.mini .row b{font:700 14px/1 Outfit,sans-serif}
+.mini .row .v{font:800 22px/1 "JetBrains Mono",monospace}
+.mini input[type=range]{margin-top:6px}
+
+/* reveal */
+.rev{background:var(--text);color:#fff;border-radius:var(--r-lg);padding:24px;margin-bottom:14px}
+.rev .eyebrow{color:rgba(255,255,255,.6)}
+.rev h2{font-size:clamp(24px,6.4vw,31px);margin-bottom:16px}
+.rev .kv{display:flex;justify-content:space-between;align-items:baseline;padding:12px 0;
+  border-top:1px solid rgba(255,255,255,.14);font-size:15px}
+.rev .kv:first-of-type{border-top:0}
+.rev .kv span{color:rgba(255,255,255,.7)}
+.rev .kv b{font:800 17px/1 "JetBrains Mono",monospace}
+.rev .note{margin-top:16px;font-size:13.5px;color:rgba(255,255,255,.62);line-height:1.5}
+
+/* email */
+.field{margin-top:18px}
+.field label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.field input{width:100%;font:16px Outfit,sans-serif;padding:15px;border:1px solid var(--line);
+  border-radius:var(--r-sm);background:var(--canvas);color:var(--text)}
+.field input:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:transparent}
+.err{color:var(--danger);font-size:14px;margin-top:9px;font-weight:600}
+
+/* building */
+.build li{list-style:none;display:flex;align-items:center;gap:11px;padding:11px 0;
+  font-size:15.5px;color:var(--faint);transition:.3s}
+.build li.on{color:var(--text);font-weight:600}
+.build .tick{width:21px;height:21px;border-radius:50%;border:1.5px solid var(--line);flex:0 0 auto;
+  display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent}
+.build li.on .tick{background:var(--brand);border-color:var(--brand);color:#fff}
+.build ul{margin:22px 0 0;padding:0}
+
+footer.cta{position:sticky;bottom:0;background:linear-gradient(transparent,var(--canvas) 22%);
+  padding:16px 0 calc(16px + env(safe-area-inset-bottom))}
+.btn{display:block;width:100%;border:0;cursor:pointer;background:var(--brand);color:var(--on-brand);
+  font:800 17px/1 Outfit,sans-serif;padding:19px;border-radius:var(--r-pill)}
+.btn:disabled{background:var(--raised);color:var(--faint);cursor:default}
+.legal{text-align:center;font-size:12px;color:var(--faint);margin-top:11px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="bar"><div class="wrap">
+  <button class="back" id="back" aria-label="Back">&#8249;</button>
+  <div class="track"><div class="fill" id="fill"></div></div>
+  <span class="count" id="count"></span>
+</div></div>
+
+<main><div class="wrap" id="main"></div></main>
+<footer class="cta"><div class="wrap">
+  <button class="btn" id="next">Continue</button>
+  <div class="legal" id="legal"></div>
+</div></footer>
+
+<script type="module">
+import { ANGLES, pickAngle } from './q-index.js';
+
+/* Which of the fifteen ads sent her here. */
+const ANGLE = pickAngle(location.search);
+const SCREENS = ANGLES[ANGLE].screens;
+const BUILDING = ANGLES[ANGLE].building;
+
+const SUPABASE_URL = 'https://guixatihuqwfhzvnrkvb.supabase.co';
+const SUPABASE_ANON = 'sb_publishable_HsWRfggaqcEPxG5CHT1wvg_9ImA8qZc';
+
+const main = document.getElementById('main');
+const nextBtn = document.getElementById('next');
+const legal = document.getElementById('legal');
+const fill = document.getElementById('fill');
+const count = document.getElementById('count');
+
+const A = {};                 // every answer, flat
+let i = 0, pending = null;
+
+/* Screens can be skipped by an earlier answer, so "which screens exist" is a
+   function of the answers so far and has to be recomputed, not cached. */
+/* A condition is either a value to match, or {not: value}. The second form is
+   what lets one bridge gate a block on "she picked any goal at all" rather than
+   forcing a separate yes/no flag alongside the answer we already have. */
+const meets = (cond, got) =>
+  (cond && typeof cond === 'object' && 'not' in cond) ? got !== cond.not : got === cond;
+
+const visible = () => SCREENS.filter((s) => {
+  if (!s.showIf) return true;
+  return Object.keys(s.showIf).every((k) => meets(s.showIf[k], A[k]));
+});
+
+const SAVE = 'dayspine.q.' + ANGLE;
+try {
+  const s = JSON.parse(sessionStorage.getItem(SAVE) || 'null');
+  if (s && typeof s.i === 'number') { Object.assign(A, s.A); i = s.i; }
+} catch {}
+const save = () => { try { sessionStorage.setItem(SAVE, JSON.stringify({ i, A })); } catch {} };
+
+function track(ev, data = {}) {
+  try { window.fbq && window.fbq('trackCustom', ev, { angle: ANGLE, ...data }); } catch {}
+}
+
+/* Sent twice: once on email entry so an abandoned quiz is still a lead, and once
+   when the plan is built. The Meta browser and the installed PWA are different
+   browsers, so this is the only way the answers reach the app. */
+/* The bridge asks whether the meals should aim at anything, in her language.
+   The app's plan wants a goal in its own vocabulary, and "none" is not one of
+   its values -- someone who declined a goal is eating at maintenance. Derived
+   here rather than in the app, so the row that lands is already in the shape
+   the plan builder expects. */
+function withDerived() {
+  const out = Object.assign({}, A);
+  out['p.goal'] = A.aim === 'lose' ? 'lose' : A.aim === 'gain' ? 'gain' : 'maintain';
+  if (out['p.goal'] === 'maintain') out['p.targetLb'] = A['p.weightLb'];
+  return out;
+}
+
+async function persist(complete) {
+  const email = A.email;
+  if (!email) return;
+  try {
+    await fetch(SUPABASE_URL + '/functions/v1/save-quiz', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + SUPABASE_ANON },
+      body: JSON.stringify({ email, angle: ANGLE, answers: withDerived(), complete }),
+    });
+  } catch (e) { /* never block the funnel on telemetry */ }
+}
+
+const fmtFeet = (inches) => Math.floor(inches / 12) + "' " + (inches % 12) + '"';
+
+function setCta(label, on, note = '') {
+  nextBtn.textContent = label;
+  nextBtn.disabled = !on;
+  legal.textContent = note;
+}
+
+function render() {
+  const list = visible();
+  if (i >= list.length) return renderBuilding();
+  const s = list[i];
+  pending = A[s.key] !== undefined ? A[s.key] : null;
+
+  /* Progress is measured against every screen that could exist, not the ones
+     currently visible. Otherwise accepting the training bridge grows the
+     denominator mid-flow and the bar slides backwards -- and someone who
+     declines simply leaps forward, which reads as a reward rather than a bug. */
+  const pos = SCREENS.indexOf(s);
+  fill.style.width = Math.round((pos / SCREENS.length) * 100) + '%';
+  count.textContent = (i + 1) + '/' + list.length;
+  document.getElementById('back').style.visibility = i ? 'visible' : 'hidden';
+  main.innerHTML = '';
+  const add = (h) => { main.insertAdjacentHTML('beforeend', h); };
+
+  if (s.kicker) add('<span class="kicker">' + s.kicker + '</span>');
+  if (s.title && s.type !== 'interstitial' && s.type !== 'gap' && s.type !== 'bridge'
+      && s.type !== 'email') add('<h1 class="big">' + s.title + '</h1>');
+  if (s.sub && s.type !== 'sexsub') add('<p class="sub">' + s.sub + '</p>');
+  if (s.question) add('<h2 class="q">' + s.question + '</h2>');
+  if (s.why) add('<p class="why">' + s.why + '</p>');
+
+  if (s.type === 'question') return renderOptions(s);
+  if (s.type === 'tiles') return renderTiles(s);
+  if (s.type === 'slider') return renderSlider(s);
+  if (s.type === 'steppers') return renderSteppers(s);
+  if (s.type === 'profile') return renderProfile(s);
+  if (s.type === 'interstitial') return renderCard(s);
+  if (s.type === 'gap') return renderGap(s);
+  if (s.type === 'payoff') return renderPayoff(s);
+  if (s.type === 'bridge') return renderBridge(s);
+  if (s.type === 'email') return renderEmail(s);
+}
+
+function optionRow(o, on) {
+  return '<button class="opt' + (on ? ' on' : '') + '" data-v="' + o.v + '"><span class="txt">'
+    + o.label + (o.hint ? '<small>' + o.hint + '</small>' : '') + '</span><span class="dot"></span></button>';
+}
+
+function renderOptions(s) {
+  main.insertAdjacentHTML('beforeend',
+    '<div class="opts">' + s.options.map((o) => optionRow(o, pending === o.v)).join('') + '</div>');
+  main.querySelectorAll('.opt').forEach((b) => {
+    b.onclick = () => {
+      pending = b.dataset.v;
+      main.querySelectorAll('.opt').forEach((x) => x.classList.toggle('on', x === b));
+      setCta('Continue', true);
+      setTimeout(commit, 180);          // tap-through, no second tap needed
+    };
+  });
+  setCta('Continue', pending !== null);
+}
+
+function renderTiles(s) {
+  const multi = !!s.multi;
+  if (multi && !Array.isArray(pending)) pending = Array.isArray(A[s.key]) ? A[s.key] : [];
+  const on = (v) => multi ? pending.indexOf(v) > -1 : pending === v;
+  main.insertAdjacentHTML('beforeend', '<div class="tiles">'
+    + s.options.map((o) => '<button class="tile' + (on(o.v) ? ' on' : '') + '" data-v="' + o.v
+      + '"' + (o.exclusive ? ' data-x="1"' : '') + '>' + o.label + '</button>').join('') + '</div>');
+  const paint = () => main.querySelectorAll('.tile').forEach(
+    (t) => t.classList.toggle('on', on(t.dataset.v)));
+  main.querySelectorAll('.tile').forEach((t) => {
+    t.onclick = () => {
+      const v = t.dataset.v;
+      if (!multi) { pending = v; paint(); setCta('Continue', true); return setTimeout(commit, 180); }
+      // "None of these" clears everything else, and anything else clears it.
+      const exclusive = s.options.filter((o) => o.exclusive).map((o) => o.v);
+      if (exclusive.indexOf(v) > -1) pending = on(v) ? [] : [v];
+      else {
+        pending = pending.filter((x) => exclusive.indexOf(x) === -1);
+        pending = on(v) ? pending.filter((x) => x !== v) : pending.concat([v]);
+      }
+      paint();
+      setCta(pending.length ? 'Continue' : 'Skip', true);
+    };
+  });
+  setCta(multi ? (pending.length ? 'Continue' : 'Skip') : 'Continue', multi || pending !== null);
+}
+
+function renderSlider(s) {
+  let start = s.start;
+  if (s.startFrom && A[s.startFrom] !== undefined) {
+    start = Math.max(s.min, Math.min(s.max, A[s.startFrom] + (s.startOffset || 0)));
+  }
+  const v = pending === null ? start : pending;
+  pending = v;
+  const show = (n) => s.format === 'feet' ? fmtFeet(n) : (s.prefix || '') + n;
+  main.insertAdjacentHTML('beforeend',
+    '<div class="sl"><div class="val mono" id="sv">' + show(v) + '</div>'
+    + (s.suffix ? '<span class="unit">' + s.suffix + '</span>' : '')
+    + '<input type="range" id="sr" min="' + s.min + '" max="' + s.max + '" step="' + (s.step || 1)
+    + '" value="' + v + '"><div class="ends"><span>' + show(s.min) + '</span><span>'
+    + show(s.max) + '</span></div></div>');
+  const sr = document.getElementById('sr'), sv = document.getElementById('sv');
+  sr.oninput = () => { pending = Number(sr.value); sv.textContent = show(pending); };
+  setCta('Continue', true);
+}
+
+function renderSteppers(s) {
+  if (pending === null) pending = {};
+  s.fields.forEach((f) => { if (pending[f.key] === undefined) pending[f.key] = A[f.key] ?? f.start; });
+  main.insertAdjacentHTML('beforeend', s.fields.map((f) =>
+    '<div class="step"><div class="lab">' + f.label + '<small>' + f.unit + '</small></div>'
+    + '<div class="pm"><button data-k="' + f.key + '" data-d="-1">&minus;</button>'
+    + '<span class="n" id="n-' + f.key.replace(/\W/g, '') + '">' + pending[f.key] + '</span>'
+    + '<button data-k="' + f.key + '" data-d="1">+</button></div></div>').join(''));
+  main.querySelectorAll('.pm button').forEach((b) => {
+    b.onclick = () => {
+      const f = s.fields.find((x) => x.key === b.dataset.k);
+      pending[f.key] = Math.max(f.min, Math.min(f.max, pending[f.key] + Number(b.dataset.d)));
+      document.getElementById('n-' + f.key.replace(/\W/g, '')).textContent = pending[f.key];
+    };
+  });
+  setCta('Continue', true);
+}
+
+function renderProfile(s) {
+  if (pending === null || typeof pending !== 'object') pending = {};
+  if (pending[s.sexKey] === undefined) pending[s.sexKey] = A[s.sexKey] || null;
+  s.fields.forEach((f) => { if (pending[f.key] === undefined) pending[f.key] = A[f.key] ?? f.start; });
+  const show = (f, n) => f.format === 'feet' ? fmtFeet(n) : n + (f.suffix ? ' ' + f.suffix : '');
+  main.insertAdjacentHTML('beforeend',
+    '<div class="seg">'
+    + ['female', 'male'].map((v) => '<button data-sex="' + v + '"'
+        + (pending[s.sexKey] === v ? ' class="on"' : '') + '>'
+        + (v === 'female' ? 'Female' : 'Male') + '</button>').join('') + '</div>'
+    + s.fields.map((f) => '<div class="mini"><div class="row"><b>' + f.label
+        + '</b><span class="v mono" id="v-' + f.key.replace(/\W/g, '') + '">'
+        + show(f, pending[f.key]) + '</span></div>'
+        + '<input type="range" data-k="' + f.key + '" min="' + f.min + '" max="' + f.max
+        + '" step="1" value="' + pending[f.key] + '"></div>').join(''));
+  const ok = () => setCta('Continue', !!pending[s.sexKey]);
+  main.querySelectorAll('.seg button').forEach((b) => {
+    b.onclick = () => {
+      pending[s.sexKey] = b.dataset.sex;
+      main.querySelectorAll('.seg button').forEach((x) => x.classList.toggle('on', x === b));
+      ok();
+    };
+  });
+  main.querySelectorAll('.mini input').forEach((r) => {
+    const f = s.fields.find((x) => x.key === r.dataset.k);
+    r.oninput = () => {
+      pending[f.key] = Number(r.value);
+      document.getElementById('v-' + f.key.replace(/\W/g, '')).textContent = show(f, pending[f.key]);
+    };
+  });
+  ok();
+}
+
+function renderCard(s) {
+  main.insertAdjacentHTML('beforeend', '<div class="card">'
+    + (s.eyebrow ? '<div class="eyebrow">' + s.eyebrow + '</div>' : '')
+    + '<h2>' + s.title + '</h2><p>' + s.body + '</p></div>');
+  pending = true;
+  setCta(s.cta || 'Continue', true);
+}
+
+function renderGap(s) {
+  main.insertAdjacentHTML('beforeend', '<div class="card"><h2>' + s.title + '</h2>'
+    + '<div class="bars"><div class="col us"><span class="n">' + s.withUs.n + '</span>'
+    + '<div class="bx" style="height:0"></div><span class="lb">' + s.withUs.label + '</span></div>'
+    + '<div class="col them"><span class="n">' + s.without.n + '</span>'
+    + '<div class="bx" style="height:0"></div><span class="lb">' + s.without.label + '</span></div>'
+    + '</div><p>' + s.body + '</p></div>');
+  // Grown after paint so the transition actually runs.
+  requestAnimationFrame(() => {
+    const b = main.querySelectorAll('.bx');
+    if (b[0]) b[0].style.height = '22px';
+    if (b[1]) b[1].style.height = '128px';
+  });
+  pending = true;
+  setCta(s.cta || 'Continue', true);
+}
+
+function renderPayoff(s) {
+  /*
+   * Her own number, multiplied out to a year.
+   *
+   * The strongest version multiplies two of her answers together rather than
+   * one answer by a constant -- a commute times the days she said she trains.
+   * A number built that way cannot read as a statistic we invented, because
+   * she supplied both halves of it.
+   *
+   * unit: money (default) | hours (base arrives in minutes) | plain
+   */
+  const base = Number(A[s.from]) || 0;
+  const per = { week: 52, month: 12, year: 1 }[s.per] || 1;
+  const times = s.timesFrom ? (Number(A[s.timesFrom]) || 1) : 1;
+  const raw = base * (s.rate == null ? 1 : s.rate) * per * times;
+  const n = s.unit === 'hours' ? Math.round(raw / 60) : Math.round(raw);
+  const shown = (s.unit === 'hours' || s.unit === 'plain')
+    ? n.toLocaleString('en-US')
+    : '$' + n.toLocaleString('en-US');
+  main.insertAdjacentHTML('beforeend', '<div class="card centre">'
+    + '<p style="color:var(--text);font-weight:600">' + s.lead + '</p>'
+    + '<div class="big-num mono">' + shown + '</div>'
+    + '<p style="font-weight:600;color:var(--text)">'
+    + (s.caption || 'a year, on the same food') + '</p>'
+    + '<p style="margin-top:14px">' + s.tail + '</p></div>');
+  pending = true;
+  setCta(s.cta || 'Continue', true);
+  track('QuizPayoff', { value: n, unit: s.unit || 'money' });
+}
+
+function renderBridge(s) {
+  main.insertAdjacentHTML('beforeend', '<div class="card">'
+    + '<div class="eyebrow">' + s.eyebrow + '</div><h2>' + s.title + '</h2>'
+    + '<p style="margin-bottom:18px">' + s.body + '</p></div>'
+    + '<div class="opts" style="margin-top:12px">'
+    + s.options.map((o) => optionRow(o, pending === o.v)).join('') + '</div>');
+  main.querySelectorAll('.opt').forEach((b) => {
+    b.onclick = () => {
+      pending = b.dataset.v;
+      main.querySelectorAll('.opt').forEach((x) => x.classList.toggle('on', x === b));
+      setTimeout(commit, 180);
+    };
+  });
+  setCta('Continue', pending !== null);
+}
+
+function renderEmail(s) {
+  main.insertAdjacentHTML('beforeend', '<h1 class="big">' + s.title + '</h1>'
+    + '<p class="sub">' + s.body + '</p>'
+    + '<div class="field"><label for="em">Your email</label>'
+    + '<input id="em" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" value="'
+    + (A.email || '') + '"></div><div class="err" id="eerr" hidden></div>');
+  const em = document.getElementById('em');
+  em.oninput = () => { pending = em.value.trim(); setCta(s.cta, !!pending); };
+  pending = em.value.trim();
+  setCta(s.cta, !!pending);
+}
+
+/* Single-select advances itself 180ms after the tap. Without this guard a fast
+   second tap -- on the option again, or on Continue -- fires commit twice and
+   silently skips the next screen, which is how the steppers question went
+   missing in testing. */
+let committing = false;
+function commit() {
+  if (committing) return;
+  committing = true;
+  setTimeout(() => { committing = false; }, 240);
+  const list = visible();
+  const s = list[i];
+  if (s.type === 'email') {
+    const v = (pending || '').toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) {
+      const e = document.getElementById('eerr');
+      e.hidden = false; e.textContent = 'That does not look like an email address.';
+      return;
+    }
+    A.email = v;
+    persist(false);                       // a lead, before she has finished
+  } else if (s.type === 'steppers' || s.type === 'profile') {
+    Object.assign(A, pending);
+  } else if (s.key) {
+    A[s.key] = pending;
+  }
+  i++;
+  save();
+  render();
+}
+
+nextBtn.onclick = commit;
+document.getElementById('back').onclick = () => { if (i > 0) { i--; render(); } };
+
+function renderBuilding() {
+  fill.style.width = '100%';
+  count.textContent = '';
+  document.getElementById('back').style.visibility = 'hidden';
+  main.innerHTML = '<h1 class="big">Building your week</h1>'
+    + '<p class="sub">Every answer you just gave is going into it.</p>'
+    + '<div class="build"><ul>' + BUILDING.map((t) =>
+        '<li><span class="tick">&#10003;</span>' + t + '</li>').join('') + '</ul></div>';
+  nextBtn.style.display = 'none';
+  legal.textContent = '';
+  track('QuizComplete', { training: A.wantsTraining === 'yes' });
+  persist(true);
+
+  const items = main.querySelectorAll('.build li');
+  items.forEach((li, n) => setTimeout(() => li.classList.add('on'), 500 + n * 620));
+  setTimeout(() => {
+    try { sessionStorage.setItem('dayspine.answers', JSON.stringify({ answers: withDerived(), angle: ANGLE })); } catch {}
+    renderReveal();
+  }, 700 + BUILDING.length * 620);
+}
+
+
+/* Mifflin-St Jeor, the same formula the app uses, so the numbers she is shown
+   here are the numbers she gets inside. Nothing is invented for the reveal. */
+function targets() {
+  const lb = Number(A['p.weightLb']) || 165;
+  const inch = Number(A['p.heightIn']) || 65;
+  const age = Number(A['p.age']) || 34;
+  const sex = A['p.sex'] === 'male' ? 'male' : 'female';
+  const kg = lb * 0.45359237, cm = inch * 2.54;
+  const bmr = 10 * kg + 6.25 * cm - 5 * age + (sex === 'male' ? 5 : -161);
+  const days = A.wantsTraining === 'yes' ? Number(A['p.daysPerWeek']) || 3 : 0;
+  const act = days >= 6 ? 1.725 : days >= 4 ? 1.55 : days >= 1 ? 1.375 : 1.2;
+  const deficit = { steady: 350, balanced: 500, aggressive: 650 }[A['p.pace']] || 500;
+  const kcal = Math.max(1200, Math.round((bmr * act - deficit) / 5) * 5);
+  // Protein tracks body mass, and the reference weight is capped at BMI 27 so a
+  // heavier person is not handed an unreachable number.
+  const capKg = 27 * (cm / 100) * (cm / 100);
+  const proteinG = Math.round(Math.min(kg, capKg) * 2.0);
+  const toLose = Math.max(0, lb - (Number(A['p.targetLb']) || lb));
+  const rate = { steady: 0.7, balanced: 1, aggressive: 1.3 }[A['p.pace']] || 1;
+  const weeks = toLose ? Math.ceil(toLose / rate) : 0;
+  const when = new Date(Date.now() + weeks * 7 * 86400000);
+  return { kcal, proteinG, weeks, when, days, toLose };
+}
+
+const startWord = () => ({ today: 'today', tomorrow: 'tomorrow', monday: 'Monday' })[A['p.start']] || 'today';
+
+function renderReveal() {
+  const t = targets();
+  const money = Math.round((Number(A['p.weeklyBudget']) || 0) * 0.82);
+  const date = t.when.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+  /* She can decline the goal bridge, in which case there is no weight and no
+     honest way to state a calorie target. The list is what she came for, so the
+     reveal simply shows the list. */
+  const aimed = A.aim && A.aim !== 'none';
+  const nights = Array.isArray(A['p.cookNights']) ? A['p.cookNights'].length : 0;
+  main.innerHTML = '<div class="rev"><div class="eyebrow">Your plan is built</div>'
+    + '<h2>' + (aimed ? 'Here are your numbers.' : 'Here is your week.') + '</h2>'
+    + (aimed ? '' :
+        (nights ? '<div class="kv"><span>Dinners written</span><b>' + nights + '</b></div>' : '')
+        + '<div class="kv"><span>Shopping list</span><b>one, with amounts</b></div>')
+    + (aimed ? '<div class="kv"><span>Every day</span><b>' + t.kcal.toLocaleString('en-US')
+        + ' kcal</b></div><div class="kv"><span>Protein</span><b>' + t.proteinG + ' g</b></div>' : '')
+    + (t.days ? '<div class="kv"><span>Training</span><b>' + t.days + ' days a week</b></div>' : '')
+    + (money ? '<div class="kv"><span>Weekly shop</span><b>$' + money + '</b></div>' : '')
+    + (aimed && t.toLose ? '<div class="kv"><span>' + t.toLose + ' lb by</span><b>' + date + '</b></div>' : '')
+    + '<p class="note">These are your real numbers, worked out from what you just told us — not '
+    + 'an estimate. Your meals' + (t.days ? ', your training' : '') + ' and the shopping list are '
+    + 'written against them.</p>'
+    + '</div>';
+  nextBtn.style.display = '';
+  setCta('See my plan', true);
+  nextBtn.onclick = () => { location.href = './paywall.html'; };
+  legal.textContent = 'One payment. No subscription.';
+  track('QuizReveal', { kcal: t.kcal });
+}
+
+render();
+</script>
+</body>
+</html>

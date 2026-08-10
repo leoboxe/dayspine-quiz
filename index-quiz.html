@@ -1,0 +1,43 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Dayspine — the fifteen quizzes</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--brand:#F26A11;--tint:#FEF0E6;--ink:#171310;--mut:#736B64;--line:#E9E3DD;--surf:#FBF9F7}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;color:var(--ink);font:16px/1.55 Outfit,system-ui,sans-serif;
+ -webkit-font-smoothing:antialiased}
+.wrap{max-width:900px;margin:0 auto;padding:44px 22px 70px}
+h1{font-size:34px;font-weight:800;letter-spacing:-.03em;margin:0 0 10px}
+p.l{color:var(--mut);margin:0 0 28px;max-width:60ch}
+.g{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+a.c{display:block;text-decoration:none;color:inherit;background:var(--surf);border:1px solid var(--line);
+ border-radius:14px;padding:16px 18px;transition:.12s}
+a.c:hover{border-color:var(--brand);background:var(--tint)}
+.k{font:800 11px/1 Outfit;letter-spacing:.1em;color:var(--brand);background:#fff;
+ border:1px solid var(--line);padding:5px 8px;border-radius:6px;display:inline-block;margin-bottom:9px}
+.t{font-weight:700;font-size:16px;line-height:1.25}
+.s{color:var(--mut);font-size:13px;margin-top:5px}
+.led{display:inline-block;font-size:11px;font-weight:700;padding:3px 7px;border-radius:20px;
+ margin-top:9px;background:#fff;border:1px solid var(--line);color:var(--mut)}
+</style></head><body><div class="wrap">
+<h1>The fifteen quizzes</h1>
+<p class="l">One per ad. Each opens on its own grievance and only ever asks what her own
+answers have earned — open a few and try declining the bridges to see the flow shrink.
+Use a private window; each one resumes where you left it.</p>
+<div class="g" id="g"></div>
+</div>
+<script type="module">
+import { ANGLES } from './q-index.js';
+const LED = { A1:'food', A3:'food', A7:'food', A10:'food', A15:'food',
+  A4:'training', A5:'training', A9:'training', A11:'training', A13:'training',
+  A2:'whole product', A6:'whole product', A8:'whole product', A12:'whole product', A14:'whole product' };
+document.getElementById('g').innerHTML = Object.keys(ANGLES).map(k => {
+  const a = ANGLES[k], n = a.screens.length;
+  return `<a class="c" href="./q.html?a=${k}" target="_blank" rel="noopener">
+    <span class="k">${k}</span>
+    <div class="t">${a.ad}</div>
+    <div class="s">${a.screens[0].question || ''}</div>
+    <span class="led">${LED[k]} &middot; up to ${n} screens</span></a>`;
+}).join('');
+</script></body></html>

@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dayspine — your plan is ready</title>
+<meta name="theme-color" content="#FFFFFF">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://js.stripe.com/v3/"></script>
+<script src="./pixel.js"></script>
+<style>
+/*
+ * The paywall.
+ *
+ * Built to the grammar of an app paywall, not an ecommerce checkout, because
+ * that is what the buyer has just been trained on by every other fitness app
+ * they have ever cancelled: price in the first screenful, one button, the
+ * payment sheet arriving from the bottom only once they have said yes.
+ *
+ * Three CRO decisions carry this page.
+ *
+ * PRICE ABOVE THE FOLD, NEVER SCROLLED TO. The old checkout put the number in a
+ * line item halfway down a form. Here it is the first thing under the headline,
+ * at 56px, with the recurring alternative struck out beside it. Nobody has to
+ * hunt for what it costs, which is the single most common reason a paywall is
+ * abandoned.
+ *
+ * THE ANCHOR IS THEIR OWN NUMBER. They told the quiz what they currently pay
+ * every month. That figure is multiplied out to a year and set against $79 once
+ * -- a comparison the buyer supplied themselves and therefore cannot dismiss.
+ * When the quiz was skipped it falls back to the category median.
+ *
+ * THE SHEET, NOT A PAGE. Tapping the button slides payment up over the offer
+ * instead of navigating. The offer stays visible behind it, the back gesture
+ * closes rather than abandons, and the wallet sheet is one tap from the price.
+ *
+ * The element ids below (pay, email, name, payment-element, bump, bumpRow,
+ * total, btnTotal, submit, payErr) are the contract checkout-payment.js already
+ * expects. They are reproduced exactly so the payment module is reused
+ * untouched -- the money path is the last thing that should be rewritten for a
+ * layout change.
+ */
+:root{
+  --brand:#F26A11; --brand-deep:#B24A05; --brand-tint:#FEF0E6; --on-brand:#fff;
+  --canvas:#fff; --surface:#FBF9F7; --raised:#F2EEEA; --line:#E9E3DD;
+  --text:#171310; --muted:#736B64; --faint:#A79E96;
+  --good:#0D9488; --danger:#B3261E;
+  --r-sm:10px; --r-md:16px; --r-lg:22px; --r-pill:999px;
+  --shadow:0 2px 10px rgba(91,70,54,.06);
+  --shadow-lg:0 -8px 40px rgba(23,19,16,.16);
+  --wrap:min(520px,100%);
+}
+*{box-sizing:border-box}
+/* display:flex on .line beats the [hidden] attribute, so the bump row showed
+   before it was ticked. Attribute must win. */
+[hidden]{display:none!important}
+html,body{margin:0;padding:0}
+body{background:var(--canvas);color:var(--text);
+  font:16px/1.55 Outfit,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased;padding-bottom:104px}
+h1,h2,h3{margin:0;letter-spacing:-.03em;line-height:1.08;font-weight:800;text-wrap:balance}
+p{margin:0}
+.mono{font-family:"JetBrains Mono",ui-monospace,Menlo,monospace}
+.wrap{width:var(--wrap);margin:0 auto;padding:0 20px}
+
+/* --- top bar: brand + restore, the two things an app paywall always has --- */
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 0 6px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:-.02em}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--brand)}
+.restore{font-size:13px;color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line)}
+
+/* --- the offer --- */
+.hero{padding:14px 0 4px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--brand);margin-bottom:10px}
+.hero h1{font-size:clamp(30px,8vw,40px)}
+.hero .sub{color:var(--muted);margin-top:10px;font-size:16px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:14px}
+.chip{font-size:12.5px;font-weight:600;background:var(--surface);border:1px solid var(--line);
+  padding:6px 11px;border-radius:var(--r-pill);color:var(--muted)}
+.chip b{color:var(--text);font-weight:700}
+
+/* --- price, first screenful, no scrolling --- */
+.price{margin:20px 0 0;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r-lg);padding:20px;position:relative;overflow:hidden}
+.price::before{content:"";position:absolute;inset:0 0 auto;height:3px;background:var(--brand)}
+.tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  background:var(--brand-tint);color:var(--brand-deep);padding:5px 10px;border-radius:var(--r-pill)}
+.amount{display:flex;align-items:baseline;gap:12px;margin-top:12px}
+.was{font-size:22px;color:var(--faint);text-decoration:line-through;font-weight:600}
+.now{font-size:56px;font-weight:800;letter-spacing:-.045em;line-height:1}
+.once{font-size:15px;color:var(--muted);font-weight:600}
+.norenew{margin-top:12px;font-size:14.5px;font-weight:600;line-height:1.45}
+.norenew b{color:var(--brand-deep)}
+.left{margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);
+  font-size:13px;color:var(--muted)}
+.left b{color:var(--text)}
+
+.cta{display:block;width:100%;border:0;cursor:pointer;background:var(--brand);color:var(--on-brand);
+  font:800 17px/1 Outfit,sans-serif;letter-spacing:-.01em;padding:19px 20px;border-radius:var(--r-pill);
+  margin-top:16px;box-shadow:0 6px 18px rgba(242,106,17,.28)}
+.cta:active{transform:translateY(1px)}
+.cta small{display:block;font-weight:600;font-size:12.5px;opacity:.9;margin-top:5px;letter-spacing:0}
+
+/* --- what the one payment buys --- */
+section{padding:30px 0 0}
+h2.sec{font-size:21px;margin-bottom:14px}
+.gets{list-style:none;margin:0;padding:0}
+.gets li{display:grid;grid-template-columns:24px 1fr;gap:11px;padding:11px 0;
+  border-top:1px solid var(--line);font-size:15.5px;align-items:start}
+.gets li:first-child{border-top:0}
+.tick{width:20px;height:20px;border-radius:50%;background:var(--brand-tint);color:var(--brand-deep);
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;margin-top:2px}
+.gets b{font-weight:700}
+.gets span{color:var(--muted);display:block;font-size:13.5px;margin-top:1px}
+
+/* --- their own arithmetic --- */
+.maths{background:var(--text);color:#fff;border-radius:var(--r-lg);padding:22px;margin-top:8px}
+.maths .eyebrow{color:rgba(255,255,255,.65)}
+.maths h3{font-size:20px;margin-bottom:14px}
+.mrow{display:flex;align-items:baseline;justify-content:space-between;padding:10px 0;
+  border-top:1px solid rgba(255,255,255,.14);font-size:15px}
+.mrow:first-of-type{border-top:0}
+.mrow .k{color:rgba(255,255,255,.72)}
+.mrow .v{font-weight:700}
+.mrow.win .v{color:#7DD3C4}
+.verdict{margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.14);
+  font-size:15px;font-weight:600}
+.verdict b{color:#7DD3C4}
+
+/* --- the guarantee block, standing in for reviews we have not earned yet --- */
+.guar{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px}
+.guar h3{font-size:19px;margin-bottom:4px}
+.guar .why{color:var(--muted);font-size:14px;margin-bottom:14px}
+.guar li{display:grid;grid-template-columns:24px 1fr;gap:11px;padding:9px 0;font-size:15px;
+  border-top:1px solid var(--line);list-style:none;align-items:start}
+.guar li:first-of-type{border-top:0}
+.guar ul{margin:0;padding:0}
+
+.faq{margin-top:8px}
+.faq details{border-top:1px solid var(--line);padding:14px 0}
+.faq details:last-child{border-bottom:1px solid var(--line)}
+.faq summary{cursor:pointer;font-weight:700;font-size:15.5px;list-style:none;
+  display:flex;justify-content:space-between;gap:12px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";color:var(--brand);font-weight:800}
+.faq details[open] summary::after{content:"\2212"}
+.faq p{color:var(--muted);font-size:14.5px;margin-top:9px}
+
+footer{padding:34px 0 20px;color:var(--faint);font-size:12.5px;text-align:center}
+footer a{color:var(--faint)}
+
+/* --- sticky bar: the price is never off screen --- */
+.stick{position:fixed;left:0;right:0;bottom:0;z-index:40;background:rgba(255,255,255,.94);
+  backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:12px 0 calc(12px + env(safe-area-inset-bottom))}
+.stick .wrap{display:flex;align-items:center;gap:14px}
+.stick .p{flex:0 0 auto}
+.stick .p .n{font-weight:800;font-size:20px;letter-spacing:-.03em}
+.stick .p .w{font-size:12.5px;color:var(--faint);text-decoration:line-through}
+.stick .cta{margin-top:0;flex:1;padding:16px 18px;font-size:16px}
+
+/* --- payment sheet --- */
+.scrim{position:fixed;inset:0;background:rgba(23,19,16,.5);opacity:0;pointer-events:none;
+  transition:opacity .22s ease;z-index:50}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:60;background:var(--canvas);
+  border-radius:22px 22px 0 0;box-shadow:var(--shadow-lg);transform:translateY(101%);
+  transition:transform .28s cubic-bezier(.32,.72,0,1);max-height:94vh;overflow-y:auto;
+  padding:8px 0 calc(20px + env(safe-area-inset-bottom))}
+.sheet.on{transform:translateY(0)}
+.grab{width:38px;height:4px;border-radius:99px;background:var(--line);margin:6px auto 12px}
+.sheet h2{font-size:22px}
+.sheet .lead{color:var(--muted);font-size:14.5px;margin-top:6px}
+.line{display:flex;justify-content:space-between;align-items:baseline;padding:11px 0;
+  border-top:1px solid var(--line);font-size:15px}
+.line:first-of-type{border-top:0}
+.line .k{color:var(--muted)}
+.line.tot{border-top:1px solid var(--text);font-weight:800;font-size:17px;margin-top:2px}
+.field{margin-top:14px}
+.field label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:6px}
+.field input{width:100%;font:16px Outfit,sans-serif;padding:14px;border:1px solid var(--line);
+  border-radius:var(--r-sm);background:var(--canvas);color:var(--text)}
+.field input:focus{outline:2px solid var(--brand);outline-offset:-1px;border-color:transparent}
+.bump{display:grid;grid-template-columns:22px 1fr;gap:11px;margin-top:16px;padding:14px;
+  border:1.5px dashed var(--brand);border-radius:var(--r-md);background:var(--brand-tint);cursor:pointer}
+.bump input{width:19px;height:19px;accent-color:var(--brand);margin-top:2px}
+.bump b{font-size:15px}
+.bump small{display:block;color:var(--muted);font-size:13px;margin-top:3px;line-height:1.45}
+.reassure{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:14px;
+  font-size:12.5px;color:var(--muted)}
+.note{font-size:12px;color:var(--faint);margin-top:12px;line-height:1.5}
+.err{color:var(--danger);font-size:14px;margin-top:10px;font-weight:600}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top">
+    <div class="brand"><span class="dot"></span>Dayspine</div>
+    <a class="restore" href="./install.html">Already bought? Restore</a>
+  </div>
+
+  <div class="hero">
+    <div class="eyebrow" id="eyebrow">Your plan is ready</div>
+    <h1 id="headline">Your whole day, written before you wake up.</h1>
+    <p class="sub" id="sub">Food, training, and the shopping list that feeds it — built around
+      the answers you just gave.</p>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <!-- Price. First screenful, no scrolling, largest type on the page. -->
+  <div class="price">
+    <span class="tag" id="pricetag">Launch price</span>
+    <div class="amount">
+      <span class="was">$99</span>
+      <span class="now mono">$79</span>
+      <span class="once">once</span>
+    </div>
+    <div class="norenew">✓&nbsp;<b>Nothing renews.</b>&nbsp;There is no subscription to cancel.</div>
+    <div class="left" id="left">The launch price holds for the <b>first 500 buyers</b>, then
+      Dayspine goes to $99.</div>
+    <button class="cta" id="open1">Get lifetime access — $79
+      <small>One payment · 30-day refund</small></button>
+  </div>
+
+  <section>
+    <h2 class="sec">What the one payment buys</h2>
+    <ul class="gets">
+      <li><span class="tick">✓</span><div><b>The week, decided for you</b>
+        <span>Every meal and every session written before Monday. You open it and follow it.</span></div></li>
+      <li><span class="tick">✓</span><div><b>A grocery list with the amounts on it</b>
+        <span>Straight off the plan, priced to a budget you set, aisle by aisle.</span></div></li>
+      <li><span class="tick">✓</span><div><b>Training that talks you through it</b>
+        <span>A real instructor calling the form, not a name and a stick figure.</span></div></li>
+      <li><span class="tick">✓</span><div><b>Photo meal logging</b>
+        <span>Photograph the plate. You check the numbers before anything is saved.</span></div></li>
+      <li><span class="tick">✓</span><div><b>Fasting, mood and the day on one line</b>
+        <span>The four apps you were paying for, in one place that actually talks to itself.</span></div></li>
+      <li><span class="tick">✓</span><div><b>A plan that changes when you stall</b>
+        <span>It reads your weigh-ins, moves the target and rewrites the week.</span></div></li>
+    </ul>
+  </section>
+
+  <!-- Their own number, multiplied out. The buyer supplied this figure. -->
+  <section>
+    <div class="maths">
+      <div class="eyebrow">The arithmetic</div>
+      <h3 id="mathsTitle">What you're paying now versus this.</h3>
+      <div class="mrow"><span class="k" id="nowLabel">What you said you spend</span>
+        <span class="v mono" id="nowVal">$27 / mo</span></div>
+      <div class="mrow"><span class="k">Over the next year</span>
+        <span class="v mono" id="yearVal">$324</span></div>
+      <div class="mrow win"><span class="k">Dayspine, once</span>
+        <span class="v mono">$79</span></div>
+      <div class="verdict" id="verdict">It pays for itself in <b>under three months</b> — and then
+        it never charges you again.</div>
+    </div>
+  </section>
+
+  <!-- No reviews yet. Saying so is stronger than inventing them. -->
+  <section>
+    <div class="guar">
+      <h3>No reviews here yet.</h3>
+      <p class="why">Dayspine launched this month, so there is nothing honest to put in this space.
+        Here is what you get instead.</p>
+      <ul>
+        <li><span class="tick">✓</span><div><b>30 days to change your mind</b>
+          <span>Email us and you get all of it back. No form, no reason needed.</span></div></li>
+        <li><span class="tick">✓</span><div><b>Nothing renews, ever</b>
+          <span>No trial rolling into a charge. No date you have to remember to cancel.</span></div></li>
+        <li><span class="tick">✓</span><div><b>Built by one person, not a subscription company</b>
+          <span>Nobody here is measured on how long they can keep billing you.</span></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="faq">
+    <details><summary>Is this really one payment?</summary>
+      <p>Yes. One charge, today, and nothing after it. There is no plan to upgrade to and nothing
+        to cancel — that is the entire point of the product.</p></details>
+    <details><summary>Do I need to download anything?</summary>
+      <p>No app store. Dayspine installs straight to your home screen from the browser in about
+        ten seconds, and we walk you through it the moment you have paid.</p></details>
+    <details><summary>What if it isn't for me?</summary>
+      <p>Email within 30 days and we refund you in full. You keep the printed plan if you bought it.</p></details>
+    <details><summary>Why is it cheaper than the apps I've been paying for?</summary>
+      <p>It isn't, over a month. It is far cheaper over a year, because those apps are built to
+        charge you forever and this one is built to be bought once.</p></details>
+  </section>
+
+  <footer>
+    Dayspine · Exotix Creators LLC<br>
+    <a href="./terms.html">Terms</a> · <a href="./privacy.html">Privacy</a>
+  </footer>
+</div>
+
+<div class="stick">
+  <div class="wrap">
+    <div class="p"><div class="w">$99</div><div class="n mono">$79</div></div>
+    <button class="cta" id="open2">Get lifetime access</button>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+
+<!-- The payment sheet. Same element ids checkout-payment.js already binds to. -->
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Payment">
+  <div class="grab"></div>
+  <div class="wrap">
+    <h2>One payment. Then it's yours.</h2>
+    <p class="lead">Your card is handled by Stripe. Nothing is ever charged again.</p>
+
+    <div style="margin-top:16px">
+      <div class="line"><span class="k">Dayspine — lifetime access</span><span class="mono">$79.00</span></div>
+      <div class="line" id="bumpRow" hidden><span class="k">Printed Plan</span><span class="mono">$9.00</span></div>
+      <div class="line tot"><span>Total today</span><span class="mono" id="total">$79.00</span></div>
+    </div>
+
+    <label class="bump">
+      <input type="checkbox" id="bump">
+      <span>
+        <b>Add the Printed Plan — $9</b>
+        <small>Your first four weeks of meals, training and the grocery list as a PDF for the
+          fridge. The people who print it stick with it.</small>
+      </span>
+    </label>
+
+    <form id="pay" novalidate>
+      <div class="field">
+        <label for="email">Email — where your access link goes</label>
+        <input id="email" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" required>
+      </div>
+      <div class="field">
+        <label for="name">Name on card</label>
+        <input id="name" type="text" autocomplete="cc-name" placeholder="Alex Morgan" required>
+      </div>
+      <div class="field">
+        <label for="payment-element">Payment</label>
+        <div id="payment-element"></div>
+      </div>
+      <div id="payErr" class="err" hidden></div>
+      <button class="cta" id="submit" type="submit">Pay <span id="btnTotal">$79</span> once</button>
+      <div class="reassure"><span>30-day refund</span><span>No auto-renewal</span><span>Secure checkout</span></div>
+      <p class="note">By continuing you agree to the Terms and Privacy Policy. This is a one-time
+        purchase — there is nothing to cancel.</p>
+    </form>
+  </div>
+</div>
+
+<script>
+/*
+ * Personalisation. Everything here comes from answers the buyer gave two minutes
+ * ago, which is the difference between a price and a price they argued
+ * themselves into. Missing answers fall back to the category median rather than
+ * to nothing -- a paywall that renders empty because the quiz was skipped is
+ * worse than one that is slightly generic.
+ */
+var SPEND = { '0': 0, 'u15': 12, '15-40': 27, '40+': 55 };
+var LABEL = {
+  '0': 'Apps you are paying for now', 'u15': 'What you said you spend',
+  '15-40': 'What you said you spend', '40+': 'What you said you spend'
+};
+
+/* Written once, when the quiz completes: { answers, angle }. The in-progress
+   key is per-angle now, so this is the only place the finished answers live. */
+function readQuiz() {
+  try {
+    var d = JSON.parse(sessionStorage.getItem('dayspine.answers') || '{}') || {};
+    window.DS_ANGLE = d.angle || null;
+    return d.answers || {};
+  } catch (e) { return {}; }
+}
+
+(function personalise() {
+  var a = readQuiz();
+  var monthly = SPEND[a.spend];
+  if (monthly === undefined) monthly = 27;          // category median, not zero
+
+  // Someone paying nothing today cannot be sold on savings, so the frame flips
+  // from "you will save" to "this is what it would otherwise cost you".
+  var none = !monthly;
+  document.getElementById('nowLabel').textContent =
+    none ? 'What four apps would cost you' : LABEL[a.spend] || 'What you said you spend';
+  var m = none ? 27 : monthly;
+  document.getElementById('nowVal').textContent = '$' + m + ' / mo';
+  document.getElementById('yearVal').textContent = '$' + (m * 12);
+  var months = Math.max(1, Math.round(79 / m));
+  document.getElementById('verdict').innerHTML =
+    'It pays for itself in <b>' + (months <= 1 ? 'under a month' : months + ' months') +
+    '</b> — and then it never charges you again.';
+
+  // Chips mirror their own answers back, so the plan reads as theirs.
+  var chips = [];
+  if (a.where === 'gym') chips.push('Training <b>at a gym</b>');
+  else if (a.where === 'home') chips.push('Training <b>at home</b>');
+  else if (a.where === 'none') chips.push('<b>Starting again</b>');
+  if (a.age) chips.push('<b>' + a.age.replace('-', '–') + '</b>');
+  if (Array.isArray(a.goals) && a.goals.length) {
+    var g = { lose: 'Lose fat', muscle: 'Build muscle', energy: 'More energy',
+              consistency: 'Be consistent', know: 'Know what to eat' };
+    a.goals.slice(0, 2).forEach(function (k) { if (g[k]) chips.push('<b>' + g[k] + '</b>'); });
+  }
+  document.getElementById('chips').innerHTML =
+    chips.map(function (c) { return '<span class="chip">' + c + '</span>'; }).join('');
+})();
+
+/* The sheet. Opening it is the InitiateCheckout moment, not page load. */
+var sheet = document.getElementById('sheet'), scrim = document.getElementById('scrim');
+var opened = false;
+function openSheet() {
+  sheet.classList.add('on'); scrim.classList.add('on');
+  document.body.style.overflow = 'hidden';
+  if (!opened) { opened = true; try { window.fbq && window.fbq('track', 'AddToCart', { value: 79, currency: 'USD' }); } catch (e) {} }
+  setTimeout(function () { document.getElementById('email').focus({ preventScroll: true }); }, 320);
+}
+function closeSheet() {
+  sheet.classList.remove('on'); scrim.classList.remove('on');
+  document.body.style.overflow = '';
+}
+document.getElementById('open1').onclick = openSheet;
+document.getElementById('open2').onclick = openSheet;
+scrim.onclick = closeSheet;
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSheet(); });
+
+/* Records an add-on the buyer just paid for, so install.html can hand the list
+   to the app. sessionStorage, because the buyer walks through more pages before
+   the handoff and a lost query parameter is a lost purchase. */
+function grantAddon(id) {
+  try {
+    var owned = JSON.parse(sessionStorage.getItem('dayspine.addons') || '[]');
+    if (owned.indexOf(id) === -1) owned.push(id);
+    sessionStorage.setItem('dayspine.addons', JSON.stringify(owned));
+  } catch (e) {}
+}
+</script>
+<script type="module" src="./checkout-payment.js"></script>
+</body>
+</html>
