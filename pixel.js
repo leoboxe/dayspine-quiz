@@ -65,8 +65,12 @@
     document.cookie = name + '=' + value + ';expires=' + d.toUTCString() + ';path=/;SameSite=Lax';
   }
   try {
+    /* A new fbclid in the URL always wins. See middleware.js: the cookie may
+       hold an older campaign, and the URL holds the click being attributed now.
+       Meta's own pixel does the same thing a moment later; doing it here first
+       means the page_view is not attributed to the previous ad. */
     var fbclid = new URL(location.href).searchParams.get('fbclid');
-    if (fbclid && !cookie('_fbc')) {
+    if (fbclid) {
       setCookie('_fbc', 'fb.1.' + Date.now() + '.' + fbclid, 90);
     }
   } catch (e) {}

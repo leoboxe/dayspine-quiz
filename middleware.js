@@ -85,10 +85,17 @@ export default function middleware(request) {
   // Meta browser id. Written here so it is a real ninety-day cookie.
   if (!has('_fbp')) put('_fbp', fbp(), NINETY_DAYS);
 
-  /* The click id arrives once, in the URL, and is gone by the next page. This
-     is the only moment it can be captured. */
+  /* The click id arrives once, in the URL, and is gone by the next page, so
+     this is the only moment it can be captured.
+     A new fbclid in the URL always wins, even over an existing _fbc. The
+     tempting rule is "never overwrite _fbc", but that is about not clobbering a
+     good value with a stale one -- here the URL carries the click being
+     attributed right now, and the cookie holds an older campaign. Skipping the
+     write credits the new visit to the previous ad until Meta's own pixel
+     corrects it, which showed up in testing as a page_view attributed to the
+     previous click while every later event on the same page had the new one. */
   const fbclid = url.searchParams.get('fbclid');
-  if (fbclid && !has('_fbc')) {
+  if (fbclid) {
     put('_fbc', `fb.1.${Date.now()}.${fbclid}`, NINETY_DAYS);
   }
 
