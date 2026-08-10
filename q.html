@@ -475,7 +475,7 @@ function renderPayoff(s) {
     + '<p style="margin-top:14px">' + s.tail + '</p></div>');
   pending = true;
   setCta(s.cta || 'Continue', true);
-  track('QuizPayoff', { value: n, unit: s.unit || 'money' });
+  track('quiz_payoff', { value: n, unit: s.unit || 'money' });
 }
 
 function renderBridge(s) {
@@ -511,6 +511,7 @@ function renderEmail(s) {
    silently skips the next screen, which is how the steppers question went
    missing in testing. */
 let committing = false;
+let started = false;
 function commit() {
   if (committing) return;
   committing = true;
@@ -526,11 +527,18 @@ function commit() {
     }
     A.email = v;
     persist(false);                       // a lead, before she has finished
+    /* The one event worth optimising toward before a purchase exists. Carries
+       the email so the server half can hash it for advanced matching. */
+    track('lead_captured', { email: v });
   } else if (s.type === 'steppers' || s.type === 'profile') {
     Object.assign(A, pending);
   } else if (s.key) {
     A[s.key] = pending;
   }
+  /* Fired once, on the first answer she commits -- not on load, where it would
+     just be a second page view and say nothing about intent. */
+  if (!started) { started = true; track('quiz_started'); }
+
   i++;
   save();
   render();
@@ -549,7 +557,7 @@ function renderBuilding() {
         '<li><span class="tick">&#10003;</span>' + t + '</li>').join('') + '</ul></div>';
   nextBtn.style.display = 'none';
   legal.textContent = '';
-  track('QuizComplete', { training: A.wantsTraining === 'yes' });
+  track('quiz_completed', { training: A.wantsTraining === 'yes' });
   persist(true);
 
   const items = main.querySelectorAll('.build li');
@@ -614,7 +622,7 @@ function renderReveal() {
   setCta('See my plan', true);
   nextBtn.onclick = () => { location.href = './paywall.html'; };
   legal.textContent = 'One payment. No subscription.';
-  track('QuizReveal', { kcal: t.kcal });
+  track('quiz_reveal', { kcal: t.kcal });
 }
 
 render();

@@ -436,5 +436,16 @@ function grantAddon(id) {
 }
 </script>
 <script type="module" src="./checkout-payment.js"></script>
+<script>
+/* InitiateCheckout. Fired on arrival rather than on the pay button, because the
+   paywall IS the checkout here -- there is no separate cart step to reach. */
+(function () {
+  function go() {
+    if (window.dayspineTrack) window.dayspineTrack('paywall_reached');
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', go);
+  else go();
+})();
+</script>
 </body>
 </html>
