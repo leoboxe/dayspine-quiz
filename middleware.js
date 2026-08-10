@@ -16,9 +16,16 @@
  */
 
 export const config = {
-  /* HTML only. Running this on assets would spend a function invocation on
-     every font and image to set cookies that are already set. */
-  matcher: ['/', '/((?!api|assets|_vercel|.*\\.[a-z0-9]+$).*)'],
+  /* Documents only. Running this on assets would spend a function invocation on
+     every font and image to set cookies that are already set.
+     Excluding "anything with an extension" is the obvious way to write this and
+     it is wrong here: every page in this funnel is a literal .html file, so that
+     version silently skips the entire site and sets no cookies anywhere. Assets
+     are therefore excluded by naming their extensions, and .html is not one. */
+  matcher: [
+    '/',
+    '/((?!api/|assets/|_vercel|.*\\.(?:js|mjs|css|map|png|jpg|jpeg|gif|svg|webp|ico|woff|woff2|ttf|mp4|webm|json|txt|xml)$).*)',
+  ],
 };
 
 const YEAR = 60 * 60 * 24 * 365;
@@ -38,28 +45,42 @@ function visitorId() {
 
 export default function middleware(request) {
   const url = new URL(request.url);
-  const jar = request.cookies;
-  const res = new Response(null, { headers: { 'x-middleware-next': '1' } });
+
+  /* `request.cookies` is a Next.js convenience that does not exist here -- this
+     is framework-agnostic middleware, so the request is a plain Request and the
+     header has to be parsed by hand. Reading it as if it were NextRequest
+     throws on every page load, which takes the whole site down rather than just
+     the tracking. */
+  const jar = request.headers.get('cookie') || '';
+  const has = (name) => new RegExp('(?:^|;\\s*)' + name + '=').test(jar);
+
+  /* Collected as tuples and handed to the Headers constructor in one go.
+     headers.append('set-cookie', ...) looks like the natural way to write this
+     and quietly loses all but the last cookie in this runtime -- the symptom is
+     a page that sets _fbc correctly and never sets _fbp or a visitor id at all,
+     which looks like working attribution right up until you check. An array of
+     entries is the one form that reliably survives as repeated headers. */
+  const out = [['x-middleware-next', '1']];
 
   const put = (name, value, maxAge) => {
-    res.headers.append(
+    out.push([
       'set-cookie',
       `${name}=${value}; Path=/; Max-Age=${maxAge}; SameSite=Lax; Secure`,
-    );
+    ]);
   };
 
   // Primary identity, ours. Survives across the quiz, the paywall and back.
-  if (!jar.get('_ds_vid')) put('_ds_vid', visitorId(), YEAR);
+  if (!has('_ds_vid')) put('_ds_vid', visitorId(), YEAR);
 
   // Meta browser id. Written here so it is a real ninety-day cookie.
-  if (!jar.get('_fbp')) put('_fbp', fbp(), NINETY_DAYS);
+  if (!has('_fbp')) put('_fbp', fbp(), NINETY_DAYS);
 
   /* The click id arrives once, in the URL, and is gone by the next page. This
      is the only moment it can be captured. */
   const fbclid = url.searchParams.get('fbclid');
-  if (fbclid && !jar.get('_fbc')) {
+  if (fbclid && !has('_fbc')) {
     put('_fbc', `fb.1.${Date.now()}.${fbclid}`, NINETY_DAYS);
   }
 
-  return res;
+  return new Response(null, { headers: out });
 }

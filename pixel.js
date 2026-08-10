@@ -25,7 +25,9 @@
   (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
 
   fbq('init', DATASET_ID);
-  fbq('track', 'PageView');
+  /* PageView is NOT fired here. dayspineTrack('page_view') at the bottom fires
+     it with an explicit eventID so the browser and server halves deduplicate;
+     firing it here as well would report two page views for every one. */
 
   /* -------------------------------------------------------------------------
      Click-ID capture.
@@ -74,4 +76,94 @@
       }
     },
   };
+
+  /* -------------------------------------------------------------------------
+     The two halves, fired together.
+
+     Everything below Purchase goes out twice on purpose: `fbq` from the browser
+     where the cookies live, and `/api/t` from our own origin where an ad
+     blocker cannot reach. Both carry the same `event_id`, so Meta unions the
+     match signals and still counts one.
+
+     `/api/t` rather than the Supabase URL directly. A request to *.supabase.co
+     is a third-party request and is blocked by exactly the lists that just
+     blocked the pixel, which would leave both halves dead for the same visitor
+     -- the one case where redundancy buys nothing.
+  ------------------------------------------------------------------------- */
+  var ANGLE = (function () {
+    try {
+      var m = /[?&]a=([A-Za-z0-9]+)/.exec(location.search);
+      return m ? m[1].toUpperCase() : null;
+    } catch (e) { return null; }
+  })();
+
+  /* Ad-level attribution, passed through by the ad's URL parameters. Read once
+     and remembered, because they are gone from the URL by the next page. */
+  var AD = (function () {
+    var keep = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'utm_term',
+                'ad_id', 'adset_id', 'campaign_id', 'ad_name', 'adset_name',
+                'campaign_name', 'placement'];
+    var out = {};
+    try {
+      var q = new URL(location.href).searchParams;
+      var saved = JSON.parse(sessionStorage.getItem('dayspine.ad') || '{}');
+      keep.forEach(function (k) { if (q.get(k)) out[k] = q.get(k); });
+      out = Object.keys(out).length ? out : saved;
+      sessionStorage.setItem('dayspine.ad', JSON.stringify(out));
+    } catch (e) {}
+    return out;
+  })();
+
+  var META_NAME = {
+    page_view: 'PageView',
+    quiz_started: 'ViewContent',
+    quiz_completed: 'ViewContent',
+    lead_captured: 'Lead',
+    paywall_reached: 'InitiateCheckout',
+    checkout_reached: 'InitiateCheckout',
+    add_to_cart: 'AddToCart',
+  };
+
+  window.dayspineTrack = function (eventType, data) {
+    data = data || {};
+    var eventId = data.event_id
+      || 'ds-' + eventType + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+
+    var name = META_NAME[eventType];
+    if (name && window.fbq) {
+      try {
+        fbq('track', name, { content_category: ANGLE || undefined }, { eventID: eventId });
+      } catch (e) {}
+    }
+
+    var payload = {
+      event_type: eventType,
+      event_id: eventId,
+      angle: ANGLE,
+      page_slug: location.pathname.replace(/^\/|\.html$/g, '') || 'index',
+      event_source_url: location.href,
+      referrer: document.referrer || null,
+      fbp: window.dayspineMeta.fbp(),
+      fbc: window.dayspineMeta.fbc(),
+      fbclid: new URL(location.href).searchParams.get('fbclid'),
+    };
+    Object.keys(AD).forEach(function (k) { payload[k] = AD[k]; });
+    Object.keys(data).forEach(function (k) { payload[k] = data[k]; });
+
+    try {
+      /* keepalive so the send survives the navigation it is often reporting --
+         a lead event fired as the page unloads is exactly the one worth having. */
+      fetch('/api/t', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true,
+      }).catch(function () {});
+    } catch (e) {}
+
+    return eventId;
+  };
+
+  /* The only PageView. Fires both halves under one id. */
+  window.dayspineTrack('page_view');
 })();

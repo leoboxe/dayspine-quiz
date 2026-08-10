@@ -225,8 +225,15 @@ try {
 } catch {}
 const save = () => { try { sessionStorage.setItem(SAVE, JSON.stringify({ i, A })); } catch {} };
 
+/* Routed through pixel.js so every event goes out both ways -- browser pixel
+   and first-party proxy -- under one event_id. The old version called fbq
+   directly behind a `window.fbq &&` guard, and since the pixel was never
+   installed that guard was false on every page load: correctly named events,
+   correctly placed, going nowhere. */
 function track(ev, data = {}) {
-  try { window.fbq && window.fbq('trackCustom', ev, { angle: ANGLE, ...data }); } catch {}
+  try {
+    if (window.dayspineTrack) window.dayspineTrack(ev, data);
+  } catch {}
 }
 
 /* Sent twice: once on email entry so an abandoned quiz is still a lead, and once
