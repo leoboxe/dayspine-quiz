@@ -41,8 +41,23 @@
      the attribution it was trying to preserve.
   ------------------------------------------------------------------------- */
   function cookie(name) {
-    var m = document.cookie.match('(^|;)\s*' + name + '\s*=\s*([^;]+)');
-    return m ? m.pop() : null;
+    /* Split, not a regex.
+       This was previously `match('(^|;)\s*' + name + ...)` -- a pattern built
+       from a STRING, where \s is not an escape at all and collapses to a bare
+       letter "s". It therefore looked for "s_fbps=" and never matched anything,
+       so fbp() and fbc() returned null on every call and every event reached
+       Meta without the two cookies that carry the ad click. Nothing looked
+       broken: the pixel loaded, the events fired, the match quality was just
+       quietly halved.
+       Splitting has no escaping hazard to get wrong a second time. */
+    var parts = document.cookie ? document.cookie.split(';') : [];
+    for (var i = 0; i < parts.length; i++) {
+      var p = parts[i].trim();
+      if (p.indexOf(name + '=') === 0) {
+        return decodeURIComponent(p.slice(name.length + 1));
+      }
+    }
+    return null;
   }
   function setCookie(name, value, days) {
     var d = new Date();

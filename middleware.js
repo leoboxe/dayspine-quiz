@@ -62,10 +62,20 @@ export default function middleware(request) {
      entries is the one form that reliably survives as repeated headers. */
   const out = [['x-middleware-next', '1']];
 
+  /* Meta's pixel writes _fbp and _fbc on the registrable domain. A host-only
+     cookie of the same name is a DIFFERENT cookie, so without this the browser
+     ends up holding two _fbp values and whichever is read first wins -- which
+     was visible in testing as _fbp and _fbc each appearing twice. Matching the
+     domain means we are writing the same cookie Meta would have written, only
+     earlier and from the server. Skipped on preview hosts and localhost, where
+     there is no registrable domain worth scoping to. */
+  const host = url.hostname;
+  const domain = host.endsWith('dayspine.com') ? '; Domain=.dayspine.com' : '';
+
   const put = (name, value, maxAge) => {
     out.push([
       'set-cookie',
-      `${name}=${value}; Path=/; Max-Age=${maxAge}; SameSite=Lax; Secure`,
+      `${name}=${value}; Path=/${domain}; Max-Age=${maxAge}; SameSite=Lax; Secure`,
     ]);
   };
 
