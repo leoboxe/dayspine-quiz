@@ -151,7 +151,16 @@ document.getElementById('pay').addEventListener('submit', async (e) => {
     elements,
     clientSecret,
     confirmParams: {
-      return_url: location.href.replace('checkout.html', 'upsell.html'),
+      /* Resolved against the current page rather than string-replaced.
+         This was `location.href.replace('checkout.html', 'upsell.html')`, from
+         when the payment lived on checkout.html. It now lives on paywall.html,
+         where that string is absent, so the replace did nothing and return_url
+         stayed on the paywall: a buyer sent through 3-D Secure -- routine in
+         Europe and standard for wallets -- came back to the offer page after
+         paying and had every reason to think it had failed. Only that path is
+         affected, which is why it survives casual testing: redirect is
+         'if_required', so a card that skips 3DS never uses return_url at all. */
+      return_url: new URL('./upsell.html', location.href).href,
     },
     // Only leave the page when the bank actually demands it (3DS). Everything
     // else stays put, so the upsell is reached without a round trip.
