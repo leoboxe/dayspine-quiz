@@ -183,5 +183,27 @@ document.getElementById('pay').addEventListener('submit', async (e) => {
     }
   } catch (err) {}
 
-  location.href = './upsell.html';
+  /* Our own record of the sale. `checkout_completed` is deliberately absent
+     from the forward map, so this is stored and never sent on -- the webhook
+     owns the Purchase that reaches Meta. Without it we have no server-side
+     evidence that the browser half ever ran, which is exactly the question that
+     came up after the first real purchase. keepalive, because it is racing the
+     same navigation as the beacon below. */
+  try {
+    if (window.dayspineTrack) {
+      window.dayspineTrack('checkout_completed', {
+        event_id: window.dayspineMeta ? window.dayspineMeta.purchaseEventId() : undefined,
+        revenue_cents: Math.round(total() * 100),
+      });
+    }
+  } catch (err) {}
+
+  /* fbq sends via an <img> beacon, and navigating aborts one in flight. Measured
+     at 23ms on a desktop connection, which is where this looks safe and is not:
+     on mobile data it is hundreds of milliseconds, and the assignment below runs
+     immediately. Losing it does not lose the sale -- the webhook reports that
+     from the server -- but it loses the browser's match signals and makes
+     Events Manager look like the pixel is dead. A third of a second here is
+     imperceptible after a payment that just took several. */
+  setTimeout(function () { location.href = './upsell.html'; }, 350);
 });
