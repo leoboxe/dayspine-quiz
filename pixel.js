@@ -78,22 +78,37 @@
 
   /* The identity the server half cannot see. Read at send time, not now — the
      pixel writes `_fbp` asynchronously after init. */
+  /* Survives a storage failure, which the sessionStorage-only version did not. */
+  var purchaseId = null;
+
   window.dayspineMeta = {
     fbp: function () { return cookie('_fbp'); },
     fbc: function () { return cookie('_fbc'); },
     /* One id per purchase, stable across the browser event and the server
-       event, and stable across a page refresh mid-checkout. */
+       event, and stable across a page refresh mid-checkout.
+       Held in a closure variable FIRST, and only then in sessionStorage.
+       The old version went straight to storage and fell back to
+       'ds-' + Date.now() when it threw -- which returns a DIFFERENT id on every
+       call. The two calls that matter are seconds apart (create-checkout when
+       she submits, the Purchase pixel after confirmPayment returns), so the
+       ids diverged, Meta saw two Purchases instead of one, and every sale
+       reported double. Storage throws more often than it looks: Safari private
+       mode, partitioned storage, and in-app webviews -- which is where all of
+       the ad traffic arrives. Verified throwing in a real browser, where two
+       back-to-back calls only agreed because they landed in the same
+       millisecond.
+       The closure keeps it stable for the page; sessionStorage is now only for
+       surviving a refresh, and its absence costs nothing. */
     purchaseEventId: function () {
+      if (purchaseId) return purchaseId;
+      var fresh = 'ds-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
       try {
-        var id = sessionStorage.getItem('dayspine.eventId');
-        if (!id) {
-          id = 'ds-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
-          sessionStorage.setItem('dayspine.eventId', id);
-        }
-        return id;
+        purchaseId = sessionStorage.getItem('dayspine.eventId') || fresh;
+        sessionStorage.setItem('dayspine.eventId', purchaseId);
       } catch (e) {
-        return 'ds-' + Date.now();
+        purchaseId = fresh;
       }
+      return purchaseId;
     },
   };
 
