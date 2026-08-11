@@ -259,6 +259,13 @@ async function persist(complete) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + SUPABASE_ANON },
       body: JSON.stringify({ email, angle: ANGLE, answers: withDerived(), complete }),
+      /* Without this the completion write is cancelled by the navigation to the
+         paywall -- the browser kills in-flight requests when the page goes away,
+         and this one fires moments before she leaves. The row then keeps
+         complete=false from the earlier lead write, which is the one state that
+         makes the app ask a paying customer to take the quiz a second time.
+         Observed: a fast run through A8 stored 27 answers with complete=false. */
+      keepalive: true,
     });
   } catch (e) { /* never block the funnel on telemetry */ }
 }
