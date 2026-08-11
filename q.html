@@ -168,6 +168,11 @@ footer.cta{position:sticky;bottom:0;background:linear-gradient(transparent,var(-
   font:800 17px/1 Outfit,sans-serif;padding:19px;border-radius:var(--r-pill)}
 .btn:disabled{background:var(--raised);color:var(--faint);cursor:default}
 .legal{text-align:center;font-size:12px;color:var(--faint);margin-top:11px}
+/* Persistent, unlike .legal above, which is per-screen copy that gets cleared.
+   This is the landing page every ad points at, so the policies have to be
+   reachable from it without finishing the quiz first. */
+.fine{text-align:center;font-size:11px;color:var(--faint);margin-top:8px}
+.fine a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -183,6 +188,7 @@ footer.cta{position:sticky;bottom:0;background:linear-gradient(transparent,var(-
 <footer class="cta"><div class="wrap">
   <button class="btn" id="next">Continue</button>
   <div class="legal" id="legal"></div>
+  <div class="fine"><a href="./privacy.html">Privacy</a> · <a href="./terms.html">Terms</a></div>
 </div></footer>
 
 <script type="module">
