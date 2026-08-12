@@ -27,7 +27,7 @@
  * abandoned.
  *
  * THE ANCHOR IS THEIR OWN NUMBER. They told the quiz what they currently pay
- * every month. That figure is multiplied out to a year and set against $79 once
+ * every month. That figure is multiplied out to a year and set against $49 once
  * -- a comparison the buyer supplied themselves and therefore cannot dismiss.
  * When the quiz was skipped it falls back to the category median.
  *
@@ -215,13 +215,13 @@ footer a{color:var(--faint)}
     <span class="tag" id="pricetag">Launch price</span>
     <div class="amount">
       <span class="was">$99</span>
-      <span class="now mono">$79</span>
+      <span class="now mono">$49</span>
       <span class="once">once</span>
     </div>
     <div class="norenew">✓&nbsp;<b>Nothing renews.</b>&nbsp;There is no subscription to cancel.</div>
     <div class="left" id="left">The launch price holds for the <b>first 500 buyers</b>, then
       Dayspine goes to $99.</div>
-    <button class="cta" id="open1">Get lifetime access — $79
+    <button class="cta" id="open1">Get lifetime access — $49
       <small>One payment · 30-day refund</small></button>
   </div>
 
@@ -253,7 +253,7 @@ footer a{color:var(--faint)}
       <div class="mrow"><span class="k">Over the next year</span>
         <span class="v mono" id="yearVal">$324</span></div>
       <div class="mrow win"><span class="k">Dayspine, once</span>
-        <span class="v mono">$79</span></div>
+        <span class="v mono">$49</span></div>
       <div class="verdict" id="verdict">It pays for itself in <b>under three months</b> — and then
         it never charges you again.</div>
     </div>
@@ -305,7 +305,7 @@ footer a{color:var(--faint)}
 
 <div class="stick">
   <div class="wrap">
-    <div class="p"><div class="w">$99</div><div class="n mono">$79</div></div>
+    <div class="p"><div class="w">$99</div><div class="n mono">$49</div></div>
     <button class="cta" id="open2">Get lifetime access</button>
   </div>
 </div>
@@ -320,9 +320,9 @@ footer a{color:var(--faint)}
     <p class="lead">Your card is handled by Stripe. Nothing is ever charged again.</p>
 
     <div style="margin-top:16px">
-      <div class="line"><span class="k">Dayspine — lifetime access</span><span class="mono">$79.00</span></div>
+      <div class="line"><span class="k">Dayspine — lifetime access</span><span class="mono">$49.00</span></div>
       <div class="line" id="bumpRow" hidden><span class="k">Printed Plan</span><span class="mono">$9.00</span></div>
-      <div class="line tot"><span>Total today</span><span class="mono" id="total">$79.00</span></div>
+      <div class="line tot"><span>Total today</span><span class="mono" id="total">$49.00</span></div>
     </div>
 
     <label class="bump">
@@ -348,7 +348,7 @@ footer a{color:var(--faint)}
         <div id="payment-element"></div>
       </div>
       <div id="payErr" class="err" hidden></div>
-      <button class="cta" id="submit" type="submit">Pay <span id="btnTotal">$79</span> once</button>
+      <button class="cta" id="submit" type="submit">Pay <span id="btnTotal">$49</span> once</button>
       <div class="reassure"><span>30-day refund</span><span>No auto-renewal</span><span>Secure checkout</span></div>
       <p class="note">By continuing you agree to the Terms and Privacy Policy. This is a one-time
         purchase — there is nothing to cancel.</p>
@@ -364,6 +364,15 @@ footer a{color:var(--faint)}
  * to nothing -- a paywall that renders empty because the quiz was skipped is
  * worse than one that is slightly generic.
  */
+/* The core price, for the two places this script COMPUTES with it: the payback
+   verdict and the AddToCart value. Display prices are in the markup above.
+   ⚠️ None of these charge anything -- supabase/functions/_shared/catalogue.ts
+   is the only authority, and the client never sends an amount. Change this and
+   you must change the catalogue (and checkout-payment.js's CORE, which prices
+   the Stripe Element) in the same commit, or the page advertises one number and
+   Stripe collects another. */
+var CORE_PRICE = 49;
+
 var SPEND = { '0': 0, 'u15': 12, '15-40': 27, '40+': 55 };
 var LABEL = {
   '0': 'Apps you are paying for now', 'u15': 'What you said you spend',
@@ -393,7 +402,7 @@ function readQuiz() {
   var m = none ? 27 : monthly;
   document.getElementById('nowVal').textContent = '$' + m + ' / mo';
   document.getElementById('yearVal').textContent = '$' + (m * 12);
-  var months = Math.max(1, Math.round(79 / m));
+  var months = Math.max(1, Math.round(CORE_PRICE / m));
   document.getElementById('verdict').innerHTML =
     'It pays for itself in <b>' + (months <= 1 ? 'under a month' : months + ' months') +
     '</b> — and then it never charges you again.';
@@ -419,7 +428,14 @@ var opened = false;
 function openSheet() {
   sheet.classList.add('on'); scrim.classList.add('on');
   document.body.style.overflow = 'hidden';
-  if (!opened) { opened = true; try { window.fbq && window.fbq('track', 'AddToCart', { value: 79, currency: 'USD' }); } catch (e) {} }
+  /* Through dayspineTrack, NOT a bare fbq. This was browser-only for the first
+     day of traffic, which meant the single most important step in the funnel --
+     did she engage with the payment form at all -- had no server-side record.
+     Nine paywall views produced zero AddToCarts on 2026-08-12 and there was no
+     way to tell "nobody tapped" from "the pixel was blocked", which is not a
+     rare case: ad traffic arrives in Meta's in-app webview. `add_to_cart` was
+     already mapped in forwarding.ts and pixel.js; only the call site was wrong. */
+  if (!opened) { opened = true; try { window.dayspineTrack && window.dayspineTrack('add_to_cart', { value: CORE_PRICE, currency: 'USD' }); } catch (e) {} }
   setTimeout(function () { document.getElementById('email').focus({ preventScroll: true }); }, 320);
 }
 function closeSheet() {

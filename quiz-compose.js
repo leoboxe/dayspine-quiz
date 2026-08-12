@@ -28,7 +28,7 @@
  *  14  commit2        shared   gate two
  *
  * `spend` stays in the spine deliberately -- paywall.html reads that answer to
- * anchor $79 against her own yearly outlay, so it must exist on every angle.
+ * anchor $49 against her own yearly outlay, so it must exist on every angle.
  */
 import { SCREENS as BASE, LOADING_STEPS } from './quiz-content.js';
 import { ANGLES, pickAngle } from './quiz-angles.js';

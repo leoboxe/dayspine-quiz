@@ -40,7 +40,7 @@
  *  11  tiles     something concrete and tappable
  *  12  data3     a different input type again
  *  13  spend     she authors the number
- *  14  payoff    her number, multiplied, against $79 once
+ *  14  payoff    her number, multiplied, against $49 once
  *  15  avoid     constraints, framed as care
  *  16  basics    age and sex, late, because they are admin
  *  17  build     the committing verb
@@ -301,7 +301,7 @@ A2: {
   },
   gap: {
     title: 'Two years of this.',
-    with: { n: '$79', label: 'Dayspine, once' },
+    with: { n: '$49', label: 'Dayspine, once' },
     without: { n: '$1,200', label: 'four apps, two years' },
     body: 'At $50 a month across a tracker, a training app, a fasting timer and a coach.',
     cta: 'Continue',
@@ -339,7 +339,7 @@ A2: {
   payoff: {
     lead: 'Here is what that is on its way to costing you.',
     calc: 'monthly',
-    tail: 'Dayspine is $79. Once. There is no second year of it.',
+    tail: 'Dayspine is $49. Once. There is no second year of it.',
     cta: 'Continue',
   },
   avoid: {
@@ -469,7 +469,7 @@ A3: {
   payoff: {
     lead: 'For counting what you had already eaten.',
     calc: 'monthly',
-    tail: 'Dayspine costs $79 once, and it decides first.',
+    tail: 'Dayspine costs $49 once, and it decides first.',
     cta: 'Continue',
   },
   avoid: {

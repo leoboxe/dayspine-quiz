@@ -24,7 +24,11 @@ export interface CatalogueItem {
 }
 
 export const CATALOGUE: Record<AddonSlug, CatalogueItem> = {
-  core: { slug: 'core', name: 'Dayspine — lifetime', amount: 7900, slot: 'core' },
+  /* $49 from 2026-08-12 (was $79). Leo's call: the buyer's reference price is set
+     by the app-store cohort (Cal AI $29.99/yr, Yazio $47.90/yr, MacroFactor
+     $71.99/yr), so $49 matches the number she expects to see for a YEAR while
+     still being one-time. The anchor stays $99. Add-ons deliberately unchanged. */
+  core: { slug: 'core', name: 'Dayspine — lifetime', amount: 4900, slot: 'core' },
   'printed-plan': { slug: 'printed-plan', name: 'The Printed Plan', amount: 900, slot: 'bump' },
   'partner-seat': { slug: 'partner-seat', name: 'Partner Seat', amount: 3900, slot: 'upsell' },
   'grocery-pro': { slug: 'grocery-pro', name: 'Grocery Pro', amount: 2900, slot: 'downsell' },

@@ -59,7 +59,7 @@ const BASE = process.env.FUNNEL_URL || 'http://localhost:8090';
   await page.locator('#bump').check();
   await page.waitForTimeout(900);
   const after = await page.locator('#total').textContent();
-  ck('bump re-prices the order and the wallet total', before === '$79.00' && after === '$88.00', `${before} -> ${after}`);
+  ck('bump re-prices the order and the wallet total', before === '$49.00' && after === '$58.00', `${before} -> ${after}`);
 
   const stripeFrames = page.frames().filter((f) => /js\.stripe\.com/.test(f.url()));
   ck('Payment Element mounts — the Apple/Google Pay surface', stripeFrames.length > 0, `${stripeFrames.length} frames`);

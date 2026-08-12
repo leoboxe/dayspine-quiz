@@ -39,7 +39,7 @@ const R=[];const ck=(n,ok,d='')=>{R.push(ok);console.log(`${ok?'PASS':'FAIL'}  $
   await page.locator('#bump').check({timeout:5000}).catch(()=>{});
   await page.waitForTimeout(600);
   const t1=await page.locator('#total').textContent().catch(()=>'');
-  ck('order bump updates the total',t0==='$79.00'&&t1==='$88.00',`${t0} -> ${t1}`);
+  ck('order bump updates the total',t0==='$49.00'&&t1==='$58.00',`${t0} -> ${t1}`);
 
   /* The Payment Element is a cross-origin iframe. Its presence IS the Apple
      Pay / Google Pay surface — dynamic payment methods render the wallets

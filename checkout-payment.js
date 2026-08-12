@@ -31,7 +31,7 @@ const SUPABASE_ANON = 'sb_publishable_HsWRfggaqcEPxG5CHT1wvg_9ImA8qZc';
 const STRIPE_PK =
   'pk_live_51SM9r7CV0B2KOmXXq0LDIO174zhFEaMqO3slq8HW8yFoZKedWrwIAYczzxCxQPYrVxoV6M3h1pjdUFoeMBAo71vL00coL89fee';
 
-const CORE = 79;
+const CORE = 49;
 const BUMP = 9;
 
 const bump = document.getElementById('bump');

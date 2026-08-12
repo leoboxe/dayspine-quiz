@@ -76,6 +76,16 @@ const BASE = process.env.FUNNEL_URL || 'https://quiz.dayspine.com';
     waitUntil: 'load', timeout: 60000,
   });
   await page.waitForTimeout(9000);
+
+  /* Open the payment sheet, which is what a buyer does next and what fires
+     AddToCart. Worth doing here because AddToCart is the ONLY read we have on
+     whether anyone engages with payment at all -- on day one, nine paywall views
+     produced zero of them and there was no server-side record to check it
+     against. Untested, it can silently stop firing and look identical to
+     "nobody was interested". */
+  await page.click('#open1').catch(() => page.click('#open2').catch(() => {}));
+  await page.waitForTimeout(4000);
+
   // The pixel batches; navigating away flushes whatever is still queued.
   await page.goto(`${BASE}/install.html`, { waitUntil: 'load', timeout: 45000 }).catch(() => {});
   await page.waitForTimeout(5000);
@@ -97,6 +107,17 @@ const BASE = process.env.FUNNEL_URL || 'https://quiz.dayspine.com';
   const ic = fired.filter((f) => f.ev === 'InitiateCheckout');
   ck('InitiateCheckout fires exactly once per paywall view',
     ic.length === 1, `${ic.length} fired`);
+
+  /* AddToCart must go through dayspineTrack, not a bare fbq -- the eventID is
+     the proof, because only dayspineTrack attaches one and only dayspineTrack
+     also posts the event to our own pipeline. A bare fbq would still fire this
+     event and still pass a naive "did AddToCart fire" check, while leaving us
+     with no server-side record of it. */
+  const atc = fired.filter((f) => f.ev === 'AddToCart');
+  ck('AddToCart fires when the payment sheet opens',
+    atc.length === 1, `${atc.length} fired`);
+  ck('AddToCart is server-mirrored (has a dedup id)',
+    atc.length === 1 && Boolean(atc[0].eid), atc[0] ? atc[0].eid || 'NO EID' : '-');
 
   /* A dedup id is only required where the SERVER also sends the event -- without
      one the server half lands as a second conversion instead of the same one

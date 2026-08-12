@@ -167,7 +167,17 @@
     var name = META_NAME[eventType];
     if (name && window.fbq) {
       try {
-        fbq('track', name, { content_category: ANGLE || undefined }, { eventID: eventId });
+        /* value/currency ride along when the caller has them. Meta needs a value
+           on AddToCart and Purchase to optimise toward revenue rather than event
+           count, and an event sent without one is not corrected later. Passed
+           only when present, so the events that have no natural value stay
+           exactly as they were. */
+        var custom = { content_category: ANGLE || undefined };
+        if (typeof data.value === 'number') {
+          custom.value = data.value;
+          custom.currency = data.currency || 'USD';
+        }
+        fbq('track', name, custom, { eventID: eventId });
       } catch (e) {}
     }
 
