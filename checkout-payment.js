@@ -63,14 +63,25 @@ const elements = stripe.elements({
 
 elements.create('payment', { layout: 'tabs' }).mount('#payment-element');
 
-/* Fired once the checkout is usable, not on page load: an InitiateCheckout that
-   counts people who never saw a payment form makes the funnel look healthier
-   than it is, and the optimiser learns from the difference. */
-try {
-  if (window.fbq) {
-    window.fbq('track', 'InitiateCheckout', { value: CORE, currency: 'USD' });
-  }
-} catch (e) {}
+/* NO InitiateCheckout here. It used to fire on this line, once the Stripe element
+   mounted, on the reasoning that an IC counting people who never saw a payment
+   form makes the funnel look healthier than it is.
+
+   That reasoning is sound and the placement was still wrong, because paywall.html
+   ALREADY fires InitiateCheckout on arrival (via dayspineTrack('paywall_reached'),
+   which the server mirrors under a shared eventID). This file loads on that same
+   page, so both fired for every visitor -- and this one passed no eventID, so Meta
+   had nothing to collapse them on. Measured 2026-08-12: Meta reported 13
+   InitiateCheckouts against 9 real paywall visits in our own events table, and
+   exactly 2x on A1_GroceryList_cold (8 reported, 4 real). With no purchases yet,
+   IC was the only signal the optimiser had, so the inflation was also differential
+   across ads -- the worst kind, because it distorts CBO allocation.
+
+   Do not re-add it. The "did she actually engage with payment" signal already
+   exists and is stronger: paywall.html fires AddToCart when the payment sheet is
+   opened, which is a deliberate tap rather than a mount. If that signal ever needs
+   a server half, route it through dayspineTrack('add_to_cart') -- already mapped in
+   forwarding.ts -- never through a bare fbq() call. */
 
 function total() {
   return CORE + (bump.checked ? BUMP : 0);

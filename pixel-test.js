@@ -68,7 +68,11 @@ const BASE = process.env.FUNNEL_URL || 'https://quiz.dayspine.com';
   });
 
   // Arrive the way a buyer from an ad does: with an fbclid.
-  await page.goto(`${BASE}/checkout.html?fbclid=TEST_CLICK_${Date.now()}`, {
+  // paywall.html, NOT checkout.html -- checkout.html is legacy and is reached only
+  // by results.html and old test scripts. Pointing this test at it meant the page
+  // every buyer actually sees was never covered, which is how the duplicate
+  // InitiateCheckout below survived to production.
+  await page.goto(`${BASE}/paywall.html?fbclid=TEST_CLICK_${Date.now()}`, {
     waitUntil: 'load', timeout: 60000,
   });
   await page.waitForTimeout(9000);
@@ -84,8 +88,27 @@ const BASE = process.env.FUNNEL_URL || 'https://quiz.dayspine.com';
     fired.length > 0 && fired.every((f) => f.id === '2125302081732347'),
     [...new Set(fired.map((f) => f.id))].join(', ') || '-');
 
-  ck('InitiateCheckout fires once the payment form is usable',
-    fired.some((f) => f.ev === 'InitiateCheckout'));
+  /* EXACTLY one, not "at least one". Two independent lines each fired their own
+     InitiateCheckout -- paywall.html on arrival (deduped against the server half
+     by eventID) and checkout-payment.js when the Stripe element mounted (no
+     eventID at all, so nothing could collapse them). Meta counted both: 13
+     against 9 real paywall visits on 2026-08-12, and exactly 2x on A1_cold.
+     `some()` could never see that. The count is the assertion. */
+  const ic = fired.filter((f) => f.ev === 'InitiateCheckout');
+  ck('InitiateCheckout fires exactly once per paywall view',
+    ic.length === 1, `${ic.length} fired`);
+
+  /* A dedup id is only required where the SERVER also sends the event -- without
+     one the server half lands as a second conversion instead of the same one
+     confirmed twice. Browser-only customs (InstallStepShown, BumpAdded,
+     Upsell1Accepted, DownsellAccepted) have no server counterpart, so asserting
+     an id on those would fail on correct behaviour. Keep this list in step with
+     META_EVENT_MAP in supabase/functions/_shared/forwarding.ts. */
+  const DEDUPED = ['PageView', 'ViewContent', 'Lead', 'InitiateCheckout', 'AddToCart', 'Purchase'];
+  const undeduped = fired.filter((f) => DEDUPED.includes(f.ev) && !f.eid);
+  ck('every server-mirrored event carries a dedup id',
+    undeduped.length === 0,
+    undeduped.map((f) => f.ev).join(', ') || 'all have one');
 
   // _fbc must be written from the fbclid, or the click is never attributed.
   const cookies = await ctx.cookies();
