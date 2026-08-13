@@ -1,0 +1,148 @@
+/**
+ * Turn a `quiz_answers` row into flat merge values for the templates.
+ *
+ * Three rules, each of which exists because of something found in the live data
+ * on 2026-08-13:
+ *
+ * 1. **Every value is a string, and never the string "undefined".** Templates
+ *    branch on `has*` flags, never on truthiness of the value itself.
+ *
+ * 2. **An absent number NEVER becomes a fallback presented as the lead's own.**
+ *    This is the rule that killed an earlier day-3 email built on `p.appSpend`,
+ *    a field collected only by A2 and A14, which no lead has ever come from. It
+ *    would have printed a category median as "the number you gave me" for all
+ *    22 leads.
+ *
+ * 3. **Both `p.` and `x.` prefixes are read.** The quiz split its namespace on
+ *    2026-08-10, so rows before that store `p.store` / `p.cookNights` and rows
+ *    after store `x.store` / `x.cookNights`. Both are live in the table right
+ *    now. Reading only one silently loses the field for half the leads.
+ *
+ * Answers are CODES ("toomuch", "over2", "costco"), so anything shown to a
+ * human is resolved through labels.json, which is generated from the quiz
+ * definitions themselves by scripts/build-quiz-labels.js.
+ */
+import LABELS from './labels.json' with { type: 'json' };
+import { packFor } from './packs.ts';
+
+export interface QuizRow {
+  email: string;
+  angle?: string | null;
+  answers: Record<string, unknown>;
+}
+
+export type Vars = Record<string, string>;
+
+const DAY_NAMES: Record<string, string> = {
+  mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday',
+  fri: 'Friday', sat: 'Saturday', sun: 'Sunday',
+};
+
+/** `p.store` and `x.store` are the same question either side of a refactor. */
+function pick(answers: Record<string, unknown>, bare: string): unknown {
+  return answers[`p.${bare}`] ?? answers[`x.${bare}`] ?? answers[bare];
+}
+
+/** Code to the exact wording the lead read on screen, for THIS angle. */
+function label(angle: string, key: string, value: unknown): string {
+  const forAngle = (LABELS as Record<string, Record<string, Record<string, string>>>)[angle];
+  const map = forAngle?.[key];
+  if (!map) return '';
+  if (Array.isArray(value)) {
+    return value.map((v) => map[String(v)]).filter(Boolean).join(', ');
+  }
+  return map[String(value)] ?? '';
+}
+
+/** "Monday, Tuesday and Thursday" rather than "mon, tue, thu". */
+function listDays(v: unknown): string {
+  if (!Array.isArray(v)) return '';
+  const named = v.map((d) => DAY_NAMES[String(d)]).filter(Boolean);
+  if (named.length === 0) return '';
+  if (named.length === 1) return named[0];
+  return `${named.slice(0, -1).join(', ')} and ${named[named.length - 1]}`;
+}
+
+const num = (v: unknown): number | null => {
+  const n = Number(v);
+  return v === undefined || v === null || v === '' || Number.isNaN(n) ? null : n;
+};
+
+export function resolve(row: QuizRow): Vars {
+  const a = row.answers || {};
+  const angle = row.angle || 'default';
+  const pack = packFor(row.angle);
+
+  const budget = num(pick(a, 'weeklyBudget'));
+  const children = num(pick(a, 'children')) ?? 0;
+  const adults = num(pick(a, 'otherAdults')) ?? 0;
+  const household = 1 + children + adults;
+  const weight = num(pick(a, 'weightLb'));
+  const target = num(pick(a, 'targetLb'));
+
+  const nights = pick(a, 'cookNights');
+  const nightList = listDays(nights);
+  const nightCount = Array.isArray(nights) ? nights.length : 0;
+
+  const allergens = pick(a, 'allergens');
+  const allergenList = Array.isArray(allergens) ? label(angle, 'p.allergens', allergens) : '';
+
+  const barrierRaw = a[pack.barrierKey];
+  const barrierLabel = label(angle, pack.barrierKey, barrierRaw);
+
+  const storeLabel = label(angle, 'x.store', pick(a, 'store'))
+    || label(angle, 'p.store', pick(a, 'store'));
+
+  const v: Vars = {
+    angle,
+    villain: pack.villain,
+    opening: pack.opening,
+    differentiator: pack.differentiator,
+    died: pack.died,
+
+    /* Their own words on what went wrong. The only field every angle collects,
+       and the strongest thing in the whole dataset to write from. */
+    hasBarrier: String(Boolean(barrierLabel)),
+    barrier: barrierLabel,
+
+    hasBudget: String(budget !== null),
+    budget: budget !== null ? `$${budget}` : '',
+
+    hasStore: String(Boolean(storeLabel)),
+    store: storeLabel,
+
+    hasCookNights: String(nightCount > 0),
+    cookNights: nightList,
+    cookNightCount: nightCount > 0 ? String(nightCount) : '',
+
+    hasHousehold: String(household > 1),
+    householdSize: String(household),
+
+    hasDiet: String(Boolean(pick(a, 'diet'))),
+    diet: String(pick(a, 'diet') ?? ''),
+
+    hasAllergens: String(Boolean(allergenList)),
+    allergens: allergenList,
+
+    hasWeightGoal: String(weight !== null && target !== null && weight !== target),
+    weightLb: weight !== null ? String(weight) : '',
+    targetLb: target !== null ? String(target) : '',
+    poundsToGo: weight !== null && target !== null ? String(Math.abs(weight - target)) : '',
+
+    goal: String(pick(a, 'goal') ?? 'maintain'),
+
+    hasSunday: String(Boolean(label(angle, 'sunday', a.sunday))),
+    sunday: label(angle, 'sunday', a.sunday),
+
+    hasListHow: String(Boolean(label(angle, 'listhow', a.listhow))),
+    listhow: label(angle, 'listhow', a.listhow),
+  };
+
+  /* Belt and braces. A single undefined reaching a template renders the literal
+     word "undefined" in somebody's inbox, which is the most expensive kind of
+     typo: it tells the reader nothing here was written for them. */
+  for (const k of Object.keys(v)) {
+    if (v[k] === undefined || v[k] === null || v[k] === 'undefined' || v[k] === 'NaN') v[k] = '';
+  }
+  return v;
+}

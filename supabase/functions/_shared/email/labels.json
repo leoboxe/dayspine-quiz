@@ -1,0 +1,1929 @@
+{
+  "A1": {
+    "listhow": {
+      "hand": "By hand, off recipes",
+      "notes": "A notes app, as things occur to me",
+      "memory": "I wing it in the aisles",
+      "app": "An app attempts it for me"
+    },
+    "x.shopCadence": {
+      "weekly": "Once a week",
+      "twice": "A couple of times a week",
+      "often": "Little and often",
+      "chaos": "There is no rhythm to it"
+    },
+    "barrier": {
+      "forget": "I forget the one thing dinner needed",
+      "amounts": "Right food, wrong amounts",
+      "toomuch": "I buy far more than we get through",
+      "rots": "Half of it goes off before I use it"
+    },
+    "yes": {
+      "definitely": "Definitely",
+      "mostly": "Most of it",
+      "some": "Some of it",
+      "no": "Not really"
+    },
+    "sunday": {
+      "over2": "Over two hours",
+      "1-2": "An hour or two",
+      "under1": "Under an hour",
+      "avoid": "I have started avoiding it"
+    },
+    "x.store": {
+      "walmart": "Walmart",
+      "aldi": "Aldi",
+      "kroger": "Kroger",
+      "target": "Target",
+      "costco": "Costco",
+      "trader": "Trader Joe's",
+      "safeway": "Safeway",
+      "publix": "Publix",
+      "other": "Somewhere else"
+    },
+    "x.cookNights": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "x.cookTime": {
+      "15": "Fifteen minutes",
+      "30": "About half an hour",
+      "45": "Up to forty-five",
+      "enjoy": "I like cooking, take your time"
+    },
+    "p.allergens": {
+      "dairy": "Dairy",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "gluten": "Gluten",
+      "peanuts": "Peanuts",
+      "shellfish": "Shellfish",
+      "soy": "Soy",
+      "treeNuts": "Tree nuts",
+      "none": "Nothing"
+    },
+    "p.avoid": {
+      "Aubergine": "Aubergine",
+      "Beetroot": "Beetroot",
+      "Brussels sprouts": "Sprouts",
+      "Cottage cheese": "Cottage cheese",
+      "Mackerel, cooked": "Mackerel",
+      "Mushrooms": "Mushrooms",
+      "Olives": "Olives",
+      "Quark": "Quark",
+      "Tofu, firm": "Tofu",
+      "Tuna, canned in water": "Tinned tuna",
+      "none": "Nothing"
+    },
+    "p.like": {
+      "Chicken breast, cooked": "Chicken",
+      "Beef sirloin steak, cooked": "Beef",
+      "Salmon fillet, cooked": "Salmon",
+      "Egg, whole": "Eggs",
+      "Wholemeal pasta, cooked": "Pasta",
+      "White rice, cooked": "Rice",
+      "Greek yoghurt 0%": "Greek yoghurt",
+      "Avocado": "Avocado",
+      "Sweet potato, baked": "Sweet potato"
+    },
+    "p.diet": {
+      "standard": "Anything",
+      "highProtein": "Lots of protein",
+      "vegetarian": "Vegetarian",
+      "dairyFree": "Dairy free"
+    },
+    "aim": {
+      "lose": "Aim them at losing weight",
+      "gain": "Aim them at building muscle",
+      "none": "Just plan them well"
+    },
+    "p.pace": {
+      "steady": "Steady",
+      "balanced": "Balanced",
+      "aggressive": "Aggressive"
+    },
+    "wantsTraining": {
+      "yes": "Yes, build that as well",
+      "no": "Just the food for now"
+    },
+    "p.location": {
+      "gym": "At a gym",
+      "home": "At home"
+    },
+    "p.homeGear": {
+      "weights": "Dumbbells or bands",
+      "bodyweight": "Just my bodyweight"
+    },
+    "p.daysPerWeek": {
+      "3": "3 days",
+      "4": "4 days",
+      "5": "5 days",
+      "7": "Every day"
+    },
+    "p.pilates": {
+      "yes": "Yes, layer it in",
+      "no": "Just the training"
+    },
+    "p.pilatesKit": {
+      "dumbbells": "Dumbbells 1, 4 kg",
+      "ankle-weights": "Ankle weights",
+      "wrist-weights": "Wrist weights",
+      "pilates-ball": "Pilates ball",
+      "yoga-block": "Yoga block",
+      "band": "Resistance band",
+      "none": "Just a mat"
+    },
+    "p.focus": {
+      "glutes": "Glutes",
+      "hamstrings": "Hamstrings",
+      "quads": "Quads",
+      "abs": "Abs",
+      "shoulders": "Shoulders",
+      "backOfArms": "Arms",
+      "upperBack": "Upper back",
+      "chest": "Chest"
+    }
+  },
+  "A2": {
+    "billing": {
+      "0": "None, I cancelled them all",
+      "1": "One",
+      "2": "Two",
+      "3+": "Three or more"
+    },
+    "stack": {
+      "tracker": "Calorie tracker",
+      "workout": "Training app",
+      "fasting": "Fasting timer",
+      "recipes": "Recipes",
+      "coach": "A coach",
+      "gym": "Gym",
+      "sleep": "Sleep",
+      "mind": "Journalling",
+      "none": "None of them"
+    },
+    "barrier": {
+      "paywall": "The good part moved behind another paywall",
+      "unused": "I stopped opening it and kept paying",
+      "trial": "A trial charged me before I noticed",
+      "cancel": "Cancelling was deliberately awkward"
+    },
+    "yes": {
+      "definitely": "Obviously",
+      "mostly": "If it is actually complete",
+      "some": "Depends on the price",
+      "no": "I do not mind subscribing"
+    },
+    "howlong": {
+      "years": "Years. I stopped counting",
+      "1-2": "A year or two",
+      "months": "A few months",
+      "new": "I am just starting out"
+    },
+    "wantsFood": {
+      "yes": "Yes, build the food",
+      "no": "Skip the food for now"
+    },
+    "p.allergens": {
+      "dairy": "Dairy",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "gluten": "Gluten",
+      "peanuts": "Peanuts",
+      "shellfish": "Shellfish",
+      "soy": "Soy",
+      "treeNuts": "Tree nuts",
+      "none": "Nothing"
+    },
+    "p.avoid": {
+      "Aubergine": "Aubergine",
+      "Beetroot": "Beetroot",
+      "Brussels sprouts": "Sprouts",
+      "Cottage cheese": "Cottage cheese",
+      "Mackerel, cooked": "Mackerel",
+      "Mushrooms": "Mushrooms",
+      "Olives": "Olives",
+      "Quark": "Quark",
+      "Tofu, firm": "Tofu",
+      "Tuna, canned in water": "Tinned tuna",
+      "none": "Nothing"
+    },
+    "p.like": {
+      "Chicken breast, cooked": "Chicken",
+      "Beef sirloin steak, cooked": "Beef",
+      "Salmon fillet, cooked": "Salmon",
+      "Egg, whole": "Eggs",
+      "Wholemeal pasta, cooked": "Pasta",
+      "White rice, cooked": "Rice",
+      "Greek yoghurt 0%": "Greek yoghurt",
+      "Avocado": "Avocado",
+      "Sweet potato, baked": "Sweet potato"
+    },
+    "p.diet": {
+      "standard": "Anything",
+      "highProtein": "Lots of protein",
+      "vegetarian": "Vegetarian",
+      "dairyFree": "Dairy free"
+    },
+    "aim": {
+      "lose": "Aim it at losing weight",
+      "gain": "Aim it at building muscle",
+      "none": "Just plan it well"
+    },
+    "p.pace": {
+      "steady": "Steady",
+      "balanced": "Balanced",
+      "aggressive": "Aggressive"
+    },
+    "wantsTraining": {
+      "yes": "Yes, build the training",
+      "no": "Skip the training for now"
+    },
+    "p.location": {
+      "gym": "At a gym",
+      "home": "At home"
+    },
+    "p.homeGear": {
+      "weights": "Dumbbells or bands",
+      "bodyweight": "Just my bodyweight"
+    },
+    "p.daysPerWeek": {
+      "3": "3 days",
+      "4": "4 days",
+      "5": "5 days",
+      "7": "Every day"
+    },
+    "p.pilates": {
+      "yes": "Yes, layer it in",
+      "no": "Just the training"
+    },
+    "p.pilatesKit": {
+      "dumbbells": "Dumbbells 1, 4 kg",
+      "ankle-weights": "Ankle weights",
+      "wrist-weights": "Wrist weights",
+      "pilates-ball": "Pilates ball",
+      "yoga-block": "Yoga block",
+      "band": "Resistance band",
+      "none": "Just a mat"
+    },
+    "p.focus": {
+      "glutes": "Glutes",
+      "hamstrings": "Hamstrings",
+      "quads": "Quads",
+      "abs": "Abs",
+      "shoulders": "Shoulders",
+      "backOfArms": "Arms",
+      "upperBack": "Upper back",
+      "chest": "Chest"
+    }
+  },
+  "A3": {
+    "tonight": {
+      "no": "No idea yet",
+      "vaguely": "Vaguely, I will improvise",
+      "same": "The same thing I always eat",
+      "yes": "Yes, it is planned"
+    },
+    "barrier": {
+      "count": "Counted what I had already eaten",
+      "nag": "Reminded me I was behind",
+      "nothing": "Sat there until I opened them",
+      "plan": "Given me a plan"
+    },
+    "sixpm": {
+      "stare": "I stare into the fridge",
+      "order": "I order something",
+      "repeat": "The same three meals",
+      "planned": "I already know"
+    },
+    "yes": {
+      "definitely": "Completely",
+      "mostly": "Mostly",
+      "some": "A bit",
+      "no": "I quite like deciding"
+    },
+    "x.mealsPerDay": {
+      "2": "Two, I skip breakfast",
+      "3": "Three",
+      "4": "Three and a snack",
+      "dinner": "Just dinner"
+    },
+    "x.store": {
+      "walmart": "Walmart",
+      "aldi": "Aldi",
+      "kroger": "Kroger",
+      "target": "Target",
+      "costco": "Costco",
+      "trader": "Trader Joe's",
+      "safeway": "Safeway",
+      "publix": "Publix",
+      "other": "Somewhere else"
+    },
+    "x.cookNights": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "x.cookTime": {
+      "15": "Fifteen minutes",
+      "30": "About half an hour",
+      "45": "Up to forty-five",
+      "enjoy": "I enjoy cooking"
+    },
+    "p.allergens": {
+      "dairy": "Dairy",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "gluten": "Gluten",
+      "peanuts": "Peanuts",
+      "shellfish": "Shellfish",
+      "soy": "Soy",
+      "treeNuts": "Tree nuts",
+      "none": "Nothing"
+    },
+    "p.avoid": {
+      "Aubergine": "Aubergine",
+      "Beetroot": "Beetroot",
+      "Brussels sprouts": "Sprouts",
+      "Cottage cheese": "Cottage cheese",
+      "Mackerel, cooked": "Mackerel",
+      "Mushrooms": "Mushrooms",
+      "Olives": "Olives",
+      "Quark": "Quark",
+      "Tofu, firm": "Tofu",
+      "Tuna, canned in water": "Tinned tuna",
+      "none": "Nothing"
+    },
+    "p.like": {
+      "Chicken breast, cooked": "Chicken",
+      "Beef sirloin steak, cooked": "Beef",
+      "Salmon fillet, cooked": "Salmon",
+      "Egg, whole": "Eggs",
+      "Wholemeal pasta, cooked": "Pasta",
+      "White rice, cooked": "Rice",
+      "Greek yoghurt 0%": "Greek yoghurt",
+      "Avocado": "Avocado",
+      "Sweet potato, baked": "Sweet potato"
+    },
+    "p.diet": {
+      "standard": "Anything",
+      "highProtein": "Lots of protein",
+      "vegetarian": "Vegetarian",
+      "dairyFree": "Dairy free"
+    },
+    "aim": {
+      "lose": "Aim it at losing weight",
+      "gain": "Aim it at building muscle",
+      "none": "Just decide it for me"
+    },
+    "p.pace": {
+      "steady": "Steady",
+      "balanced": "Balanced",
+      "aggressive": "Aggressive"
+    },
+    "wantsTraining": {
+      "yes": "Yes, build that as well",
+      "no": "Just the food for now"
+    },
+    "p.location": {
+      "gym": "At a gym",
+      "home": "At home"
+    },
+    "p.homeGear": {
+      "weights": "Dumbbells or bands",
+      "bodyweight": "Just my bodyweight"
+    },
+    "p.daysPerWeek": {
+      "3": "3 days",
+      "4": "4 days",
+      "5": "5 days",
+      "7": "Every day"
+    },
+    "p.pilates": {
+      "yes": "Yes, layer it in",
+      "no": "Just the training"
+    },
+    "p.pilatesKit": {
+      "dumbbells": "Dumbbells 1, 4 kg",
+      "ankle-weights": "Ankle weights",
+      "wrist-weights": "Wrist weights",
+      "pilates-ball": "Pilates ball",
+      "yoga-block": "Yoga block",
+      "band": "Resistance band",
+      "none": "Just a mat"
+    },
+    "p.focus": {
+      "glutes": "Glutes",
+      "hamstrings": "Hamstrings",
+      "quads": "Quads",
+      "abs": "Abs",
+      "shoulders": "Shoulders",
+      "backOfArms": "Arms",
+      "upperBack": "Upper back",
+      "chest": "Chest"
+    }
+  },
+  "A4": {
+    "split": {
+      "two": "Two different apps",
+      "apphead": "An app for training, my head for food",
+      "paper": "A program on paper, food improvised",
+      "one": "One place"
+    },
+    "programs": {
+      "5+": "Five or more",
+      "3-4": "Three or four",
+      "1-2": "One or two",
+      "none": "Never followed a real one"
+    },
+    "barrier": {
+      "nothing": "Almost nothing, physically",
+      "strength": "I got stronger, but I look the same",
+      "unfinished": "I did not finish it",
+      "drifted": "It worked, then I drifted"
+    },
+    "yes": {
+      "definitely": "Entirely",
+      "mostly": "Mostly",
+      "some": "A bit",
+      "no": "I like managing it myself"
+    },
+    "p.location": {
+      "gym": "At a gym",
+      "home": "At home"
+    },
+    "p.homeGear": {
+      "weights": "Dumbbells or bands",
+      "bodyweight": "Just my bodyweight"
+    },
+    "p.daysPerWeek": {
+      "3": "3 days",
+      "4": "4 days",
+      "5": "5 days",
+      "7": "Every day"
+    },
+    "p.pilates": {
+      "yes": "Yes, layer it in",
+      "no": "Just the training"
+    },
+    "p.pilatesKit": {
+      "dumbbells": "Dumbbells 1, 4 kg",
+      "ankle-weights": "Ankle weights",
+      "wrist-weights": "Wrist weights",
+      "pilates-ball": "Pilates ball",
+      "yoga-block": "Yoga block",
+      "band": "Resistance band",
+      "none": "Just a mat"
+    },
+    "p.focus": {
+      "glutes": "Glutes",
+      "hamstrings": "Hamstrings",
+      "quads": "Quads",
+      "abs": "Abs",
+      "shoulders": "Shoulders",
+      "backOfArms": "Arms",
+      "upperBack": "Upper back",
+      "chest": "Chest"
+    },
+    "wantsFood": {
+      "yes": "Yes, do the food too",
+      "no": "Just the training for now"
+    },
+    "p.allergens": {
+      "dairy": "Dairy",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "gluten": "Gluten",
+      "peanuts": "Peanuts",
+      "shellfish": "Shellfish",
+      "soy": "Soy",
+      "treeNuts": "Tree nuts",
+      "none": "Nothing"
+    },
+    "p.avoid": {
+      "Aubergine": "Aubergine",
+      "Beetroot": "Beetroot",
+      "Brussels sprouts": "Sprouts",
+      "Cottage cheese": "Cottage cheese",
+      "Mackerel, cooked": "Mackerel",
+      "Mushrooms": "Mushrooms",
+      "Olives": "Olives",
+      "Quark": "Quark",
+      "Tofu, firm": "Tofu",
+      "Tuna, canned in water": "Tinned tuna",
+      "none": "Nothing"
+    },
+    "p.like": {
+      "Chicken breast, cooked": "Chicken",
+      "Beef sirloin steak, cooked": "Beef",
+      "Salmon fillet, cooked": "Salmon",
+      "Egg, whole": "Eggs",
+      "Wholemeal pasta, cooked": "Pasta",
+      "White rice, cooked": "Rice",
+      "Greek yoghurt 0%": "Greek yoghurt",
+      "Avocado": "Avocado",
+      "Sweet potato, baked": "Sweet potato"
+    },
+    "p.diet": {
+      "standard": "Anything",
+      "highProtein": "Lots of protein",
+      "vegetarian": "Vegetarian",
+      "dairyFree": "Dairy free"
+    },
+    "aim": {
+      "lose": "Losing fat, keeping strength",
+      "gain": "Building muscle",
+      "none": "Neither, just make it coherent"
+    },
+    "p.pace": {
+      "steady": "Steady",
+      "balanced": "Balanced",
+      "aggressive": "Aggressive"
+    }
+  },
+  "A5": {
+    "barrier": {
+      "time": "The trip there and back",
+      "kids": "Childcare",
+      "money": "Paying for something I barely use",
+      "room": "The room itself",
+      "energy": "No energy by then",
+      "nothing": "Nothing, I just do not go"
+    },
+    "p.sessionMinutes": {
+      "15": "Fifteen minutes",
+      "45": "Forty-five, if it is planned",
+      "20-30": "Twenty to thirty",
+      "varies": "Wildly different every day"
+    },
+    "homefail": {
+      "what": "I never knew what to actually do",
+      "bored": "Same four moves, got bored",
+      "form": "I was not sure I was doing it right",
+      "stopped": "Life happened and it stopped"
+    },
+    "yes": {
+      "definitely": "Most days, yes",
+      "mostly": "A lot more than now",
+      "some": "Some weeks",
+      "no": "Probably not"
+    },
+    "p.location": {
+      "gym": "At a gym",
+      "home": "At home"
+    },
+    "p.homeGear": {
+      "weights": "Dumbbells or bands",
+      "bodyweight": "Just my bodyweight"
+    },
+    "p.daysPerWeek": {
+      "3": "3 days",
+      "4": "4 days",
+      "5": "5 days",
+      "7": "Every day"
+    },
+    "p.pilates": {
+      "yes": "Yes, layer it in",
+      "no": "Just the training"
+    },
+    "p.pilatesKit": {
+      "dumbbells": "Dumbbells 1, 4 kg",
+      "ankle-weights": "Ankle weights",
+      "wrist-weights": "Wrist weights",
+      "pilates-ball": "Pilates ball",
+      "yoga-block": "Yoga block",
+      "band": "Resistance band",
+      "none": "Just a mat"
+    },
+    "p.focus": {
+      "glutes": "Glutes",
+      "hamstrings": "Hamstrings",
+      "quads": "Quads",
+      "abs": "Abs",
+      "shoulders": "Shoulders",
+      "backOfArms": "Arms",
+      "upperBack": "Upper back",
+      "chest": "Chest"
+    },
+    "wantsFood": {
+      "yes": "Yes, do the food too",
+      "no": "Just the training for now"
+    },
+    "p.allergens": {
+      "dairy": "Dairy",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "gluten": "Gluten",
+      "peanuts": "Peanuts",
+      "shellfish": "Shellfish",
+      "soy": "Soy",
+      "treeNuts": "Tree nuts",
+      "none": "Nothing"
+    },
+    "p.avoid": {
+      "Aubergine": "Aubergine",
+      "Beetroot": "Beetroot",
+      "Brussels sprouts": "Sprouts",
+      "Cottage cheese": "Cottage cheese",
+      "Mackerel, cooked": "Mackerel",
+      "Mushrooms": "Mushrooms",
+      "Olives": "Olives",
+      "Quark": "Quark",
+      "Tofu, firm": "Tofu",
+      "Tuna, canned in water": "Tinned tuna",
+      "none": "Nothing"
+    },
+    "p.like": {
+      "Chicken breast, cooked": "Chicken",
+      "Beef sirloin steak, cooked": "Beef",
+      "Salmon fillet, cooked": "Salmon",
+      "Egg, whole": "Eggs",
+      "Wholemeal pasta, cooked": "Pasta",
+      "White rice, cooked": "Rice",
+      "Greek yoghurt 0%": "Greek yoghurt",
+      "Avocado": "Avocado",
+      "Sweet potato, baked": "Sweet potato"
+    },
+    "p.diet": {
+      "standard": "Anything",
+      "highProtein": "Lots of protein",
+      "vegetarian": "Vegetarian",
+      "dairyFree": "Dairy free"
+    },
+    "aim": {
+      "lose": "Aim it at losing weight",
+      "gain": "Aim it at building muscle",
+      "none": "Just get me moving"
+    },
+    "p.pace": {
+      "steady": "Steady",
+      "balanced": "Balanced",
+      "aggressive": "Aggressive"
+    }
+  },
+  "A6": {
+    "restarts": {
+      "10+": "More than ten. I lost count",
+      "4-9": "Four or five",
+      "2-3": "Two or three",
+      "once": "This is the first proper go"
+    },
+    "howfar": {
+      "days": "A few days",
+      "2wk": "Two weeks or so",
+      "month": "About a month",
+      "longer": "Longer, then it fades"
+    },
+    "barrier": {
+      "meal": "One meal off plan, and the week goes",
+      "weekend": "A weekend. Every time",
+      "busy": "A genuinely chaotic week",
+      "bored": "It just gets boring"
+    },
+    "yes": {
+      "definitely": "Almost certainly",
+      "mostly": "Probably",
+      "some": "Maybe",
+      "no": "It is not the scoring, it is me"
+    },
+    "hardest": {
+      "food": "The food",
+      "training": "The training",
+      "both": "Both together",
+      "mood": "Neither, my head goes first"
+    },
+    "wantsFood": {
+      "yes": "Yes, build the food",
+      "no": "Skip the food for now"
+    },
+    "p.allergens": {
+      "dairy": "Dairy",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "gluten": "Gluten",
+      "peanuts": "Peanuts",
+      "shellfish": "Shellfish",
+      "soy": "Soy",
+      "treeNuts": "Tree nuts",
+      "none": "Nothing"
+    },
+    "p.avoid": {
+      "Aubergine": "Aubergine",
+      "Beetroot": "Beetroot",
+      "Brussels sprouts": "Sprouts",
+      "Cottage cheese": "Cottage cheese",
+      "Mackerel, cooked": "Mackerel",
+      "Mushrooms": "Mushrooms",
+      "Olives": "Olives",
+      "Quark": "Quark",
+      "Tofu, firm": "Tofu",
+      "Tuna, canned in water": "Tinned tuna",
+      "none": "Nothing"
+    },
+    "p.like": {
+      "Chicken breast, cooked": "Chicken",
+      "Beef sirloin steak, cooked": "Beef",
+      "Salmon fillet, cooked": "Salmon",
+      "Egg, whole": "Eggs",
+      "Wholemeal pasta, cooked": "Pasta",
+      "White rice, cooked": "Rice",
+      "Greek yoghurt 0%": "Greek yoghurt",
+      "Avocado": "Avocado",
+      "Sweet potato, baked": "Sweet potato"
+    },
+    "p.diet": {
+      "standard": "Anything",
+      "highProtein": "Lots of protein",
+      "vegetarian": "Vegetarian",
+      "dairyFree": "Dairy free"
+    },
+    "aim": {
+      "lose": "Aim it at losing weight",
+      "gain": "Aim it at building muscle",
+      "none": "Just keep me consistent"
+    },
+    "p.pace": {
+      "steady": "Steady",
+      "balanced": "Balanced",
+      "aggressive": "Aggressive"
+    },
+    "wantsTraining": {
+      "yes": "Yes, build the training",
+      "no": "Skip the training for now"
+    },
+    "p.location": {
+      "gym": "At a gym",
+      "home": "At home"
+    },
+    "p.homeGear": {
+      "weights": "Dumbbells or bands",
+      "bodyweight": "Just my bodyweight"
+    },
+    "p.daysPerWeek": {
+      "3": "3 days",
+      "4": "4 days",
+      "5": "5 days",
+      "7": "Every day"
+    },
+    "p.pilates": {
+      "yes": "Yes, layer it in",
+      "no": "Just the training"
+    },
+    "p.pilatesKit": {
+      "dumbbells": "Dumbbells 1, 4 kg",
+      "ankle-weights": "Ankle weights",
+      "wrist-weights": "Wrist weights",
+      "pilates-ball": "Pilates ball",
+      "yoga-block": "Yoga block",
+      "band": "Resistance band",
+      "none": "Just a mat"
+    },
+    "p.focus": {
+      "glutes": "Glutes",
+      "hamstrings": "Hamstrings",
+      "quads": "Quads",
+      "abs": "Abs",
+      "shoulders": "Shoulders",
+      "backOfArms": "Arms",
+      "upperBack": "Upper back",
+      "chest": "Chest"
+    }
+  },
+  "A7": {
+    "who": {
+      "partner-diff": "A partner on completely different goals",
+      "partner-same": "A partner, roughly the same",
+      "kids": "Kids, plus me",
+      "family": "A whole household"
+    },
+    "barrier": {
+      "two": "Two. Every night",
+      "sometimes": "Two a few times a week",
+      "compromise": "One, and I compromise mine",
+      "one": "One that works for everyone"
+    },
+    "cost": {
+      "time": "An hour of my evening",
+      "waste": "Food in the bin",
+      "money": "A much bigger shop",
+      "plan": "My own plan slipping",
+      "peace": "The mood in the kitchen"
+    },
+    "yes": {
+      "definitely": "Completely",
+      "mostly": "Most nights",
+      "some": "Some nights",
+      "no": "We are too far apart for that"
+    },
+    "x.store": {
+      "walmart": "Walmart",
+      "aldi": "Aldi",
+      "kroger": "Kroger",
+      "target": "Target",
+      "costco": "Costco",
+      "trader": "Trader Joes",
+      "safeway": "Safeway",
+      "publix": "Publix",
+      "other": "Somewhere else"
+    },
+    "x.cookNights": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "x.cookTime": {
+      "15": "Fifteen minutes",
+      "30": "About half an hour",
+      "45": "Up to forty-five",
+      "enjoy": "I like cooking, take your time"
+    },
+    "p.allergens": {
+      "dairy": "Dairy",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "gluten": "Gluten",
+      "peanuts": "Peanuts",
+      "shellfish": "Shellfish",
+      "soy": "Soy",
+      "treeNuts": "Tree nuts",
+      "none": "Nothing"
+    },
+    "p.avoid": {
+      "Aubergine": "Aubergine",
+      "Beetroot": "Beetroot",
+      "Brussels sprouts": "Sprouts",
+      "Cottage cheese": "Cottage cheese",
+      "Mackerel, cooked": "Mackerel",
+      "Mushrooms": "Mushrooms",
+      "Olives": "Olives",
+      "Quark": "Quark",
+      "Tofu, firm": "Tofu",
+      "Tuna, canned in water": "Tinned tuna",
+      "none": "Nothing"
+    },
+    "p.like": {
+      "Chicken breast, cooked": "Chicken",
+      "Beef sirloin steak, cooked": "Beef",
+      "Salmon fillet, cooked": "Salmon",
+      "Egg, whole": "Eggs",
+      "Wholemeal pasta, cooked": "Pasta",
+      "White rice, cooked": "Rice",
+      "Greek yoghurt 0%": "Greek yoghurt",
+      "Avocado": "Avocado",
+      "Sweet potato, baked": "Sweet potato"
+    },
+    "p.diet": {
+      "standard": "Anything",
+      "highProtein": "Lots of protein",
+      "vegetarian": "Vegetarian",
+      "dairyFree": "Dairy free"
+    },
+    "aim": {
+      "lose": "Aim it at losing weight",
+      "gain": "Aim it at building muscle",
+      "none": "No, just feed us properly"
+    },
+    "p.pace": {
+      "steady": "Steady",
+      "balanced": "Balanced",
+      "aggressive": "Aggressive"
+    },
+    "wantsTraining": {
+      "yes": "Yes, build that as well",
+      "no": "Just the food for now"
+    },
+    "p.location": {
+      "gym": "At a gym",
+      "home": "At home"
+    },
+    "p.homeGear": {
+      "weights": "Dumbbells or bands",
+      "bodyweight": "Just my bodyweight"
+    },
+    "p.daysPerWeek": {
+      "3": "3 days",
+      "4": "4 days",
+      "5": "5 days",
+      "7": "Every day"
+    },
+    "p.pilates": {
+      "yes": "Yes, layer it in",
+      "no": "Just the training"
+    },
+    "p.pilatesKit": {
+      "dumbbells": "Dumbbells 1, 4 kg",
+      "ankle-weights": "Ankle weights",
+      "wrist-weights": "Wrist weights",
+      "pilates-ball": "Pilates ball",
+      "yoga-block": "Yoga block",
+      "band": "Resistance band",
+      "none": "Just a mat"
+    },
+    "p.focus": {
+      "glutes": "Glutes",
+      "hamstrings": "Hamstrings",
+      "quads": "Quads",
+      "abs": "Abs",
+      "shoulders": "Shoulders",
+      "backOfArms": "Arms",
+      "upperBack": "Upper back",
+      "chest": "Chest"
+    }
+  },
+  "A8": {
+    "stalled": {
+      "months": "Months",
+      "4-8wk": "A month or two",
+      "2-3wk": "Two or three weeks",
+      "moving": "It is actually moving"
+    },
+    "weighin": {
+      "daily": "Most days",
+      "weekly": "Once a week",
+      "sometimes": "When I feel brave",
+      "stopped": "I stopped. It was demoralising"
+    },
+    "barrier": {
+      "harder": "The same thing, harder",
+      "cut": "Cut calories further",
+      "switch": "Switch plan entirely",
+      "quit": "Lose faith and drift off it"
+    },
+    "yes": {
+      "definitely": "Far more",
+      "mostly": "Probably",
+      "some": "A bit",
+      "no": "I would rather decide myself"
+    },
+    "p.pace": {
+      "steady": "Steady",
+      "balanced": "Balanced",
+      "aggressive": "Aggressive"
+    },
+    "wantsFood": {
+      "yes": "Yes, build the food",
+      "no": "Skip the food for now"
+    },
+    "p.allergens": {
+      "dairy": "Dairy",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "gluten": "Gluten",
+      "peanuts": "Peanuts",
+      "shellfish": "Shellfish",
+      "soy": "Soy",
+      "treeNuts": "Tree nuts",
+      "none": "Nothing"
+    },
+    "p.avoid": {
+      "Aubergine": "Aubergine",
+      "Beetroot": "Beetroot",
+      "Brussels sprouts": "Sprouts",
+      "Cottage cheese": "Cottage cheese",
+      "Mackerel, cooked": "Mackerel",
+      "Mushrooms": "Mushrooms",
+      "Olives": "Olives",
+      "Quark": "Quark",
+      "Tofu, firm": "Tofu",
+      "Tuna, canned in water": "Tinned tuna",
+      "none": "Nothing"
+    },
+    "p.like": {
+      "Chicken breast, cooked": "Chicken",
+      "Beef sirloin steak, cooked": "Beef",
+      "Salmon fillet, cooked": "Salmon",
+      "Egg, whole": "Eggs",
+      "Wholemeal pasta, cooked": "Pasta",
+      "White rice, cooked": "Rice",
+      "Greek yoghurt 0%": "Greek yoghurt",
+      "Avocado": "Avocado",
+      "Sweet potato, baked": "Sweet potato"
+    },
+    "p.diet": {
+      "standard": "Anything",
+      "highProtein": "Lots of protein",
+      "vegetarian": "Vegetarian",
+      "dairyFree": "Dairy free"
+    },
+    "wantsTraining": {
+      "yes": "Yes, build the training",
+      "no": "Skip the training for now"
+    },
+    "p.location": {
+      "gym": "At a gym",
+      "home": "At home"
+    },
+    "p.homeGear": {
+      "weights": "Dumbbells or bands",
+      "bodyweight": "Just my bodyweight"
+    },
+    "p.daysPerWeek": {
+      "3": "3 days",
+      "4": "4 days",
+      "5": "5 days",
+      "7": "Every day"
+    },
+    "p.pilates": {
+      "yes": "Yes, layer it in",
+      "no": "Just the training"
+    },
+    "p.pilatesKit": {
+      "dumbbells": "Dumbbells 1, 4 kg",
+      "ankle-weights": "Ankle weights",
+      "wrist-weights": "Wrist weights",
+      "pilates-ball": "Pilates ball",
+      "yoga-block": "Yoga block",
+      "band": "Resistance band",
+      "none": "Just a mat"
+    },
+    "p.focus": {
+      "glutes": "Glutes",
+      "hamstrings": "Hamstrings",
+      "quads": "Quads",
+      "abs": "Abs",
+      "shoulders": "Shoulders",
+      "backOfArms": "Arms",
+      "upperBack": "Upper back",
+      "chest": "Chest"
+    }
+  },
+  "A9": {
+    "howknow": {
+      "youtube": "I stop and look it up",
+      "guess": "I guess from the little diagram",
+      "skip": "I skip it and do something I know",
+      "know": "I usually know them"
+    },
+    "barrier": {
+      "months": "Yes, after months of it",
+      "once": "Once or twice, by accident",
+      "suspect": "I suspect I am, right now",
+      "no": "Not that I know of"
+    },
+    "holdback": {
+      "form": "Not trusting my form",
+      "hurt": "Worrying I will hurt myself",
+      "unsure": "Not knowing if it is even the right move",
+      "nothing": "Nothing, I go hard"
+    },
+    "yes": {
+      "definitely": "Completely",
+      "mostly": "Mostly",
+      "some": "A bit",
+      "no": "I would still check"
+    },
+    "p.location": {
+      "gym": "At a gym",
+      "home": "At home"
+    },
+    "p.homeGear": {
+      "weights": "Dumbbells or bands",
+      "bodyweight": "Just my bodyweight"
+    },
+    "p.daysPerWeek": {
+      "3": "3 days",
+      "4": "4 days",
+      "5": "5 days",
+      "7": "Every day"
+    },
+    "p.pilates": {
+      "yes": "Yes, layer it in",
+      "no": "Just the training"
+    },
+    "p.pilatesKit": {
+      "dumbbells": "Dumbbells 1, 4 kg",
+      "ankle-weights": "Ankle weights",
+      "wrist-weights": "Wrist weights",
+      "pilates-ball": "Pilates ball",
+      "yoga-block": "Yoga block",
+      "band": "Resistance band",
+      "none": "Just a mat"
+    },
+    "p.focus": {
+      "glutes": "Glutes",
+      "hamstrings": "Hamstrings",
+      "quads": "Quads",
+      "abs": "Abs",
+      "shoulders": "Shoulders",
+      "backOfArms": "Arms",
+      "upperBack": "Upper back",
+      "chest": "Chest"
+    },
+    "wantsFood": {
+      "yes": "Yes, do the food too",
+      "no": "Just the training for now"
+    },
+    "p.allergens": {
+      "dairy": "Dairy",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "gluten": "Gluten",
+      "peanuts": "Peanuts",
+      "shellfish": "Shellfish",
+      "soy": "Soy",
+      "treeNuts": "Tree nuts",
+      "none": "Nothing"
+    },
+    "p.avoid": {
+      "Aubergine": "Aubergine",
+      "Beetroot": "Beetroot",
+      "Brussels sprouts": "Sprouts",
+      "Cottage cheese": "Cottage cheese",
+      "Mackerel, cooked": "Mackerel",
+      "Mushrooms": "Mushrooms",
+      "Olives": "Olives",
+      "Quark": "Quark",
+      "Tofu, firm": "Tofu",
+      "Tuna, canned in water": "Tinned tuna",
+      "none": "Nothing"
+    },
+    "p.like": {
+      "Chicken breast, cooked": "Chicken",
+      "Beef sirloin steak, cooked": "Beef",
+      "Salmon fillet, cooked": "Salmon",
+      "Egg, whole": "Eggs",
+      "Wholemeal pasta, cooked": "Pasta",
+      "White rice, cooked": "Rice",
+      "Greek yoghurt 0%": "Greek yoghurt",
+      "Avocado": "Avocado",
+      "Sweet potato, baked": "Sweet potato"
+    },
+    "p.diet": {
+      "standard": "Anything",
+      "highProtein": "Lots of protein",
+      "vegetarian": "Vegetarian",
+      "dairyFree": "Dairy free"
+    },
+    "aim": {
+      "lose": "Aim it at losing weight",
+      "gain": "Aim it at building muscle",
+      "none": "Just coach me well"
+    },
+    "p.pace": {
+      "steady": "Steady",
+      "balanced": "Balanced",
+      "aggressive": "Aggressive"
+    }
+  },
+  "A10": {
+    "bill": {
+      "wayup": "Way up, and I cannot say why",
+      "up": "Up a bit",
+      "eating": "Up since I started eating properly",
+      "same": "About the same"
+    },
+    "barrier": {
+      "half": "About half, if I am honest",
+      "produce": "Everything except the fresh stuff",
+      "most": "Most of it",
+      "all": "Nearly all of it"
+    },
+    "budgeting": {
+      "try": "I try, and I always go over",
+      "no": "No, I just wince at the total",
+      "strict": "Yes, strictly",
+      "want": "I would love to, but nothing helps me"
+    },
+    "yes": {
+      "definitely": "Definitely",
+      "mostly": "Most weeks",
+      "some": "Some weeks",
+      "no": "I would still overspend"
+    },
+    "x.store": {
+      "walmart": "Walmart",
+      "aldi": "Aldi",
+      "kroger": "Kroger",
+      "target": "Target",
+      "costco": "Costco",
+      "trader": "Trader Joes",
+      "safeway": "Safeway",
+      "publix": "Publix",
+      "other": "Somewhere else"
+    },
+    "x.cookNights": {
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat",
+      "sun": "Sun"
+    },
+    "p.allergens": {
+      "dairy": "Dairy",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "gluten": "Gluten",
+      "peanuts": "Peanuts",
+      "shellfish": "Shellfish",
+      "soy": "Soy",
+      "treeNuts": "Tree nuts",
+      "none": "Nothing"
+    },
+    "p.avoid": {
+      "Aubergine": "Aubergine",
+      "Beetroot": "Beetroot",
+      "Brussels sprouts": "Sprouts",
+      "Cottage cheese": "Cottage cheese",
+      "Mackerel, cooked": "Mackerel",
+      "Mushrooms": "Mushrooms",
+      "Olives": "Olives",
+      "Quark": "Quark",
+      "Tofu, firm": "Tofu",
+      "Tuna, canned in water": "Tinned tuna",
+      "none": "Nothing"
+    },
+    "p.like": {
+      "Chicken breast, cooked": "Chicken",
+      "Beef sirloin steak, cooked": "Beef",
+      "Salmon fillet, cooked": "Salmon",
+      "Egg, whole": "Eggs",
+      "Wholemeal pasta, cooked": "Pasta",
+      "White rice, cooked": "Rice",
+      "Greek yoghurt 0%": "Greek yoghurt",
+      "Avocado": "Avocado",
+      "Sweet potato, baked": "Sweet potato"
+    },
+    "p.diet": {
+      "standard": "Anything",
+      "highProtein": "Lots of protein",
+      "vegetarian": "Vegetarian",
+      "dairyFree": "Dairy free"
+    },
+    "aim": {
+      "lose": "Aim it at losing weight",
+      "gain": "Aim it at building muscle",
+      "none": "No, just cheaper and planned"
+    },
+    "p.pace": {
+      "steady": "Steady",
+      "balanced": "Balanced",
+      "aggressive": "Aggressive"
+    },
+    "wantsTraining": {
+      "yes": "Yes, build that as well",
+      "no": "Just the food for now"
+    },
+    "p.location": {
+      "gym": "At a gym",
+      "home": "At home"
+    },
+    "p.homeGear": {
+      "weights": "Dumbbells or bands",
+      "bodyweight": "Just my bodyweight"
+    },
+    "p.daysPerWeek": {
+      "3": "3 days",
+      "4": "4 days",
+      "5": "5 days",
+      "7": "Every day"
+    },
+    "p.pilates": {
+      "yes": "Yes, layer it in",
+      "no": "Just the training"
+    },
+    "p.pilatesKit": {
+      "dumbbells": "Dumbbells 1, 4 kg",
+      "ankle-weights": "Ankle weights",
+      "wrist-weights": "Wrist weights",
+      "pilates-ball": "Pilates ball",
+      "yoga-block": "Yoga block",
+      "band": "Resistance band",
+      "none": "Just a mat"
+    },
+    "p.focus": {
+      "glutes": "Glutes",
+      "hamstrings": "Hamstrings",
+      "quads": "Quads",
+      "abs": "Abs",
+      "shoulders": "Shoulders",
+      "backOfArms": "Arms",
+      "upperBack": "Upper back",
+      "chest": "Chest"
+    }
+  },
+  "A11": {
+    "trainday": {
+      "same": "Exactly the same",
+      "less": "Less, if anything, I am being good",
+      "guess": "More, but I am guessing",
+      "planned": "Different, and it is planned"
+    },
+    "protein": {
+      "noidea": "Genuinely no idea",
+      "low": "Less than I should",
+      "guess": "I aim for a number and hope",
+      "track": "I hit a target and know it"
+    },
+    "barrier": {
+      "wrecked": "I am wrecked and starving",
+      "push": "Nothing much, I push through",
+      "binge": "I overeat, then feel guilty",
+      "fine": "I recover fine"
+    },
+    "yes": {
+      "definitely": "I think that is the whole problem",
+      "mostly": "Probably",
+      "some": "Maybe",
+      "no": "I would be scared to eat more"
+    },
+    "p.location": {
+      "gym": "At a gym",
+      "home": "At home"
+    },
+    "p.homeGear": {
+      "weights": "Dumbbells or bands",
+      "bodyweight": "Just my bodyweight"
+    },
+    "p.daysPerWeek": {
+      "3": "3 days",
+      "4": "4 days",
+      "5": "5 days",
+      "7": "Every day"
+    },
+    "p.pilates": {
+      "yes": "Yes, layer it in",
+      "no": "Just the training"
+    },
+    "p.pilatesKit": {
+      "dumbbells": "Dumbbells 1, 4 kg",
+      "ankle-weights": "Ankle weights",
+      "wrist-weights": "Wrist weights",
+      "pilates-ball": "Pilates ball",
+      "yoga-block": "Yoga block",
+      "band": "Resistance band",
+      "none": "Just a mat"
+    },
+    "p.focus": {
+      "glutes": "Glutes",
+      "hamstrings": "Hamstrings",
+      "quads": "Quads",
+      "abs": "Abs",
+      "shoulders": "Shoulders",
+      "backOfArms": "Arms",
+      "upperBack": "Upper back",
+      "chest": "Chest"
+    },
+    "p.pace": {
+      "steady": "Steady",
+      "balanced": "Balanced",
+      "aggressive": "Aggressive"
+    },
+    "wantsFood": {
+      "yes": "Yes, do the food too",
+      "no": "Just the training for now"
+    },
+    "p.allergens": {
+      "dairy": "Dairy",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "gluten": "Gluten",
+      "peanuts": "Peanuts",
+      "shellfish": "Shellfish",
+      "soy": "Soy",
+      "treeNuts": "Tree nuts",
+      "none": "Nothing"
+    },
+    "p.avoid": {
+      "Aubergine": "Aubergine",
+      "Beetroot": "Beetroot",
+      "Brussels sprouts": "Sprouts",
+      "Cottage cheese": "Cottage cheese",
+      "Mackerel, cooked": "Mackerel",
+      "Mushrooms": "Mushrooms",
+      "Olives": "Olives",
+      "Quark": "Quark",
+      "Tofu, firm": "Tofu",
+      "Tuna, canned in water": "Tinned tuna",
+      "none": "Nothing"
+    },
+    "p.like": {
+      "Chicken breast, cooked": "Chicken",
+      "Beef sirloin steak, cooked": "Beef",
+      "Salmon fillet, cooked": "Salmon",
+      "Egg, whole": "Eggs",
+      "Wholemeal pasta, cooked": "Pasta",
+      "White rice, cooked": "Rice",
+      "Greek yoghurt 0%": "Greek yoghurt",
+      "Avocado": "Avocado",
+      "Sweet potato, baked": "Sweet potato"
+    },
+    "p.diet": {
+      "standard": "Anything",
+      "highProtein": "Lots of protein",
+      "vegetarian": "Vegetarian",
+      "dairyFree": "Dairy free"
+    }
+  },
+  "A12": {
+    "whatends": {
+      "badday": "One bad day, and how I felt about it after",
+      "stress": "Something stressful, nothing to do with food",
+      "boredom": "Boredom",
+      "food": "Honestly, the food itself"
+    },
+    "barrier": {
+      "eat": "I eat everything, then hate myself",
+      "skip": "I skip everything and hide from it",
+      "hold": "I hold it together and pay for it later",
+      "rare": "They are rare"
+    },
+    "pattern": {
+      "no": "No, I have never looked",
+      "suspect": "I suspect one, but nothing tracks it",
+      "yes": "Yes, and it is always the same trigger",
+      "random": "It feels random"
+    },
+    "yes": {
+      "definitely": "Almost certainly",
+      "mostly": "Probably",
+      "some": "Maybe",
+      "no": "I doubt it"
+    },
+    "wantsFood": {
+      "yes": "Yes, build the food",
+      "no": "Skip the food for now"
+    },
+    "p.allergens": {
+      "dairy": "Dairy",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "gluten": "Gluten",
+      "peanuts": "Peanuts",
+      "shellfish": "Shellfish",
+      "soy": "Soy",
+      "treeNuts": "Tree nuts",
+      "none": "Nothing"
+    },
+    "p.avoid": {
+      "Aubergine": "Aubergine",
+      "Beetroot": "Beetroot",
+      "Brussels sprouts": "Sprouts",
+      "Cottage cheese": "Cottage cheese",
+      "Mackerel, cooked": "Mackerel",
+      "Mushrooms": "Mushrooms",
+      "Olives": "Olives",
+      "Quark": "Quark",
+      "Tofu, firm": "Tofu",
+      "Tuna, canned in water": "Tinned tuna",
+      "none": "Nothing"
+    },
+    "p.like": {
+      "Chicken breast, cooked": "Chicken",
+      "Beef sirloin steak, cooked": "Beef",
+      "Salmon fillet, cooked": "Salmon",
+      "Egg, whole": "Eggs",
+      "Wholemeal pasta, cooked": "Pasta",
+      "White rice, cooked": "Rice",
+      "Greek yoghurt 0%": "Greek yoghurt",
+      "Avocado": "Avocado",
+      "Sweet potato, baked": "Sweet potato"
+    },
+    "p.diet": {
+      "standard": "Anything",
+      "highProtein": "Lots of protein",
+      "vegetarian": "Vegetarian",
+      "dairyFree": "Dairy free"
+    },
+    "aim": {
+      "lose": "Aim it at losing weight",
+      "gain": "Aim it at building muscle",
+      "none": "No target, just consistency"
+    },
+    "p.pace": {
+      "steady": "Steady",
+      "balanced": "Balanced",
+      "aggressive": "Aggressive"
+    },
+    "wantsTraining": {
+      "yes": "Yes, build the training",
+      "no": "Skip the training for now"
+    },
+    "p.location": {
+      "gym": "At a gym",
+      "home": "At home"
+    },
+    "p.homeGear": {
+      "weights": "Dumbbells or bands",
+      "bodyweight": "Just my bodyweight"
+    },
+    "p.daysPerWeek": {
+      "3": "3 days",
+      "4": "4 days",
+      "5": "5 days",
+      "7": "Every day"
+    },
+    "p.pilates": {
+      "yes": "Yes, layer it in",
+      "no": "Just the training"
+    },
+    "p.pilatesKit": {
+      "dumbbells": "Dumbbells 1, 4 kg",
+      "ankle-weights": "Ankle weights",
+      "wrist-weights": "Wrist weights",
+      "pilates-ball": "Pilates ball",
+      "yoga-block": "Yoga block",
+      "band": "Resistance band",
+      "none": "Just a mat"
+    },
+    "p.focus": {
+      "glutes": "Glutes",
+      "hamstrings": "Hamstrings",
+      "quads": "Quads",
+      "abs": "Abs",
+      "shoulders": "Shoulders",
+      "backOfArms": "Arms",
+      "upperBack": "Upper back",
+      "chest": "Chest"
+    }
+  },
+  "A13": {
+    "membership": {
+      "paying": "Paying for it, barely going",
+      "cancelled": "Cancelled it, felt guilty",
+      "going": "Paying and going properly",
+      "never": "Never had one"
+    },
+    "often": {
+      "never": "Basically never",
+      "month": "Once or twice a month",
+      "week": "Once a week, on a good week",
+      "regular": "Two or three times a week"
+    },
+    "barrier": {
+      "travel": "The trip there and back",
+      "time": "It never fits the day",
+      "energy": "By the time I could go, I am done",
+      "dread": "I dread the room itself"
+    },
+    "yes": {
+      "definitely": "Most days, genuinely",
+      "mostly": "A lot more than now",
+      "some": "I would still need telling what to do",
+      "no": "Probably not"
+    },
+    "p.location": {
+      "gym": "At a gym",
+      "home": "At home"
+    },
+    "p.homeGear": {
+      "weights": "Dumbbells or bands",
+      "bodyweight": "Just my bodyweight"
+    },
+    "p.daysPerWeek": {
+      "3": "3 days",
+      "4": "4 days",
+      "5": "5 days",
+      "7": "Every day"
+    },
+    "p.pilates": {
+      "yes": "Yes, layer it in",
+      "no": "Just the training"
+    },
+    "p.pilatesKit": {
+      "dumbbells": "Dumbbells 1, 4 kg",
+      "ankle-weights": "Ankle weights",
+      "wrist-weights": "Wrist weights",
+      "pilates-ball": "Pilates ball",
+      "yoga-block": "Yoga block",
+      "band": "Resistance band",
+      "none": "Just a mat"
+    },
+    "p.focus": {
+      "glutes": "Glutes",
+      "hamstrings": "Hamstrings",
+      "quads": "Quads",
+      "abs": "Abs",
+      "shoulders": "Shoulders",
+      "backOfArms": "Arms",
+      "upperBack": "Upper back",
+      "chest": "Chest"
+    },
+    "wantsFood": {
+      "yes": "Yes, do the food too",
+      "no": "Just the training for now"
+    },
+    "p.allergens": {
+      "dairy": "Dairy",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "gluten": "Gluten",
+      "peanuts": "Peanuts",
+      "shellfish": "Shellfish",
+      "soy": "Soy",
+      "treeNuts": "Tree nuts",
+      "none": "Nothing"
+    },
+    "p.avoid": {
+      "Aubergine": "Aubergine",
+      "Beetroot": "Beetroot",
+      "Brussels sprouts": "Sprouts",
+      "Cottage cheese": "Cottage cheese",
+      "Mackerel, cooked": "Mackerel",
+      "Mushrooms": "Mushrooms",
+      "Olives": "Olives",
+      "Quark": "Quark",
+      "Tofu, firm": "Tofu",
+      "Tuna, canned in water": "Tinned tuna",
+      "none": "Nothing"
+    },
+    "p.like": {
+      "Chicken breast, cooked": "Chicken",
+      "Beef sirloin steak, cooked": "Beef",
+      "Salmon fillet, cooked": "Salmon",
+      "Egg, whole": "Eggs",
+      "Wholemeal pasta, cooked": "Pasta",
+      "White rice, cooked": "Rice",
+      "Greek yoghurt 0%": "Greek yoghurt",
+      "Avocado": "Avocado",
+      "Sweet potato, baked": "Sweet potato"
+    },
+    "p.diet": {
+      "standard": "Anything",
+      "highProtein": "Lots of protein",
+      "vegetarian": "Vegetarian",
+      "dairyFree": "Dairy free"
+    },
+    "aim": {
+      "lose": "Aim it at losing weight",
+      "gain": "Aim it at building muscle",
+      "none": "Just get me training again"
+    },
+    "p.pace": {
+      "steady": "Steady",
+      "balanced": "Balanced",
+      "aggressive": "Aggressive"
+    }
+  },
+  "A14": {
+    "howmany": {
+      "1": "Just the one",
+      "2": "A couple",
+      "5+": "Five or more",
+      "3-4": "Three or four"
+    },
+    "which": {
+      "food": "Food",
+      "training": "Training",
+      "fasting": "Fasting",
+      "sleep": "Sleep",
+      "mood": "Mood",
+      "steps": "Steps",
+      "recipes": "Recipes",
+      "grocery": "Groceries",
+      "water": "Water"
+    },
+    "barrier": {
+      "0": "None, I gave up on all of it",
+      "1": "One",
+      "2": "Two",
+      "3+": "Three or more"
+    },
+    "goodday": {
+      "no": "Not without opening four things",
+      "feel": "Only by how I feel",
+      "partly": "Partly, one number, not the picture",
+      "yes": "Yes, easily"
+    },
+    "yes": {
+      "definitely": "Far more likely",
+      "mostly": "Probably",
+      "some": "Maybe",
+      "no": "I like them separate"
+    },
+    "wantsFood": {
+      "yes": "Yes, replace those",
+      "no": "Skip the food for now"
+    },
+    "p.allergens": {
+      "dairy": "Dairy",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "gluten": "Gluten",
+      "peanuts": "Peanuts",
+      "shellfish": "Shellfish",
+      "soy": "Soy",
+      "treeNuts": "Tree nuts",
+      "none": "Nothing"
+    },
+    "p.avoid": {
+      "Aubergine": "Aubergine",
+      "Beetroot": "Beetroot",
+      "Brussels sprouts": "Sprouts",
+      "Cottage cheese": "Cottage cheese",
+      "Mackerel, cooked": "Mackerel",
+      "Mushrooms": "Mushrooms",
+      "Olives": "Olives",
+      "Quark": "Quark",
+      "Tofu, firm": "Tofu",
+      "Tuna, canned in water": "Tinned tuna",
+      "none": "Nothing"
+    },
+    "p.like": {
+      "Chicken breast, cooked": "Chicken",
+      "Beef sirloin steak, cooked": "Beef",
+      "Salmon fillet, cooked": "Salmon",
+      "Egg, whole": "Eggs",
+      "Wholemeal pasta, cooked": "Pasta",
+      "White rice, cooked": "Rice",
+      "Greek yoghurt 0%": "Greek yoghurt",
+      "Avocado": "Avocado",
+      "Sweet potato, baked": "Sweet potato"
+    },
+    "p.diet": {
+      "standard": "Anything",
+      "highProtein": "Lots of protein",
+      "vegetarian": "Vegetarian",
+      "dairyFree": "Dairy free"
+    },
+    "aim": {
+      "lose": "Aim it at losing weight",
+      "gain": "Aim it at building muscle",
+      "none": "Just plan it well"
+    },
+    "p.pace": {
+      "steady": "Steady",
+      "balanced": "Balanced",
+      "aggressive": "Aggressive"
+    },
+    "wantsTraining": {
+      "yes": "Yes, replace that too",
+      "no": "Skip the training for now"
+    },
+    "p.location": {
+      "gym": "At a gym",
+      "home": "At home"
+    },
+    "p.homeGear": {
+      "weights": "Dumbbells or bands",
+      "bodyweight": "Just my bodyweight"
+    },
+    "p.daysPerWeek": {
+      "3": "3 days",
+      "4": "4 days",
+      "5": "5 days",
+      "7": "Every day"
+    },
+    "p.pilates": {
+      "yes": "Yes, layer it in",
+      "no": "Just the training"
+    },
+    "p.pilatesKit": {
+      "dumbbells": "Dumbbells 1, 4 kg",
+      "ankle-weights": "Ankle weights",
+      "wrist-weights": "Wrist weights",
+      "pilates-ball": "Pilates ball",
+      "yoga-block": "Yoga block",
+      "band": "Resistance band",
+      "none": "Just a mat"
+    },
+    "p.focus": {
+      "glutes": "Glutes",
+      "hamstrings": "Hamstrings",
+      "quads": "Quads",
+      "abs": "Abs",
+      "shoulders": "Shoulders",
+      "backOfArms": "Arms",
+      "upperBack": "Upper back",
+      "chest": "Chest"
+    }
+  },
+  "A15": {
+    "loghow": {
+      "type": "Typing it in, meal by meal",
+      "weigh": "Weighing and typing. Every item",
+      "photo": "A photo app that gets it wrong",
+      "stopped": "I stopped. It was too much"
+    },
+    "lastlog": {
+      "days": "Days",
+      "weeks": "A couple of weeks",
+      "months": "A month or two",
+      "still": "I am still going"
+    },
+    "barrier": {
+      "wrong": "Yes, the numbers were obviously wrong",
+      "correct": "Yes, and I spent my time correcting it",
+      "ok": "Yes, it was alright",
+      "no": "Never tried one"
+    },
+    "yes": {
+      "definitely": "That is the whole thing",
+      "mostly": "Probably",
+      "some": "I would still check",
+      "no": "I would rather weigh it myself"
+    },
+    "x.logDepth": {
+      "all": "Everything, properly",
+      "offplan": "Only the things that were not planned",
+      "little": "As little as humanly possible",
+      "nothing": "Nothing, just tell me what to eat"
+    },
+    "p.allergens": {
+      "dairy": "Dairy",
+      "eggs": "Eggs",
+      "fish": "Fish",
+      "gluten": "Gluten",
+      "peanuts": "Peanuts",
+      "shellfish": "Shellfish",
+      "soy": "Soy",
+      "treeNuts": "Tree nuts",
+      "none": "Nothing"
+    },
+    "p.avoid": {
+      "Aubergine": "Aubergine",
+      "Beetroot": "Beetroot",
+      "Brussels sprouts": "Sprouts",
+      "Cottage cheese": "Cottage cheese",
+      "Mackerel, cooked": "Mackerel",
+      "Mushrooms": "Mushrooms",
+      "Olives": "Olives",
+      "Quark": "Quark",
+      "Tofu, firm": "Tofu",
+      "Tuna, canned in water": "Tinned tuna",
+      "none": "Nothing"
+    },
+    "p.like": {
+      "Chicken breast, cooked": "Chicken",
+      "Beef sirloin steak, cooked": "Beef",
+      "Salmon fillet, cooked": "Salmon",
+      "Egg, whole": "Eggs",
+      "Wholemeal pasta, cooked": "Pasta",
+      "White rice, cooked": "Rice",
+      "Greek yoghurt 0%": "Greek yoghurt",
+      "Avocado": "Avocado",
+      "Sweet potato, baked": "Sweet potato"
+    },
+    "p.diet": {
+      "standard": "Anything",
+      "highProtein": "Lots of protein",
+      "vegetarian": "Vegetarian",
+      "dairyFree": "Dairy free"
+    },
+    "aim": {
+      "lose": "Aim it at losing weight",
+      "gain": "Aim it at building muscle",
+      "none": "No target, just feed me properly"
+    },
+    "p.pace": {
+      "steady": "Steady",
+      "balanced": "Balanced",
+      "aggressive": "Aggressive"
+    },
+    "wantsTraining": {
+      "yes": "Yes, build that as well",
+      "no": "Just the food for now"
+    },
+    "p.location": {
+      "gym": "At a gym",
+      "home": "At home"
+    },
+    "p.homeGear": {
+      "weights": "Dumbbells or bands",
+      "bodyweight": "Just my bodyweight"
+    },
+    "p.daysPerWeek": {
+      "3": "3 days",
+      "4": "4 days",
+      "5": "5 days",
+      "7": "Every day"
+    },
+    "p.pilates": {
+      "yes": "Yes, layer it in",
+      "no": "Just the training"
+    },
+    "p.pilatesKit": {
+      "dumbbells": "Dumbbells 1, 4 kg",
+      "ankle-weights": "Ankle weights",
+      "wrist-weights": "Wrist weights",
+      "pilates-ball": "Pilates ball",
+      "yoga-block": "Yoga block",
+      "band": "Resistance band",
+      "none": "Just a mat"
+    },
+    "p.focus": {
+      "glutes": "Glutes",
+      "hamstrings": "Hamstrings",
+      "quads": "Quads",
+      "abs": "Abs",
+      "shoulders": "Shoulders",
+      "backOfArms": "Arms",
+      "upperBack": "Upper back",
+      "chest": "Chest"
+    }
+  }
+}

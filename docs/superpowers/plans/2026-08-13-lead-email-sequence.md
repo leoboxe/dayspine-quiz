@@ -22,17 +22,21 @@
 
 ---
 
-### Task 1: Port the targets module
+### Task 1: ~~Port the targets module~~ CANCELLED 2026-08-13
 
-Gives every email the lead's real calorie and macro numbers, computed by the same code the app uses.
+**Do not build this.** `deriveTargets` requires an `activity` level that the quiz never collects,
+so any calorie figure in an email would rest on a guess with a ~25% spread, and the app would show
+a different number once it asks the activity question. See spec §4.
 
-**Files:**
-- Create: `supabase/functions/_shared/targets.ts` (port of `dayspine-pwa/src/domain/{energy,calorieTarget,targets}.ts`)
-- Test: `tests/targets.test.ts`
+Emails quote **stated answers only**. Skip to Task 2; the resolver in Task 3 reads the quiz row
+directly and imports nothing.
 
-**Interfaces:**
-- Consumes: nothing
-- Produces: `deriveTargets(profile, todayISO) -> { kcal, proteinG, carbsG, fatG }`, `calorieTarget(input) -> number`, `ageInYears(birthDate, today) -> number`
+<details>
+<summary>Original task, kept for the record</summary>
+
+Port `energy.ts`, `calorieTarget.ts`, `targets.ts` into `_shared/targets.ts` and assert parity with
+the app. Cancelled before any code was written.
+</details>
 
 - [ ] **Step 1: Copy the three source files into one module**
 
@@ -223,7 +227,7 @@ The resolver turns a `quiz_answers` row into a flat map of merge values, with an
 - Test: `tests/email-resolve.test.ts`
 
 **Interfaces:**
-- Consumes: `deriveTargets` from Task 1
+- Consumes: nothing (Task 1 cancelled — no derived numbers)
 - Produces: `PACKS: Record<string, AnglePack>`, `packFor(angle) -> AnglePack`, `resolve(row) -> Vars` where `Vars` is `Record<string, string>` with **no undefined values ever**
 
 - [ ] **Step 1: Write the packs**

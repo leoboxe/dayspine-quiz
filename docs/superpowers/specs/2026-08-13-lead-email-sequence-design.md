@@ -136,21 +136,49 @@ exercised before a single real message goes out.
 
 ---
 
-## 4. The targets port
+## 4. Stated facts only. No derived numbers.
 
-Port `energy.ts`, `calorieTarget.ts` and `targets.ts` from `dayspine-pwa/src/domain` into
-`supabase/functions/_shared/targets.ts`.
+🔴 **Reversal, 2026-08-13, found while implementing.** An earlier version of this spec ported the
+calorie engine so emails could quote the lead's real kcal and macros. **That is wrong and the port
+is cancelled.**
 
-**292 lines, fully self-contained**: `energy.ts` imports nothing, `calorieTarget.ts` imports only
-`energy.ts`, `targets.ts` imports both. No React, no Expo, no browser APIs. Deno runs TypeScript
-natively, so this is a copy plus rewriting `@/` aliases to relative paths.
+`deriveTargets` requires an **`activity` level** (`sedentary` | `light` | `moderate` | `very` |
+`extra`, a 1.2 to 1.9 multiplier on BMR). It is a stored profile field the app collects during its
+own onboarding, and **the quiz never asks for it.**
 
-This gives every email the lead's **real** calorie number, protein and macros, computed by the
-same code the app will use. That is what makes "your plan is ready" concrete rather than a claim.
+Computing calories from quiz answers therefore means assuming activity, and the assumption is not
+minor. On a typical profile with a BMR near 1,400:
 
-Drift is the known risk, and the codebase already has the pattern for it: a test asserts the ported
-copy produces identical output to the app's for a fixed set of profiles, the same way
-`stripeCatalogue.test.ts` asserts the two catalogue copies stay equal.
+| Assumed activity | TDEE | After a 20% deficit |
+|---|---:|---:|
+| sedentary | 1,680 | **1,344** |
+| light | 1,925 | 1,540 |
+| moderate | 2,170 | **1,736** |
+
+A ~25% spread on the single number the email would present as *theirs*. The lead then opens the
+app, answers the activity question, and is shown a different figure. That is a trust failure
+arriving at the exact moment we are asking for $49, and it is self-inflicted.
+
+### What the emails quote instead
+
+Only what the lead literally typed. Nothing derived, nothing that can contradict the app:
+
+| Fact | Coverage |
+|---|---:|
+| `barrier` — their own words on what went wrong | 22/22 |
+| `p.diet`, `p.allergens` | 21/22 |
+| `p.children` + `p.otherAdults` — household size | 21/22 |
+| `p.weeklyBudget` | 21/22 |
+| `p.goal`, `p.targetLb`, `p.weightLb` — where they are and where they want to be | 14 to 21/22 |
+| `x.cookNights`, `x.cookTime`, `x.store` (A1) | 15/22 |
+| `commute`, `homefail` (A5) · `programs`, `split` (A4) · `lostdays`, `whatends` (A12) | per angle |
+
+> *"Four cook nights. No dairy. For four people. At the $170 a week you set. Aldi. 168 down to 145."*
+
+Every item is a direct quote of an answer. That reads as more personal than a computed calorie
+figure, and it is unfalsifiable by the app.
+
+**Consequence:** `_shared/targets.ts` is not built, and the 292-line port is dropped from the plan.
 
 ### What we deliberately are not building
 
