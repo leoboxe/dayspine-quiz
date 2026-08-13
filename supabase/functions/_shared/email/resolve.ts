@@ -116,6 +116,13 @@ export function resolve(row: QuizRow): Vars {
     barrierLead: pack.barrierLead,
     barrierReply: pack.barrierReply,
     getList: pack.getList,
+    signalLead: pack.signalLead,
+
+    /* The angle's second distinctive answer. Every angle has one and it differs
+       per angle (A1 listhow, A4 split, A8 weighin, A14 which...), so it is
+       declared by the pack rather than hard coded per template. */
+    hasSignal: String(Boolean(label(angle, pack.signalKey, a[pack.signalKey]))),
+    signal: label(angle, pack.signalKey, a[pack.signalKey]),
 
     /* Their own words on what went wrong. The only field every angle collects,
        and the strongest thing in the whole dataset to write from. */
@@ -127,6 +134,10 @@ export function resolve(row: QuizRow): Vars {
 
     hasStore: String(Boolean(storeLabel)),
     store: storeLabel,
+    /* "Somewhere else" and "your store" are the catch all options. They are fine
+       mid sentence and nonsense in a subject line ("Last one from me, Somewhere
+       else list included"), so subjects gate on this instead. */
+    hasNamedStore: String(Boolean(storeLabel) && !/somewhere else|your store/i.test(storeLabel)),
 
     hasCookNights: String(nightCount > 0),
     cookNights: nightList,

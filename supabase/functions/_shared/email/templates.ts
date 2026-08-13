@@ -76,8 +76,14 @@ export const STEPS: Step[] = [
   /* ── DAY 0 ─ confirmation. The plan exists. Here is what is in it. ───────── */
   {
     day: 0,
-    subject: () => 'Your plan is ready',
-    preheader: (v) => (on(v, 'hasStore') ? `Built around ${v.store} and your week.` : 'Built around the week you described.'),
+    subject: (v) =>
+      on(v, 'hasCookNights')
+        ? `Your plan is ready, built around ${v.cookNightCount} ${Number(v.cookNightCount) === 1 ? 'night' : 'nights'} a week`
+        : on(v, 'hasHousehold') ? `Your plan is ready, for ${v.householdSize}` : 'Your plan is ready',
+    preheader: (v) =>
+      on(v, 'hasNamedStore') ? `Priced against ${v.store}, and the list is written.`
+      : on(v, 'hasBudget') ? `Costed against the ${v.budget} a week you set.`
+      : 'Built around the week you described.',
     paragraphs: (v) => [
       v.opening,
       `${planShape(v)}${on(v, 'hasBudget') ? ` It costs the whole week against the ${v.budget} you set, line by line.` : ''}`,
@@ -93,12 +99,16 @@ export const STEPS: Step[] = [
   /* ── DAY 1 ─ what a week on it actually looks like. ──────────────────────── */
   {
     day: 1,
-    subject: () => 'What a week on this actually looks like',
-    preheader: () => 'Not a diet. A week that already has decisions made.',
+    subject: (v) =>
+      on(v, 'hasCookTime') ? `A week that fits ${v.cookTime.toLowerCase()}` : 'What a week on this actually looks like',
+    preheader: (v) =>
+      on(v, 'hasHousehold') ? `Every meal decided, for ${v.householdSize}, portions included.`
+      : 'Not a diet. A week that already has its decisions made.',
     paragraphs: (v) => [
       'Here is the honest version of what changes.',
       `You open it on Sunday. The week is already decided: every meal, ${household(v)}, with portions worked out so protein lands where it should and nothing is guessed. You are not choosing, you are reading.`,
       'The grocery list is already written underneath it, with amounts, so the shop is a list you tick rather than a puzzle you solve standing in an aisle.',
+      ...(on(v, 'hasSignal') ? [`${v.signalLead} "${v.signal.toLowerCase()}". That is the thing this replaces.`] : []),
       `Then on ${nights(v)}, you make the thing the plan said, and the recipe is written at the quantity the plan promised. Not "serves 4, adjust as needed". The actual amount.`,
       'The training side sits on the same week, so what you lift and what you eat are one document instead of two apps that have never spoken to each other.',
       'That is the whole product. One payment, $49, and it does not renew.',
@@ -109,8 +119,13 @@ export const STEPS: Step[] = [
   /* ── DAY 2 ─ ANGLE ─ why the last one died. Their own answer, quoted. ────── */
   {
     day: 2,
+    /* NOT the raw barrier. Subjects show on lock screens and in previews, and
+       some of these answers are the reader at their least generous about
+       themselves ("I eat everything, then hate myself"). Quoting that back on a
+       notification is cruel and it is not ours to broadcast. The quote stays in
+       the body, where barrierLead gives it context. */
     subject: (v) => (on(v, 'hasBarrier') ? 'You already told me why it stopped' : 'Why the last one stopped'),
-    preheader: () => 'It was not discipline.',
+    preheader: (v) => (on(v, 'hasBarrier') ? 'Your words, not mine. And it is fixable.' : 'It was not discipline.'),
     paragraphs: (v) => [
       v.died,
       on(v, 'hasBarrier')
@@ -145,7 +160,9 @@ export const STEPS: Step[] = [
   {
     day: 5,
     subject: () => 'Everything in here is a real person',
-    preheader: () => 'Not stock models. Not AI. Her actual classes.',
+    preheader: (v) => (v.wantsTraining === 'false'
+      ? 'Real food data. Real recipes. No generated nonsense.'
+      : 'Not stock models. Not AI. Her actual classes.'),
     paragraphs: (v) => [
       'There is a lot of AI slop in fitness apps right now. Generated recipe photos of food nobody cooked. Plans written by a model that has never met anybody. You can usually tell, and it is the fastest way to stop trusting an app.',
       ...trustFor(v),
@@ -159,7 +176,7 @@ export const STEPS: Step[] = [
   {
     day: 6,
     subject: (v) => v.differentiator,
-    preheader: () => 'The bit nobody else does.',
+    preheader: (v) => (on(v, 'hasBudget') ? `Against the ${v.budget} a week you gave me.` : 'The bit nobody else does.'),
     paragraphs: (v) => [
       `${v.differentiator}. That is the part I would buy this for, and it is the part every other plan skips.`,
       ...proofFor(v),
@@ -177,7 +194,7 @@ export const STEPS: Step[] = [
   /* ── DAY 8 ─ the price objection, head on. ───────────────────────────────── */
   {
     day: 8,
-    subject: () => 'Is it worth $49',
+    subject: (v) => (on(v, 'hasWeightGoal') ? `Is $49 worth ${v.poundsToGo} lb` : 'Is it worth $49'),
     preheader: () => 'A fair question. Here is the honest answer.',
     paragraphs: (v) => [
       'Fair question, so here is the straight answer.',
@@ -192,14 +209,17 @@ export const STEPS: Step[] = [
   /* ── DAY 10 ─ last call. ─────────────────────────────────────────────────── */
   {
     day: 10,
-    subject: () => 'Last one from me',
-    preheader: () => 'Your plan is still there. I will stop after this.',
+    subject: (v) => (on(v, 'hasNamedStore') ? `Last one from me, ${v.store} list included` : 'Last one from me'),
+    preheader: (v) => (on(v, 'hasWeightGoal')
+      ? `${v.weightLb} to ${v.targetLb}. The plan is still there.`
+      : 'Your plan is still there. I will stop after this.'),
     paragraphs: (v) => [
       'This is the last one, so I will keep it short.',
       `Your plan is built and it is still sitting there. ${planShape(v).replace('It is built from what you told me, not from a template: ', 'Built ').replace('It is built from the answers you gave, not from a template.', 'Built from your answers.')} It took you a few minutes to answer all that, and it would be a waste for it to sit unopened.`,
       on(v, 'hasBarrier')
-        ? `You told me what goes wrong: "${v.barrier}". That is the exact thing it fixes.`
+        ? `${v.barrierLead} "${v.barrier}". That is the exact thing it fixes.`
         : 'It exists to fix the specific thing you said goes wrong.',
+      ...(on(v, 'hasWeightGoal') ? [`You put ${v.weightLb} lb now and ${v.targetLb} lb as the target. The plan is dated for that, and it re dates itself if the scale disagrees.`] : []),
       '$49, once, thirty day refund, nothing renews. The regular price is $99 and it goes back to that.',
       'If it is not for you, that is genuinely fine, and you will not hear from me again either way.',
     ],

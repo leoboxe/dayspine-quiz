@@ -123,3 +123,48 @@ test('every email carries unsubscribe and a postal address', () => {
     assert.match(r.html, /Sheridan, WY/, `step ${i} postal address`);
   }
 });
+
+test('all 15 angle packs render every step without throwing', async () => {
+  const { PACKS } = await import('../supabase/functions/_shared/email/packs.ts');
+  const angles = Object.keys(PACKS);
+  assert.equal(angles.length, 15, 'expected a pack for every angle');
+  for (const angle of angles) {
+    const v = resolve({ email: 'a@b.com', angle, answers: { barrier: 'zzz', yes: 'definitely' } });
+    for (let i = 0; i < STEPS.length; i++) {
+      const r = renderStep(i, v);
+      assert.ok(r.subject.length > 0 && r.html.length > 200, `${angle} step ${i}`);
+      assert.doesNotMatch(`${r.subject}${r.text}`, /undefined|NaN|\{\{/, `${angle} step ${i} leaked`);
+    }
+  }
+});
+
+test('the raw barrier answer NEVER appears in a subject line', () => {
+  // Subjects surface on lock screens. Some barrier answers are the reader at
+  // their least generous about themselves and are not ours to broadcast.
+  const v = resolve({ email: 'a@b.com', angle: 'A12', answers: { barrier: 'eat' } });
+  assert.equal(v.barrier, 'I eat everything, then hate myself');
+  for (let i = 0; i < STEPS.length; i++) {
+    assert.doesNotMatch(renderStep(i, v).subject, /hate myself/, `step ${i} put the barrier in the subject`);
+  }
+});
+
+test('a catch-all store answer never reaches a subject line', () => {
+  const v = resolve({ email: 'a@b.com', angle: 'A1', answers: { barrier: 'rots', 'x.store': 'other' } });
+  assert.equal(v.hasStore, 'true');
+  assert.equal(v.hasNamedStore, 'false');
+  for (let i = 0; i < STEPS.length; i++) {
+    assert.doesNotMatch(renderStep(i, v).subject, /Somewhere else/i, `step ${i} subject`);
+  }
+});
+
+test('subjects and preheaders actually vary with the answers', () => {
+  const rich = resolve({ email: 'a@b.com', angle: 'A1', answers: {
+    barrier: 'rots', 'x.store': 'aldi', 'x.cookNights': ['mon','tue'], 'x.cookTime': '30',
+    'p.weightLb': 180, 'p.targetLb': 160, 'p.weeklyBudget': 150 } });
+  const bare = resolve({ email: 'a@b.com', angle: 'A1', answers: { barrier: 'rots' } });
+  let differing = 0;
+  for (let i = 0; i < STEPS.length; i++) {
+    if (renderStep(i, rich).subject !== renderStep(i, bare).subject) differing++;
+  }
+  assert.ok(differing >= 3, `only ${differing} subjects responded to the answers`);
+});
