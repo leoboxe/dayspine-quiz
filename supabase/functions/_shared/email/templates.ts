@@ -31,8 +31,8 @@ const on = (v: Vars, flag: string) => v[flag] === 'true';
 /** "for the 3 nights you cook" but only when we actually know. */
 const nights = (v: Vars) =>
   on(v, 'hasCookNights')
-    ? `the ${v.cookNightCount} ${Number(v.cookNightCount) === 1 ? 'night' : 'nights'} you told me you actually cook`
-    : 'the nights you actually cook';
+    ? `the ${v.cookNightCount} ${Number(v.cookNightCount) === 1 ? 'night' : 'nights'} a week you cook`
+    : 'the nights you cook';
 
 const household = (v: Vars) =>
   on(v, 'hasHousehold') ? `for ${v.householdSize} people` : 'for your house';
@@ -88,7 +88,7 @@ export const STEPS: Step[] = [
       'Here is the honest version of what changes.',
       `You open it on Sunday. The week is already decided: every meal, ${household(v)}, with portions worked out so protein lands where it should and nothing is guessed. You are not choosing, you are reading.`,
       'The grocery list is already written underneath it, with amounts, so the shop is a list you tick rather than a puzzle you solve standing in an aisle.',
-      `Then ${nights(v)} you cook the thing the plan said, and the recipe is written at the quantity the plan promised. Not "serves 4, adjust as needed". The actual amount.`,
+      `Then on ${nights(v)}, you make the thing the plan said, and the recipe is written at the quantity the plan promised. Not "serves 4, adjust as needed". The actual amount.`,
       'The training side sits on the same week, so what you lift and what you eat are one document instead of two apps that have never spoken to each other.',
       'That is the whole product. One payment, $49, and it does not renew.',
     ],
