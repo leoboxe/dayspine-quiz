@@ -115,6 +115,7 @@ export function resolve(row: QuizRow): Vars {
     died: pack.died,
     barrierLead: pack.barrierLead,
     barrierReply: pack.barrierReply,
+    getList: pack.getList,
 
     /* Their own words on what went wrong. The only field every angle collects,
        and the strongest thing in the whole dataset to write from. */
@@ -155,6 +156,13 @@ export function resolve(row: QuizRow): Vars {
 
     hasListHow: String(Boolean(label(angle, 'listhow', a.listhow))),
     listhow: label(angle, 'listhow', a.listhow),
+
+    /* Some leads explicitly declined training. Selling them a training plan is
+       the clearest possible signal that nobody read their answers. */
+    wantsTraining: String(a.wantsTraining !== 'no'),
+
+    hasCookTime: String(Boolean(label(angle, 'x.cookTime', pick(a, 'cookTime')) || pick(a, 'cookTime'))),
+    cookTime: label(angle, 'x.cookTime', pick(a, 'cookTime')) || label(angle, 'p.cookTime', pick(a, 'cookTime')),
   };
 
   /* Belt and braces. A single undefined reaching a template renders the literal

@@ -61,6 +61,17 @@ function planShape(v: Vars): string {
   return `It is built from what you told me, not from a template: ${joined}.`;
 }
 
+/* Pack-supplied bodies. Imported through resolve so templates never reach past
+   the merge values, which is what keeps every step testable from a plain Vars. */
+import { packFor } from './packs.ts';
+const proofFor = (v: Vars) => packFor(v.angle === 'default' ? null : v.angle).proof;
+const trustFor = (v: Vars) => {
+  const pack = packFor(v.angle === 'default' ? null : v.angle);
+  /* Never lead the trust email with training proof for somebody who told the
+     quiz they do not want training. */
+  return v.wantsTraining === 'false' ? pack.trust.slice(0, 1) : pack.trust;
+};
+
 export const STEPS: Step[] = [
   /* ── DAY 0 ─ confirmation. The plan exists. Here is what is in it. ───────── */
   {
@@ -135,10 +146,9 @@ export const STEPS: Step[] = [
     day: 5,
     subject: () => 'Everything in here is a real person',
     preheader: () => 'Not stock models. Not AI. Her actual classes.',
-    paragraphs: () => [
+    paragraphs: (v) => [
       'There is a lot of AI slop in fitness apps right now. Generated recipe photos of food nobody cooked. Plans written by a model that has never met anybody. You can usually tell, and it is the fastest way to stop trusting an app.',
-      'So: the Pilates in Dayspine is a real instructor teaching her own classes. Twelve flows, transcribed from classes she actually taught, 202 clips of her performing each movement, and her own voice coaching from the things she genuinely said while teaching it.',
-      'The exercise library is 713 movements with 182 start and finish illustrations. The food is 170 real whole foods with real nutrition data, not a scraped table.',
+      ...trustFor(v),
       'AI does the scheduling. It does not do the authoring. That distinction is the whole difference between a plan you follow and a plan you catch out.',
       'One payment, $49, and it is yours.',
     ],
@@ -152,10 +162,12 @@ export const STEPS: Step[] = [
     preheader: () => 'The bit nobody else does.',
     paragraphs: (v) => [
       `${v.differentiator}. That is the part I would buy this for, and it is the part every other plan skips.`,
-      `Swap one dinner and the shopping list rewrites itself. Quantities change, an item disappears, the total moves. ${on(v, 'hasBudget') ? `Against the ${v.budget} a week you set, you can see whether the week fits before you go.` : 'You can see whether the week fits before you go.'}`,
-      'It also shows you what you are buying and never cooking. On a normal week that is most of the waste in a food budget, and no other app in this category will even tell you about it.',
+      ...proofFor(v),
+      on(v, 'hasBudget')
+        ? `Against the ${v.budget} a week you set, you can see whether the week fits before you go.`
+        : 'You can see whether it fits before you commit to it.',
       on(v, 'hasListHow')
-        ? `You said you make your list "${v.listhow.toLowerCase()}" right now. This is that job, done, every week, without you.`
+        ? `You said you handle it "${v.listhow.toLowerCase()}" right now. This is that job, done, every week, without you.`
         : 'That job, done, every week, without you.',
       'One payment of $49. It does not renew.',
     ],
@@ -167,9 +179,9 @@ export const STEPS: Step[] = [
     day: 8,
     subject: () => 'Is it worth $49',
     preheader: () => 'A fair question. Here is the honest answer.',
-    paragraphs: () => [
+    paragraphs: (v) => [
       'Fair question, so here is the straight answer.',
-      'What you get: the meal plan, the grocery list with real amounts and real prices, the recipes at the planned quantity, the training plan built to your days and your equipment, 713 exercises, the Pilates flows from a real instructor, the fasting timer, the diary, and the plan adapting itself when the scale stops moving.',
+      `What you get: ${v.getList}. Plus the fasting timer, the diary, and the plan adapting itself when the scale stops moving.`,
       'What it costs: $49, one time. Not $49 a month. Not $49 now and $39 later. Forty nine dollars, and then never again.',
       'The nearest thing to it that you can actually buy is four separate subscriptions at roughly $27 a month between them. That is $324 a year, every year, forever.',
       'And if I am wrong, you have thirty days to email me and get all of it back. I would rather refund you than have you keep something you do not use.',
