@@ -33,6 +33,14 @@ export interface QuizRow {
 
 export type Vars = Record<string, string>;
 
+/* Written as a phrase that reads inside a sentence, not as the on-screen label.
+   "Lots of protein eating" is not English; "high protein" is. */
+const DIET: Record<string, string> = {
+  highProtein: 'high protein',
+  vegetarian: 'vegetarian',
+  dairyFree: 'dairy free',
+};
+
 const DAY_NAMES: Record<string, string> = {
   mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday',
   fri: 'Friday', sat: 'Saturday', sun: 'Sunday',
@@ -84,8 +92,14 @@ export function resolve(row: QuizRow): Vars {
   const nightList = listDays(nights);
   const nightCount = Array.isArray(nights) ? nights.length : 0;
 
-  const allergens = pick(a, 'allergens');
-  const allergenList = Array.isArray(allergens) ? label(angle, 'p.allergens', allergens) : '';
+  /* "none" is an OPTION in the allergen list, labelled "Nothing", so a lead who
+     answered "no allergies" renders as `no Nothing` if it is treated as a value.
+     It means the absence of the field, not a value of it. */
+  const allergensRaw = pick(a, 'allergens');
+  const allergens = Array.isArray(allergensRaw)
+    ? allergensRaw.filter((x) => String(x) !== 'none')
+    : [];
+  const allergenList = label(angle, 'p.allergens', allergens);
 
   const barrierRaw = a[pack.barrierKey];
   const barrierLabel = label(angle, pack.barrierKey, barrierRaw);
@@ -99,6 +113,8 @@ export function resolve(row: QuizRow): Vars {
     opening: pack.opening,
     differentiator: pack.differentiator,
     died: pack.died,
+    barrierLead: pack.barrierLead,
+    barrierReply: pack.barrierReply,
 
     /* Their own words on what went wrong. The only field every angle collects,
        and the strongest thing in the whole dataset to write from. */
@@ -118,8 +134,11 @@ export function resolve(row: QuizRow): Vars {
     hasHousehold: String(household > 1),
     householdSize: String(household),
 
-    hasDiet: String(Boolean(pick(a, 'diet'))),
-    diet: String(pick(a, 'diet') ?? ''),
+    /* The stored value is a code (`highProtein`), which must never reach a
+       reader. `standard` means "no restriction", which is not worth a sentence,
+       so it resolves to absent rather than to the label "Anything". */
+    hasDiet: String(pick(a, 'diet') !== undefined && pick(a, 'diet') !== 'standard'),
+    diet: pick(a, 'diet') === 'standard' ? '' : DIET[String(pick(a, 'diet') ?? '')] ?? '',
 
     hasAllergens: String(Boolean(allergenList)),
     allergens: allergenList,

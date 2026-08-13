@@ -26,6 +26,23 @@ export interface AnglePack {
   died: string;
   /** The answer key holding this angle's stated barrier. */
   barrierKey: string;
+  /**
+   * How to introduce that answer, phrased to match the question THIS angle
+   * actually asked.
+   *
+   * 🔴 `barrier` is not one question. A1 asks "what usually goes wrong",
+   * A4 asks "what did the last one change", A5 asks "what is in the way of a
+   * gym", A12 asks "what does a bad day look like". One shared lead-in
+   * misquotes three of the four, and the misquote is visible to the reader
+   * because they remember answering it.
+   */
+  barrierLead: string;
+  /**
+   * And the reply has to fit the answer. "That is a planning problem" is true
+   * of a grocery barrier and a category error against "I eat everything, then
+   * hate myself".
+   */
+  barrierReply: string;
 }
 
 export const DEFAULT_PACK: AnglePack = {
@@ -35,6 +52,8 @@ export const DEFAULT_PACK: AnglePack = {
   differentiator: 'One plan instead of four apps',
   died: 'You were handed a spreadsheet and told to work out the rest.',
   barrierKey: 'barrier',
+  barrierLead: 'You told me what gets in the way:',
+  barrierReply: 'That is not a discipline problem. It is a planning problem wearing a discipline costume, and it is the specific thing this removes.',
 };
 
 export const PACKS: Record<string, AnglePack> = {
@@ -45,6 +64,8 @@ export const PACKS: Record<string, AnglePack> = {
     differentiator: 'The grocery list writes itself',
     died: 'Every meal plan you have ever downloaded died in the grocery store.',
     barrierKey: 'barrier',
+    barrierLead: 'When I asked what usually goes wrong, you said:',
+    barrierReply: 'That is not a discipline problem. It is a planning problem wearing a discipline costume, and it is exactly what a plan with real quantities on it removes.',
   },
   A4: {
     angle: 'A4',
@@ -53,6 +74,8 @@ export const PACKS: Record<string, AnglePack> = {
     differentiator: 'One plan, both halves',
     died: 'Your program was never the problem. Your food was just never attached to it.',
     barrierKey: 'barrier',
+    barrierLead: 'When I asked what the last plan actually changed, you said:',
+    barrierReply: 'That is the answer of somebody who trained properly and ate at random. The lifting was never the missing half.',
   },
   A5: {
     angle: 'A5',
@@ -61,6 +84,8 @@ export const PACKS: Record<string, AnglePack> = {
     differentiator: 'No gym, no equipment, nothing to cancel',
     died: 'It was never the workout. The workout just never fit the time you actually had.',
     barrierKey: 'barrier',
+    barrierLead: 'When I asked what is actually in the way of a gym, you said:',
+    barrierReply: 'None of that is a motivation problem. It is a logistics problem, and a plan that runs in your living room does not have it.',
   },
   A12: {
     angle: 'A12',
@@ -69,6 +94,8 @@ export const PACKS: Record<string, AnglePack> = {
     differentiator: 'The app that gets you to day 28',
     died: 'One bad day ended the week, and then the week ended the month.',
     barrierKey: 'barrier',
+    barrierLead: 'When I asked what a bad day looks like, you said:',
+    barrierReply: 'I am not going to tell you that is a planning problem, because it is not. What I will say is that a bad day only costs you the week when the plan has no way back in. This one does.',
   },
 };
 
