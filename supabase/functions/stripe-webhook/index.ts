@@ -79,6 +79,35 @@ async function grant(
     .from('addon_grants')
     .upsert(rows, { onConflict: 'email,addon', ignoreDuplicates: true });
   if (error) throw new Error(`grant failed: ${error.message}`);
+
+  /*
+   * Stop selling to somebody who has bought.
+   *
+   * Here rather than at the order update because this is the one function every
+   * paid path goes through: core, bump, upsell and downsell all land in grant().
+   * Putting it on a single branch would leave a buyer who came in through an
+   * upsell still receiving "is it worth $49".
+   *
+   * This is a correctness requirement, not a courtesy. The sequence argues
+   * about price for ten days, and four of the eight emails ask for the sale.
+   *
+   * The partner is cancelled too. They now have a seat, so they are a user
+   * rather than a lead, even though they never paid.
+   *
+   * Swallowed: a mailing-list update must never fail a webhook that has already
+   * taken money. Stripe would retry the whole delivery for a mailing-list bug.
+   */
+  try {
+    const buyers = [...new Set(rows.map((r) => r.email as string))];
+    const { error: cancelErr } = await admin
+      .from('email_enrollments')
+      .update({ status: 'cancelled', updated_at: now })
+      .in('email', buyers)
+      .eq('status', 'active');
+    if (cancelErr) console.error('enrollment cancel failed (non-fatal)', cancelErr.message);
+  } catch (e) {
+    console.error('enrollment cancel threw (non-fatal)', String(e));
+  }
 }
 
 Deno.serve(async (req: Request) => {

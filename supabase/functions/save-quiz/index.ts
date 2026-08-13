@@ -75,5 +75,40 @@ Deno.serve(async (req) => {
     console.error('save-quiz upsert failed', error.message);
     return json({ error: 'save failed' }, 500);
   }
+
+  /*
+   * Enrol into the email sequence, on the COMPLETION write only.
+   *
+   * This function is called twice: once at the email screen and once when the
+   * quiz finishes. Enrolling on the second is what makes the day 0 subject
+   * ("Your plan is ready") true, because the build screen has rendered by then.
+   *
+   * ignoreDuplicates so a retried request, or a lead who runs a second quiz,
+   * never restarts a sequence from step 0.
+   *
+   * Wrapped and swallowed for the same reason this function is separate from
+   * create-checkout: a mailing-list write must never be able to fail a quiz
+   * save. The answers are the thing that matters; the email can be backfilled.
+   */
+  if (body.complete === true) {
+    try {
+      const { error: enrolErr } = await supabase.from('email_enrollments').upsert(
+        {
+          email,
+          angle,
+          quiz_answers: answers,
+          flow: 'lead-nurture-v1',
+          step: 0,
+          status: 'active',
+          next_due_at: new Date().toISOString(),
+        },
+        { onConflict: 'email,flow', ignoreDuplicates: true },
+      );
+      if (enrolErr) console.error('enrol failed (non-fatal)', enrolErr.message);
+    } catch (e) {
+      console.error('enrol threw (non-fatal)', String(e));
+    }
+  }
+
   return json({ ok: true });
 });

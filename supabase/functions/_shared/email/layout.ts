@@ -12,8 +12,20 @@
  */
 
 export const OFFER_URL = 'https://quiz.dayspine.com/paywall.html';
+
+/**
+ * From and reply-to are DIFFERENT addresses, and that is deliberate.
+ *
+ * `send.dayspine.com` is an outbound-only subdomain. Its MX points at Amazon
+ * SES's bounce host, not at a mailbox, so nothing sent to `leo@send.dayspine.com`
+ * reaches a human: it bounces. Every one of these emails says "reply to this and
+ * it reaches me", so the reply-to has to be an address that actually receives.
+ *
+ * `support@dayspine.com` is a real Microsoft 365 mailbox, and it is the address
+ * already printed on the paywall for refunds.
+ */
 export const FROM = 'Leo at Dayspine <leo@send.dayspine.com>';
-export const REPLY_TO = 'leo@send.dayspine.com';
+export const REPLY_TO = 'support@dayspine.com';
 
 /** CAN-SPAM requires a real postal address on commercial mail. */
 export const POSTAL = 'Exotix creators LLC, 30 N Gould St, Sheridan, WY 82801';
