@@ -14,8 +14,8 @@ The launch-readiness audit has carried "no branded confirmation email" as an ope
 
 ## Goals
 
-1. Reach every completed lead with 8 emails over 10 days, each personalised from their own quiz
-   answers, and **each one selling.**
+1. Reach every completed lead with 8 emails over 10 days, **branched by the angle they came from**
+   and personalised from their own quiz answers, and **each one selling.**
 2. Land in the inbox, not spam, from a domain that has never sent mail.
 3. Ship behind three gates: build, test on Leo, then publish.
 
@@ -169,16 +169,62 @@ selling access to it, not shipping the deliverable for free.
 Founder voice, first person, from Leo. Reply-to is real. Every email ends in the ask; what varies
 is which objection each one clears.
 
-| # | Day | Frame | Objection cleared | Personalised from |
-|---|---|---|---|---|
-| 1 | 0 | **Your plan is ready.** What was built, their real numbers, the outcome | "did anything actually happen" | kcal, protein, diet, household, cook nights |
-| 2 | 1 | What a week on it actually looks like | "what am I even buying" | cook nights, cook time, training days, location |
-| 3 | 2 | Why the last plan died. Their own stated barrier, quoted back | "I won't stick to it" | `barrier`, `listhow`, `sunday` |
-| 4 | 3 | Buy it once, not rented forever | "another subscription" | see the coverage note below |
-| 5 | 5 | A real instructor, real classes, not AI slop | "is this AI slop" | pilates interest, training location |
-| 6 | 6 | The grocery list nobody else writes | "meal plans never help me" | weekly budget, store, household size |
-| 7 | 8 | $49, head-on | price | goal, target, pace |
-| 8 | 10 | Last call | inertia | goal |
+### It branches by ANGLE, not just by answers
+
+🔴 **This is the load-bearing structural decision and an earlier draft got it wrong.**
+
+The lead did not take "the Dayspine quiz". They took **one of fifteen different quizzes**, chosen
+by the ad they clicked, each interrogating a different problem. Dropping them into one generic
+sequence throws that away and breaks the continuity the funnel spent 25 questions building.
+
+It is not only a message-match argument. **Each angle collects genuinely different fields**,
+measured across the completed leads:
+
+| Angle | Leads | Angle-specific fields |
+|---|---:|---|
+| **A1** grocery list | 16 | `listhow`, `sunday`, `x.store`, `x.cookNights`, `x.cookTime`, `x.shopCadence` |
+| **A4** train + eat | 2 | `programs`, `split` |
+| **A12** bad day | 1 | `lostdays`, `pattern`, `whatends` |
+| **A5** no gym | 1 | `commute`, `homefail` |
+| **Universal** | — | **`aim`, `barrier`, `yes` only** |
+
+An angle-blind sequence could personalise on **three fields** plus the derived plan numbers, and
+would discard exactly the emotionally loaded answers that make good copy: why home training failed
+before, what ends a good streak, how long the Sunday shop takes.
+
+### The structure: one spine, angle-parameterised copy
+
+This mirrors the architecture the quiz itself already uses. `q-kit.js` is four mechanical blocks
+parameterised by wording, and fifteen angles reuse them. The email sequence copies that pattern
+rather than inventing a second one.
+
+**The spine is fixed** — eight sends, fixed days, fixed jobs, every one selling:
+
+| # | Day | Job (fixed) | Fixed or angle-filled |
+|---|---|---|---|
+| 1 | 0 | **Your plan is ready.** What was built, their real numbers, the outcome | spine + angle opening |
+| 2 | 1 | What a week on it actually looks like | spine + angle proof |
+| 3 | 2 | Why the last one died. Their own `barrier`, quoted back | **angle-filled** |
+| 4 | 3 | Buy it once, not rented forever | fixed |
+| 5 | 5 | Trust: real instructor, real classes, not AI slop | fixed |
+| 6 | 6 | **The differentiator that angle promised** | **angle-filled** |
+| 7 | 8 | $49, head-on | fixed |
+| 8 | 10 | Last call | spine + angle callback |
+
+**Each angle supplies a pack**: its villain, its opening line, its proof beat, the differentiator
+for slot 6, and which of its own fields merge where.
+
+| Angle | Villain | Slot 6 differentiator | Merges |
+|---|---|---|---|
+| A1 | the meal plan that ends at the recipe | the grocery list writes itself | `sunday`, `x.store`, `x.cookNights`, budget |
+| A4 | the program that programs the lift and never the plate | one plan, both halves | `programs`, `split`, training days |
+| A5 | the schedule, not the person | it runs in the corner of the living room | `commute`, `homefail`, location |
+| A12 | the all-or-nothing week | the app that gets you to day 28 | `lostdays`, `pattern`, `whatends` |
+
+**Build packs only for angles that have leads.** Today that is A1, A4, A5 and A12. Any angle
+without a pack falls back to a default built on the three universal fields, so a newly funded
+angle is never blocked on copy. Packs get added as Meta funds new angles, which is cheap because
+the spine does not move.
 
 Eight sends across ten days, with gaps. Daily mail from a brand-new subdomain to a 22-person list
 is how a sender gets filtered.
@@ -186,6 +232,10 @@ is how a sender gets filtered.
 ### Personalisation coverage, measured
 
 Personalisation must be built on fields we actually hold, not on fields the quiz *can* collect.
+The table below is the **cross-angle** view: the `p.*` plan fields and `barrier` are collected by
+every angle, so they are safe for the fixed spine slots. The angle-specific fields are in the
+angle table above and are only ever merged inside their own angle's pack.
+
 Measured across all 22 leads:
 
 | Field | Coverage | Usable as |
