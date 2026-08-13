@@ -28,6 +28,16 @@ export interface Step {
 
 const on = (v: Vars, flag: string) => v[flag] === 'true';
 
+/**
+ * Terminate a pack string exactly once.
+ *
+ * Five of the fifteen differentiators are already complete sentences ("Buy it
+ * once. Nothing renews.", "Six apps. Now one."), so appending "." produced ".."
+ * in the day 6 opener. Found by the audit, not by any assertion, because a
+ * double period is valid text.
+ */
+const period = (t: string) => t.replace(/[.!?]+\s*$/, '') + '.';
+
 /** "for the 3 nights you cook" but only when we actually know. */
 const nights = (v: Vars) =>
   on(v, 'hasCookNights')
@@ -178,7 +188,7 @@ export const STEPS: Step[] = [
     subject: (v) => v.differentiator,
     preheader: (v) => (on(v, 'hasBudget') ? `Against the ${v.budget} a week you gave me.` : 'The bit nobody else does.'),
     paragraphs: (v) => [
-      `${v.differentiator}. That is the part I would buy this for, and it is the part every other plan skips.`,
+      `${period(v.differentiator)} That is the part I would buy this for, and it is the part every other plan skips.`,
       ...proofFor(v),
       on(v, 'hasBudget')
         ? `Against the ${v.budget} a week you set, you can see whether the week fits before you go.`
