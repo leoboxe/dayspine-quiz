@@ -1,6 +1,8 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import Stripe from 'npm:stripe@22.4.0';
 import { CATALOGUE, isAddonSlug } from '../_shared/catalogue.ts';
+import { purchaseEmail } from '../_shared/email/purchase.ts';
+import { sendEmail } from '../_shared/email/send.ts';
 import { sendMetaEvent } from '../_shared/meta.ts';
 
 /**
@@ -107,6 +109,47 @@ async function grant(
     if (cancelErr) console.error('enrollment cancel failed (non-fatal)', cancelErr.message);
   } catch (e) {
     console.error('enrollment cancel threw (non-fatal)', String(e));
+  }
+
+  /*
+   * The confirmation email.
+   *
+   * Stripe's receipt proves money moved. It does not tell anybody how to open
+   * the product, and until now install.html was the only route in, reachable
+   * only by not closing the tab after checkout. A buyer who closed it had paid
+   * $49 and had no way to find what they bought.
+   *
+   * Only to the buyer, not to a partner-seat recipient: the partner did not pay
+   * and a receipt would confuse them. Their own onboarding is a separate thing.
+   *
+   * Deduped on (email, 'purchase') in email_sends with step -1, so a retried
+   * Stripe delivery cannot send two receipts. Swallowed, because a webhook that
+   * has already taken money must not fail over an email.
+   */
+  try {
+    const apiKey = Deno.env.get('RESEND_API_KEY') ?? '';
+    if (apiKey) {
+      const { error: claimErr } = await admin.from('email_sends').insert({
+        email, step: -1, status: 'sending', subject: 'purchase confirmation',
+      });
+      if (!claimErr) {
+        const mail = purchaseEmail({ email, items: addons });
+        const sent = await sendEmail(
+          { to: email, subject: mail.subject, html: mail.html, text: mail.text, unsubUrl: '' },
+          apiKey,
+        );
+        await admin.from('email_sends')
+          .update({
+            status: sent.ok ? 'sent' : 'failed',
+            resend_id: sent.id ?? null,
+            error: sent.error ?? null,
+            subject: mail.subject,
+          })
+          .eq('email', email).eq('step', -1);
+      }
+    }
+  } catch (e) {
+    console.error('confirmation email threw (non-fatal)', String(e));
   }
 }
 
