@@ -206,7 +206,16 @@ Deno.serve(async (req: Request) => {
               .select('fbp, fbc, client_ip, client_ua, event_source_url')
               .eq('id', intent.metadata?.order_id ?? '')
               .single();
-            await sendMetaEvent({
+
+            /* Same click recovery as the core Purchase. An upsell inherits the
+               parent order's identifiers, so a parent bought from an email has
+               no click id and neither would this. */
+            const upClick = await recoverClickIds(admin, email, {
+              fbp: parent?.fbp,
+              fbc: parent?.fbc,
+            });
+
+            const upSent = await sendMetaEvent({
               eventName: 'Purchase',
               eventId: `upsell-${intent.id}`,
               sourceUrl: parent?.event_source_url ?? null,
@@ -215,12 +224,24 @@ Deno.serve(async (req: Request) => {
               contents: [{ id: addon, quantity: 1, item_price: (intent.amount ?? 0) / 100 }],
               user: {
                 email,
-                fbp: parent?.fbp,
-                fbc: parent?.fbc,
+                fbp: upClick.fbp,
+                fbc: upClick.fbc,
                 ip: parent?.client_ip,
                 userAgent: parent?.client_ua,
               },
             });
+
+            /* Record whether Meta took it.
+               Core orders have carried capi_sent_at since day one, upsells did
+               not, and the cost of that showed up immediately: a $39 upsell is
+               missing from Meta's attributed revenue and there is no way to
+               tell whether the send failed or simply was not credited. An
+               unrecorded send is an undiagnosable one. */
+            await admin
+              .from('order_upsells')
+              .update({ capi_sent_at: upSent ? new Date().toISOString() : null })
+              .eq('stripe_payment_intent_id', intent.id);
+            if (!upSent) console.error('upsell CAPI rejected for', intent.id);
           }
           break;
         }
