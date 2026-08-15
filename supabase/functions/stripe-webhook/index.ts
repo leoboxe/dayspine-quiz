@@ -3,6 +3,7 @@ import Stripe from 'npm:stripe@22.4.0';
 import { CATALOGUE, isAddonSlug } from '../_shared/catalogue.ts';
 import { purchaseEmail } from '../_shared/email/purchase.ts';
 import { sendEmail } from '../_shared/email/send.ts';
+import { recoverClickIds } from '../_shared/clickid.ts';
 import { sendMetaEvent } from '../_shared/meta.ts';
 
 /**
@@ -280,6 +281,12 @@ Deno.serve(async (req: Request) => {
          * already granted the product.
          */
         if (!order.capi_sent_at) {
+          /* An email-driven sale arrives in a different browser from the ad click,
+             so the order carries no fbc. Recover the one we stored at click time
+             before sending, or the sale is never joined back to its ad. */
+          const click = await recoverClickIds(admin, order.email, { fbp: order.fbp, fbc: order.fbc });
+          if (click.recovered) console.log('purchase: recovered stored click id for', orderId);
+
           const sent = await sendMetaEvent({
             eventName: 'Purchase',
             eventId: order.purchase_event_id ?? `order-${orderId}`,
@@ -293,8 +300,8 @@ Deno.serve(async (req: Request) => {
             })),
             user: {
               email: order.email,
-              fbp: order.fbp,
-              fbc: order.fbc,
+              fbp: click.fbp,
+              fbc: click.fbc,
               ip: order.client_ip,
               userAgent: order.client_ua,
             },
