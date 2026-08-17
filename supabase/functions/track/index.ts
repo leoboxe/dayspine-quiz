@@ -25,6 +25,17 @@ const admin = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
 );
 
+/**
+ * A Meta object id, or null.
+ *
+ * Meta ids are long decimal strings (17 to 20 digits today). Anything else in a
+ * UTM slot is somebody else's tracking and must not be written into ad_id.
+ */
+function metaId(v: unknown): string | null {
+  const s = typeof v === 'string' ? v.trim() : '';
+  return /^\d{15,22}$/.test(s) ? s : null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
   if (req.method !== 'POST') return new Response('method not allowed', { status: 405, headers: cors });
@@ -66,7 +77,25 @@ Deno.serve(async (req) => {
     utm_source: utm_source ?? null, utm_medium: utm_medium ?? null,
     utm_campaign: utm_campaign ?? null, utm_content: utm_content ?? null,
     utm_term: utm_term ?? null,
-    ad_id: ad_id ?? null, adset_id: adset_id ?? null, campaign_id: campaign_id ?? null,
+    /*
+     * Meta appends the IDs as UTMs, so read them from there when the dedicated
+     * params are absent.
+     *
+     * The schema was built for a URL template carrying `ad_id=` explicitly. That
+     * template was never deployed. What actually arrives on every ad click is
+     * utm_content=<ad id>, utm_term=<adset id>, utm_campaign=<campaign id>,
+     * appended by Meta itself, while the creative's own url_tags holds only
+     * utm_source=facebook. Result before this: ad_id populated on 4 rows out of
+     * 791 while utm_content had 747, and per-ad reporting had to join through a
+     * column nobody read as an ad id.
+     *
+     * Guarded on the shape, not just presence: utm_content is a general-purpose
+     * parameter and a newsletter or an affiliate could put anything in it. Only
+     * a Meta-style numeric id is promoted, so a non-Meta source can never
+     * pollute ad_id.
+     */
+    ad_id: ad_id ?? metaId(utm_content), adset_id: adset_id ?? metaId(utm_term),
+    campaign_id: campaign_id ?? metaId(utm_campaign),
     ad_name: ad_name ?? null, adset_name: adset_name ?? null,
     campaign_name: campaign_name ?? null, placement: placement ?? null,
     metadata: metadata ?? null,

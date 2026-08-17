@@ -21,10 +21,16 @@ test('covers BOTH platforms, since an email cannot detect the device', () => {
   assert.match(e.text, /Chrome/);
 });
 
-test('gives them a route to a human, and the guarantee', () => {
+test('gives them a route to a human', () => {
   assert.match(e.text, new RegExp(SUPPORT));
   assert.match(e.text, /reply to this email/i);
-  assert.match(e.text, /30 days/);
+});
+
+/* Leo, 2026-08-17: the refund offer is not advertised in email. It stays in the
+   terms and on the paywall, so a buyer who wants it can still find it, but no
+   email volunteers it. Removed from the confirmation and from days 3, 8 and 10. */
+test('never volunteers the refund', () => {
+  assert.doesNotMatch(e.html + e.text, /refund|money back|thirty day|30 day/i);
 });
 
 test('is transactional, not marketing: no unsubscribe, no sell', () => {

@@ -54,8 +54,6 @@ export function purchaseEmail(opts: { email: string; items?: string[] }): {
     'It then opens full screen like any other app and works offline. You can install it on as many of your own devices as you like.',
 
     `If anything is broken, confusing, or just not what you expected, reply to this email. It reaches me, not a helpdesk. You can also write to ${SUPPORT}.`,
-
-    'And if it is not for you, you have 30 days. Email me and I will refund you in full, no argument.',
   ];
 
   const input: LayoutInput = {

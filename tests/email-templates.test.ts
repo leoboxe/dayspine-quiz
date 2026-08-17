@@ -49,6 +49,25 @@ test('no unreplaced token, no undefined, no NaN', () => {
   }
 });
 
+/* Leo, 2026-08-17. The refund exists and stays in the terms and on the paywall.
+   It is simply never advertised in an email: volunteering it plants the doubt.
+   Swept across every angle rather than the three steps that carried it, so a
+   new pack cannot reintroduce the line. */
+test('never volunteers the refund', () => {
+  for (const angle of ANGLES) {
+    for (const v of [rich(angle), bare(angle)]) {
+      for (let i = 0; i < STEPS.length; i++) {
+        const r = renderStep(i, v);
+        assert.doesNotMatch(
+          `${r.subject}\n${r.html}\n${r.text}`,
+          /refund|money back|thirty day|30 day/i,
+          `${angle} step ${i}: refund offer`,
+        );
+      }
+    }
+  }
+});
+
 test('no em dashes anywhere, ever', () => {
   for (const angle of ANGLES) {
     for (const v of [rich(angle), bare(angle)]) {

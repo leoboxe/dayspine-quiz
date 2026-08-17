@@ -126,10 +126,35 @@
      -- the one case where redundancy buys nothing.
   ------------------------------------------------------------------------- */
   var ANGLE = (function () {
+    /*
+     * Read from the URL, then REMEMBER IT, exactly as the AD block below does.
+     *
+     * Without the memory this died at the paywall. q.html navigated with
+     * `location.href = './paywall.html'` and no query string, so `?a=` was gone
+     * and every downstream event lost its angle. Measured before this fix:
+     * quiz_started 99/101 carried an angle, paywall_reached 1/94, add_to_cart
+     * 0/18, checkout_completed 0/8. A cliff, not a decay.
+     *
+     * That made per-angle paywall conversion uncomputable, which is the single
+     * comparison fifteen angles exist to support. It also reached Meta blind:
+     * forwarding.ts maps angle to content_category, so InitiateCheckout and
+     * AddToCart arrived unlabelled.
+     *
+     * The URL still wins when present, so a fresh click always sets the angle
+     * rather than inheriting a stale one from an earlier session.
+     */
     try {
       var m = /[?&]a=([A-Za-z0-9]+)/.exec(location.search);
-      return m ? m[1].toUpperCase() : null;
-    } catch (e) { return null; }
+      var fromUrl = m ? m[1].toUpperCase() : null;
+      if (fromUrl) {
+        sessionStorage.setItem('dayspine.angle', fromUrl);
+        return fromUrl;
+      }
+      return sessionStorage.getItem('dayspine.angle') || null;
+    } catch (e) {
+      var m2 = /[?&]a=([A-Za-z0-9]+)/.exec(location.search);
+      return m2 ? m2[1].toUpperCase() : null;
+    }
   })();
 
   /* Ad-level attribution, passed through by the ad's URL parameters. Read once

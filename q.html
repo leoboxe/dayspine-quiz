@@ -633,7 +633,13 @@ function renderReveal() {
     + '</div>';
   nextBtn.style.display = '';
   setCta('See my plan', true);
-  nextBtn.onclick = () => { location.href = './paywall.html'; };
+  /* Carry the angle across. Storage covers a lead who arrives some other way,
+     but the URL is the reliable half and costs nothing to pass. */
+  nextBtn.onclick = () => {
+    const to = new URL('./paywall.html', location.href);
+    if (ANGLE) to.searchParams.set('a', ANGLE);
+    location.href = to.href;
+  };
   legal.textContent = 'One payment. No subscription.';
   track('quiz_reveal', { kcal: t.kcal });
 }
