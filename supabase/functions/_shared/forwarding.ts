@@ -121,8 +121,32 @@ export async function forwardToMeta(
     const userData: Record<string, unknown> = {
       client_ip_address: event.ip_address,
       client_user_agent: event.user_agent,
-      external_id: [await sha256(event.visitor_id)],
     };
+
+    /*
+     * external_id, as a LIST of every stable id we hold for this person.
+     *
+     * This used to be `[sha256(visitor_id)]` alone, which stitched a visitor's
+     * funnel events together but could never reach the Purchase. The Stripe
+     * webhook has no visitor_id -- `orders` does not store one -- so it keys
+     * external_id on the email hash instead. Two different keys for the same
+     * buyer means Meta joins neither to the other, which is the silent half of
+     * the attribution problem `clickid.ts` fixes the loud half of.
+     *
+     * visitor_id also cannot bridge that gap even in principle: the ad click
+     * happens in Meta's in-app browser and the email click three days later
+     * happens in Gmail's, so it is a different visitor_id for the same person.
+     * The email hash is the only id present on both sides.
+     *
+     * Meta matches on ANY entry in this array, so sending both costs nothing
+     * and makes the sale joinable by whichever id the other event carried.
+     */
+    const externalIds = [await sha256(event.visitor_id)];
+    if (event.user_email_hash && !externalIds.includes(event.user_email_hash)) {
+      externalIds.push(event.user_email_hash);
+    }
+    userData.external_id = externalIds;
+
     if (event.user_email_hash) userData.em = [event.user_email_hash];
     if (event.fbp) userData.fbp = event.fbp;
     if (event.fbc) userData.fbc = event.fbc;

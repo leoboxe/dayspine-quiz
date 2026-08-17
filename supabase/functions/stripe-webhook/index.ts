@@ -256,7 +256,7 @@ Deno.serve(async (req: Request) => {
         const { data: order } = await admin
           .from('orders')
           .select(
-            'email, items, partner_email, status, amount_cents, fbp, fbc, client_ip, client_ua, event_source_url, purchase_event_id, capi_sent_at',
+            'email, customer_name, items, partner_email, status, amount_cents, fbp, fbc, client_ip, client_ua, event_source_url, purchase_event_id, capi_sent_at',
           )
           .eq('id', orderId)
           .single();
@@ -321,6 +321,7 @@ Deno.serve(async (req: Request) => {
             })),
             user: {
               email: order.email,
+              name: order.customer_name,
               fbp: click.fbp,
               fbc: click.fbc,
               ip: order.client_ip,

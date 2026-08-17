@@ -119,6 +119,14 @@ document.getElementById('pay').addEventListener('submit', async (e) => {
   const email = (emailEl.value || '').trim().toLowerCase();
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return fail('Check your email address.');
 
+  /* Tell the pixel who this is BEFORE the Purchase fires, so the browser half
+     carries the email and name rather than cookies alone. */
+  try {
+    if (window.dayspineMeta && window.dayspineMeta.identify) {
+      window.dayspineMeta.identify(email, (document.getElementById('name') || {}).value);
+    }
+  } catch (err) {}
+
   btn.disabled = true;
   btn.textContent = 'Processing…';
 
@@ -135,6 +143,9 @@ document.getElementById('pay').addEventListener('submit', async (e) => {
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + SUPABASE_ANON },
       body: JSON.stringify({
         email,
+        /* The paywall makes this required and nothing used to read it. Two more
+           match keys for Meta, and better Stripe risk scoring, for free. */
+        name: (document.getElementById('name') || {}).value || null,
         addons: bump.checked ? ['printed-plan'] : [],
         /* The cookies a server cannot read, and the id that dedupes this sale
            against the webhook's copy of it. */
@@ -162,6 +173,11 @@ document.getElementById('pay').addEventListener('submit', async (e) => {
     elements,
     clientSecret,
     confirmParams: {
+      /* Billing name, from the field the page already requires. Stripe uses it
+         for risk scoring and it makes the receipt legible. */
+      payment_method_data: {
+        billing_details: { name: (document.getElementById('name') || {}).value || undefined },
+      },
       /* Resolved against the current page rather than string-replaced.
          This was `location.href.replace('checkout.html', 'upsell.html')`, from
          when the payment lived on checkout.html. It now lives on paywall.html,

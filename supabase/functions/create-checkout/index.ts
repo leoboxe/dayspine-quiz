@@ -52,6 +52,7 @@ Deno.serve(async (req: Request) => {
   let body: {
     email?: unknown;
     addons?: unknown;
+    name?: unknown;
     partnerEmail?: unknown;
     // Meta identity, captured HERE because the Stripe webhook that fires the
     // Purchase event has no browser to read cookies from.
@@ -78,6 +79,9 @@ Deno.serve(async (req: Request) => {
   if (amount <= 0) return json({ error: 'empty_order' }, 400);
 
   const partnerEmail = cleanEmail(body.partnerEmail);
+  /* Stored so the Stripe webhook can send fn/ln with the Purchase. Trimmed and
+     length-capped; it is display data, never used for lookup. */
+  const customerName = typeof body.name === 'string' ? body.name.trim().slice(0, 120) || null : null;
 
   /**
    * The tracking identity, taken from the request rather than the body where
@@ -157,6 +161,7 @@ Deno.serve(async (req: Request) => {
         status: 'draft',
         items: selection,
         amount_cents: amount,
+        customer_name: customerName,
         stripe_customer_id: customer.id,
         partner_email: partnerEmail,
         ...tracking,

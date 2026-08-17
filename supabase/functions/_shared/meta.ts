@@ -27,6 +27,8 @@ export interface MetaUserData {
   email?: string | null;
   fbp?: string | null;
   fbc?: string | null;
+  /** Full name as typed at checkout. Split into fn/ln here. */
+  name?: string | null;
   ip?: string | null;
   userAgent?: string | null;
 }
@@ -64,7 +66,44 @@ export async function sendMetaEvent(event: MetaEvent): Promise<boolean> {
   }
 
   const user: Record<string, unknown> = {};
-  if (event.user.email) user.em = [await sha256(event.user.email)];
+  if (event.user.email) {
+    const em = await sha256(event.user.email);
+    user.em = [em];
+    /*
+     * external_id, which Meta weights heavily and we were not sending at all.
+     *
+     * It is a stable, first-party identifier for a person, and Meta uses it to
+     * stitch a visitor's events together across sessions and devices even when
+     * the cookies are gone. That is exactly our situation: the ad click happens
+     * in Meta's in-app browser and the email click happens in Gmail's, so the
+     * cookies do not survive but the email does.
+     *
+     * The hashed email IS the stable id here, because email is the only
+     * identifier present on every side of this funnel: the quiz, the checkout,
+     * the app sign-in and the email sequence. Sending the same value for em and
+     * external_id is explicitly allowed and is what Meta's own examples do.
+     */
+    user.external_id = [em];
+  }
+  /*
+   * First and last name, from the field the paywall already makes required.
+   *
+   * It was collected and silently discarded: never passed to Stripe as billing
+   * details, never stored on the order, never sent here. Two more match keys
+   * for data the buyer had already typed.
+   *
+   * Split on the last space, so "Mary Anne Smith" gives fn="Mary Anne".
+   * Guessing a middle name is worse than treating it as part of the first.
+   */
+  if (event.user.name) {
+    const parts = event.user.name.trim().split(/\s+/);
+    if (parts.length === 1) {
+      user.fn = [await sha256(parts[0])];
+    } else if (parts.length > 1) {
+      user.ln = [await sha256(parts[parts.length - 1])];
+      user.fn = [await sha256(parts.slice(0, -1).join(' '))];
+    }
+  }
   // fbp and fbc are NOT hashed — they are Meta's own identifiers, and hashing
   // them silently destroys the match.
   if (event.user.fbp) user.fbp = event.user.fbp;

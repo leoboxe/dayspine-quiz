@@ -24,7 +24,39 @@
   t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
   (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
 
-  fbq('init', DATASET_ID);
+  /* -------------------------------------------------------------------------
+     Advanced matching.
+
+     `fbq('init', ID)` with no second argument -- which is what this was --
+     sends Meta NO identity at all from the browser. The browser half then
+     matched on cookies alone, so an ad click in Meta's in-app browser and the
+     purchase that followed were two anonymous visitors as far as the browser
+     was concerned.
+
+     We know the email from the quiz (q.html fires lead_captured with it) and
+     again at checkout. Passing it to init lets Meta hash it and match on a
+     person rather than a cookie.
+
+     Values go in RAW and deliberately so: the pixel normalises and hashes them
+     itself, and hashing here would risk a double hash that matches nothing. The
+     server half hashes because a server must -- there is no pixel to do it.
+
+     Read from storage first, so identity established on the quiz still applies
+     on the paywall two pages later.
+  ------------------------------------------------------------------------- */
+  function storedIdentity() {
+    try {
+      var raw = sessionStorage.getItem('dayspine.id');
+      return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
+  }
+
+  var identity = storedIdentity();
+  if (identity && identity.em) {
+    fbq('init', DATASET_ID, identity);
+  } else {
+    fbq('init', DATASET_ID);
+  }
   /* PageView is NOT fired here. dayspineTrack('page_view') at the bottom fires
      it with an explicit eventID so the browser and server halves deduplicate;
      firing it here as well would report two page views for every one. */
@@ -99,6 +131,29 @@
        millisecond.
        The closure keeps it stable for the page; sessionStorage is now only for
        surviving a refresh, and its absence costs nothing. */
+    /* Re-init with advanced matching once we learn who this is. Meta supports
+       calling init again to add user data, and it applies to every event fired
+       afterwards. Remembered for the rest of the session so the paywall and the
+       upsell inherit it without asking again.
+
+       No PageView is fired by init in this setup, so re-initialising cannot
+       double-count anything. */
+    identify: function (email, name) {
+      var em = (email || '').trim().toLowerCase();
+      if (!em) return;
+      var data = { em: em };
+      if (name) {
+        var parts = String(name).trim().split(/\s+/);
+        if (parts.length > 1) {
+          data.ln = parts[parts.length - 1].toLowerCase();
+          data.fn = parts.slice(0, -1).join(' ').toLowerCase();
+        } else if (parts[0]) {
+          data.fn = parts[0].toLowerCase();
+        }
+      }
+      try { sessionStorage.setItem('dayspine.id', JSON.stringify(data)); } catch (e) {}
+      try { if (window.fbq) fbq('init', DATASET_ID, data); } catch (e) {}
+    },
     purchaseEventId: function () {
       if (purchaseId) return purchaseId;
       var fresh = 'ds-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
@@ -188,6 +243,13 @@
     data = data || {};
     var eventId = data.event_id
       || 'ds-' + eventType + '-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
+
+    /* Any event that knows the email upgrades the browser's match quality for
+       every event after it. q.html fires lead_captured with the address, which
+       used to be forwarded to our server and dropped before fbq. */
+    if (data.email) {
+      try { window.dayspineMeta.identify(data.email, data.name); } catch (e) {}
+    }
 
     var name = META_NAME[eventType];
     if (name && window.fbq) {
