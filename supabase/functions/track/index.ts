@@ -101,7 +101,15 @@ Deno.serve(async (req) => {
           screen_index: typeof body.screen_index === 'number' ? body.screen_index : null,
           screen_id: typeof body.screen_id === 'string' ? body.screen_id.slice(0, 64) : null,
           email: typeof email === 'string' && email.includes('@') ? email.toLowerCase() : undefined,
-          complete: body.quiz_complete === true,
+          /* Only ever set true, never written back to false.
+             The email-screen save and the completion save are two concurrent
+             keepalive posts moments apart, with no ordering guarantee. Writing
+             `complete: false` here meant a late-arriving email save could undo
+             the completion flag -- observed on the first end-to-end run: a quiz
+             that finished, with all 25 answers and the email attached, stored as
+             complete=false. Omitting the column leaves whatever is already
+             there, and the row defaults to false on insert. */
+          ...(body.quiz_complete === true ? { complete: true } : {}),
           updated_at: new Date().toISOString(),
         }, { onConflict: 'visitor_id' });
       }
