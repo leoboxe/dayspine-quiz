@@ -411,7 +411,13 @@ footer a{color:var(--faint)}
    you must change the catalogue (and checkout-payment.js's CORE, which prices
    the Stripe Element) in the same commit, or the page advertises one number and
    Stripe collects another. */
-var CORE_PRICE = 49;
+/* Read LAZILY, not captured at parse time.
+   localise.js is a module and modules are deferred, so it publishes the market
+   price AFTER this inline script has run. Assigning here would have frozen every
+   market at the US 49 while the page around it displayed A$79 -- the exact
+   show-one-price-charge-another failure this whole config exists to prevent.
+   Both call sites run on interaction or after load, so a function is safe. */
+function corePrice() { return window.DAYSPINE_CORE_PRICE || 49; }
 
 var SPEND = { '0': 0, 'u15': 12, '15-40': 27, '40+': 55 };
 var LABEL = {
@@ -442,7 +448,7 @@ function readQuiz() {
   var m = none ? 27 : monthly;
   document.getElementById('nowVal').textContent = '$' + m + ' / mo';
   document.getElementById('yearVal').textContent = '$' + (m * 12);
-  var months = Math.max(1, Math.round(CORE_PRICE / m));
+  var months = Math.max(1, Math.round(corePrice() / m));
   document.getElementById('verdict').innerHTML =
     'It pays for itself in <b>' + (months <= 1 ? 'under a month' : months + ' months') +
     '</b> — and then it never charges you again.';
@@ -475,7 +481,7 @@ function openSheet() {
      way to tell "nobody tapped" from "the pixel was blocked", which is not a
      rare case: ad traffic arrives in Meta's in-app webview. `add_to_cart` was
      already mapped in forwarding.ts and pixel.js; only the call site was wrong. */
-  if (!opened) { opened = true; try { window.dayspineTrack && window.dayspineTrack('add_to_cart', { value: CORE_PRICE, currency: 'USD' }); } catch (e) {} }
+  if (!opened) { opened = true; try { window.dayspineTrack && window.dayspineTrack('add_to_cart', { value: corePrice(), currency: (window.DAYSPINE_CURRENCY || 'USD') }); } catch (e) {} }
   setTimeout(function () { document.getElementById('email').focus({ preventScroll: true }); }, 320);
 }
 function closeSheet() {
@@ -510,5 +516,6 @@ function grantAddon(id) {
   else go();
 })();
 </script>
+<script type="module" src="./localise.js"></script>
 </body>
 </html>

@@ -23,6 +23,8 @@ export interface CatalogueItem {
   slot: 'core' | 'bump' | 'upsell' | 'downsell';
 }
 
+import { MARKETS, type MarketCode } from './markets.ts';
+
 export const CATALOGUE: Record<AddonSlug, CatalogueItem> = {
   /* $49 from 2026-08-12 (was $79). Leo's call: the buyer's reference price is set
      by the app-store cohort (Cal AI $29.99/yr, Yazio $47.90/yr, MacroFactor
@@ -72,4 +74,26 @@ export function json(body: unknown, status: number): Response {
     status,
     headers: { ...CORS, 'Content-Type': 'application/json' },
   });
+}
+
+/* ------------------------------------------------------------------ MARKETS --
+
+   The amounts above are the US price list and stay the source of truth for the
+   US funnel. Every other market prices the same four things differently -- not
+   as a conversion, but as its own round retail number that clears Leo's $45 USD
+   net floor after local tax and Stripe's international loading. See markets.ts.
+
+   Everything below takes a market and returns that market's numbers. Nothing
+   should read CATALOGUE[...].amount directly any more: it silently means "the US
+   price", which is right in one funnel out of five.
+*/
+
+/** The price of one item in one market, in that currency's smallest unit. */
+export function priceFor(market: MarketCode, slug: AddonSlug): number {
+  return MARKETS[market].prices[slug];
+}
+
+/** What a basket costs in one market. The only number allowed near Stripe. */
+export function totalForMarket(market: MarketCode, slugs: readonly string[]): number {
+  return slugs.filter(isAddonSlug).reduce((sum, s) => sum + priceFor(market, s), 0);
 }

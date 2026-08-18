@@ -11,6 +11,7 @@
  * more thorough.
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { MARKETS, marketFromRequest } from '../_shared/markets.ts';
 import { forwardToMeta, isBot, sha256, type TrackEvent } from '../_shared/forwarding.ts';
 
 const cors = {
@@ -66,6 +67,11 @@ Deno.serve(async (req) => {
   const ua = req.headers.get('x-real-user-agent') ?? req.headers.get('user-agent') ?? null;
   const bot = isBot(ua);
 
+  /* Which funnel this event belongs to, from the hostname it was sent from.
+     Every row carries it so a market can be read on its own without unpicking
+     URLs after the fact. */
+  const marketCode = marketFromRequest(req);
+
   /*
    * quiz_progress -- the backup of every answer, including abandoned quizzes.
    *
@@ -96,6 +102,7 @@ Deno.serve(async (req) => {
       if (JSON.stringify(answers).length <= 20000) {
         await admin.from('quiz_progress').upsert({
           visitor_id,
+          market: marketCode,
           angle: angle ?? null,
           answers,
           screen_index: typeof body.screen_index === 'number' ? body.screen_index : null,
@@ -121,6 +128,7 @@ Deno.serve(async (req) => {
 
   const row = {
     event_type, event_id, visitor_id,
+    market: marketCode,
     session_id: session_id ?? null,
     angle: angle ?? null,
     page_slug: page_slug ?? null,

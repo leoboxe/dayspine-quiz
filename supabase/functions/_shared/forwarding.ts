@@ -69,10 +69,16 @@ export interface TrackEvent {
   ip_address: string | null;
   user_agent: string | null;
   revenue_cents: number | null;
+  market?: string | null;
   fbp: string | null;
   fbc: string | null;
   user_email_hash: string | null;
   metadata: Record<string, unknown> | null;
+}
+
+/** The event's own currency, from its market. One column, no way to disagree. */
+function currencyFor(market: string | null | undefined): string {
+  return isMarketCode(market) ? MARKETS[market].currency : 'usd';
 }
 
 export async function sha256(value: string): Promise<string> {
@@ -160,7 +166,12 @@ export async function forwardToMeta(
         action_source: 'website',
         user_data: userData,
         custom_data: {
-          ...(event.revenue_cents ? { value: event.revenue_cents / 100, currency: 'usd' } : {}),
+          /* The market's own currency. An AddToCart worth A$79 reported as
+             79 USD makes that market look ~40% more valuable than it is, and
+             Meta optimises on exactly this number. */
+          ...(event.revenue_cents
+            ? { value: event.revenue_cents / 100, currency: currencyFor(event.market) }
+            : {}),
           /* The ad this visitor came from. Carried on every event so per-angle
              performance comes out of the same pipeline as everything else. */
           ...(event.angle ? { content_category: event.angle } : {}),

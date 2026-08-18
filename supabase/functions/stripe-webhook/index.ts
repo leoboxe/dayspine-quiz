@@ -220,7 +220,10 @@ Deno.serve(async (req: Request) => {
               eventId: `upsell-${intent.id}`,
               sourceUrl: parent?.event_source_url ?? null,
               value: (intent.amount ?? 0) / 100,
-              currency: 'usd',
+              /* What Stripe actually took, not a hardcoded USD. Reporting an
+                 A$79 sale as 79 USD would overstate that market's ROAS by ~40%
+                 and Meta would optimise toward the wrong one. */
+              currency: (intent.currency ?? 'usd').toUpperCase(),
               contents: [{ id: addon, quantity: 1, item_price: (intent.amount ?? 0) / 100 }],
               user: {
                 email,
@@ -256,7 +259,7 @@ Deno.serve(async (req: Request) => {
         const { data: order } = await admin
           .from('orders')
           .select(
-            'email, customer_name, items, partner_email, status, amount_cents, fbp, fbc, client_ip, client_ua, event_source_url, purchase_event_id, capi_sent_at',
+            'email, customer_name, items, partner_email, status, amount_cents, market, currency_code, fbp, fbc, client_ip, client_ua, event_source_url, purchase_event_id, capi_sent_at',
           )
           .eq('id', orderId)
           .single();
@@ -341,7 +344,7 @@ Deno.serve(async (req: Request) => {
             eventId: order.purchase_event_id ?? `order-${orderId}`,
             sourceUrl: order.event_source_url,
             value: (order.amount_cents ?? 0) / 100,
-            currency: 'usd',
+            currency: (order.currency_code ?? 'usd').toUpperCase(),
             contents: (order.items ?? []).filter(isAddonSlug).map((slug: string) => ({
               id: slug,
               quantity: 1,
