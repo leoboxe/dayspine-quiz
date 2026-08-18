@@ -85,13 +85,18 @@ Deno.serve(async (req: Request) => {
     if (order.status !== 'paid') return json({ error: 'order_not_paid' }, 409);
     if (!order.stripe_payment_method_id || !order.stripe_customer_id) {
       return json({ error: 'no_saved_card' }, 409);
+    }
 
     /* Falls back to US only if an old row predates the market column. Those rows
-       are genuinely US -- it is the only market that has run. */
+       are genuinely US -- it is the only market that has run.
+
+       These sat INSIDE the guard above, after its return: unreachable, and the
+       names were then used out of scope further down. Every upsell threw, in
+       every market. esbuild parses that happily -- it is a type/scope error, not
+       a syntax one -- which is why it reached production. */
     const upsellMarket = isMarketCode(order.market) ? order.market : DEFAULT_MARKET;
     const upsellAmount = priceFor(upsellMarket, addon);
     const upsellCurrency = order.currency_code || MARKETS[upsellMarket].currency;
-    }
 
     /**
      * Rule 2: claim the slot BEFORE charging.

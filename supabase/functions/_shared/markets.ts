@@ -119,15 +119,41 @@ export function marketFromHost(host: string | null | undefined): MarketCode {
   for (const m of Object.values(MARKETS)) {
     if (h === m.host) return m.code;
   }
-  const first = h.split('.')[0];
-  const byPrefix: Record<string, MarketCode> = { au: 'AU', ca: 'CA', nz: 'NZ', uk: 'GB', gb: 'GB' };
-  return byPrefix[first] ?? DEFAULT_MARKET;
+  /* EXACT hosts only. The old version also guessed from the first label, so
+     `au.anything.example` selected the Australian price list -- a wider door
+     than it needed to be for zero benefit. Anything unrecognised is US. */
+  return DEFAULT_MARKET;
 }
 
 /** The market for an incoming edge-function request. */
+/**
+ * The market for an incoming edge-function request.
+ *
+ * ## What this is trusted for, and what it is not
+ *
+ * It selects a PRICE LIST. It never sets a price: `create-checkout` computes the
+ * amount server-side from `markets.ts`, so the worst a caller can do is choose
+ * one of five legitimate lists. It cannot invent an amount.
+ *
+ * ## Why Origin, and its known limit
+ *
+ * These Edge Functions are shared by all five funnels -- one Supabase project
+ * serves every market -- so there is no deploy-time constant that could identify
+ * the caller. Origin is the only signal available, and browsers set it
+ * themselves: page JavaScript cannot forge it, which covers every real buyer.
+ *
+ * A scripted request CAN set it. The ceiling on that is $11.98: a GB buyer
+ * spoofing US pays $49 rather than $60.98. Bounded, self-inflicted, and visible
+ * afterwards because `orders.market` is compared against the card country at
+ * webhook time.
+ *
+ * ⚠️ The `x-dayspine-market` header this used to honour is GONE. It let any
+ * caller name its own price list in one hop, had no legitimate caller, and was
+ * added speculatively. Do not reintroduce it without a server-only shared secret
+ * -- see docs: the durable fix is a per-deployment Vercel proxy that injects the
+ * market with a signature only the servers know.
+ */
 export function marketFromRequest(req: Request): MarketCode {
-  const explicit = req.headers.get('x-dayspine-market');
-  if (isMarketCode(explicit)) return explicit;
   for (const header of ['origin', 'referer']) {
     const raw = req.headers.get(header);
     if (!raw) continue;

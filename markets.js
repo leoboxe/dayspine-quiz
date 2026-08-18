@@ -109,8 +109,10 @@ export function marketFromHost(host) {
   for (const m of Object.values(MARKETS)) {
     if (h === m.host) return m.code;
   }
-  const byPrefix = { au: 'AU', ca: 'CA', nz: 'NZ', uk: 'GB', gb: 'GB' };
-  return byPrefix[h.split('.')[0]] || DEFAULT_MARKET;
+  /* EXACT hosts only, matching markets.ts. If these two ever disagree the page
+     displays one market's prices while the server charges another's -- the exact
+     failure this shared config exists to prevent. */
+  return DEFAULT_MARKET;
 }
 
 /** The market for the page currently open. */
