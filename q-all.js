@@ -331,12 +331,16 @@ A4: {
        Options cut from up to eight words to two or three: the old set made a
        cold reader parse roughly thirty words before their first tap. */
     ask({ id: 'split', key: 'split',
-      question: 'Where do your training and your food live right now?',
+      question: 'How do you plan your meals and workouts?',
       options: [
-        { v: 'two', label: 'Two apps' },
-        { v: 'apphead', label: 'An app, then guesswork' },
-        { v: 'paper', label: 'Paper, food improvised' },
-        { v: 'one', label: 'One place', hint: 'Which one?' }] }),
+        { v: 'two', label: 'Two separate apps' },
+        { v: 'apphead', label: 'An app for training, guesswork for food' },
+        { v: 'paper', label: 'Written down, then improvised' },
+        /* Was "One place / Which one?" -- a hint that asked a question the screen
+           had no input to answer, so it read as a broken field. The people it was
+           aimed at are almost all in the option below anyway: someone already
+           running one joined-up plan is not the buyer. */
+        { v: 'noplan', label: 'Honestly, I do not plan it' }] }),
     ask({ id: 'programs', key: 'programs', question: 'How many training programs have you run through?',
       why: 'It tells us how much structure you are used to.',
       options: [
@@ -365,7 +369,7 @@ A4: {
       options: [
         { v: 'definitely', label: 'Entirely' }, { v: 'mostly', label: 'Mostly' },
         { v: 'some', label: 'A bit' }, { v: 'no', label: 'I like managing it myself' }] }),
-    { id: 'gap', type: 'gap', title: 'What knows about what.',
+    { id: 'gap', type: 'gap', title: 'One plan, or two that ignore each other.',
       withUs: { n: '1', label: 'plan, both halves' }, without: { n: '2', label: 'apps, neither talks' },
       body: 'Two subscriptions, two logins, and no single place that can answer the only question '
           + 'that matters.',

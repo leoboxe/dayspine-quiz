@@ -433,11 +433,22 @@
     }
   },
   "A4": {
+    "p.ageBand": {
+      "18-29": "18 to 29",
+      "30-39": "30 to 39",
+      "40-49": "40 to 49",
+      "50-59": "50 to 59",
+      "60+": "60 or over"
+    },
+    "p.sex": {
+      "female": "Female",
+      "male": "Male"
+    },
     "split": {
-      "two": "Two different apps",
-      "apphead": "An app for training, my head for food",
-      "paper": "A program on paper, food improvised",
-      "one": "One place"
+      "two": "Two separate apps",
+      "apphead": "An app for training, guesswork for food",
+      "paper": "Written down, then improvised",
+      "noplan": "Honestly, I do not plan it"
     },
     "programs": {
       "5+": "Five or more",

@@ -118,7 +118,13 @@ input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;bac
   color:var(--brand);margin-bottom:12px}
 .card h2{font-size:clamp(23px,6vw,29px);margin-bottom:12px}
 .card p{color:var(--muted);font-size:15.5px;line-height:1.55}
-.bars{display:flex;align-items:flex-end;gap:26px;justify-content:center;margin:26px 0 8px;height:170px}
+/* min-height, NOT height. The tall column is a 128px bar plus its number, its
+   label and two 10px gaps -- about 189px -- so a fixed 170px box made it overflow
+   40px upward, straight through the card's own headline. Measured 2026-08-18:
+   column top y=119 against headline bottom y=133. A flex container that is
+   allowed to grow cannot overlap what sits above it. */
+.bars{display:flex;align-items:flex-end;gap:26px;justify-content:center;margin:26px 0 8px;
+  min-height:170px}
 .col{display:flex;flex-direction:column;align-items:center;gap:10px;flex:0 0 96px}
 .col .n{font:800 24px/1 "JetBrains Mono",monospace}
 .col .bx{width:84px;border-radius:12px 12px 0 0;transition:height .8s cubic-bezier(.2,.8,.2,1)}

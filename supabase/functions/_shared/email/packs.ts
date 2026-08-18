@@ -155,7 +155,10 @@ export const PACKS: Record<string, AnglePack> = {
     barrierReply:
       'That is the answer of somebody who trained properly and ate at random. The lifting was never the missing half.',
     signalKey: 'split',
-    signalLead: 'You train on a',
+    /* Reads as: <lead> "two separate apps". That is the thing this replaces.
+       Was 'You train on a', which produced "You train on a "two separate apps""
+       -- the lead was written for an answer shape this question never had. */
+    signalLead: 'When I asked how you plan your week, you said',
     proof: [
       'Your lifting week and your eating week are the same document. Change the training split and the food moves with it, because they were never two separate plans.',
       'Adherence is scored per meal against what the plan asked for, so you can see whether the eating actually matched the training instead of guessing.',
