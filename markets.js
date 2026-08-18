@@ -24,7 +24,8 @@ export const MARKETS = {
       "grocery-pro": 2900
     },
     "taxRate": 0,
-    "taxFromFirstSale": false
+    "taxFromFirstSale": false,
+    "fxFromUsd": 1
   },
   "AU": {
     "code": "AU",
@@ -40,7 +41,8 @@ export const MARKETS = {
       "grocery-pro": 4500
     },
     "taxRate": 0.1,
-    "taxFromFirstSale": false
+    "taxFromFirstSale": false,
+    "fxFromUsd": 1.4068
   },
   "CA": {
     "code": "CA",
@@ -56,7 +58,8 @@ export const MARKETS = {
       "grocery-pro": 4500
     },
     "taxRate": 0.13,
-    "taxFromFirstSale": false
+    "taxFromFirstSale": false,
+    "fxFromUsd": 1.3865
   },
   "NZ": {
     "code": "NZ",
@@ -72,7 +75,8 @@ export const MARKETS = {
       "grocery-pro": 5500
     },
     "taxRate": 0.15,
-    "taxFromFirstSale": false
+    "taxFromFirstSale": false,
+    "fxFromUsd": 1.6926
   },
   "GB": {
     "code": "GB",
@@ -88,7 +92,8 @@ export const MARKETS = {
       "grocery-pro": 2500
     },
     "taxRate": 0.2,
-    "taxFromFirstSale": true
+    "taxFromFirstSale": true,
+    "fxFromUsd": 0.7379
   }
 };
 

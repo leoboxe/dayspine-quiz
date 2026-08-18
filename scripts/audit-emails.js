@@ -10,6 +10,12 @@ import { STEPS, renderStep } from '../supabase/functions/_shared/email/templates
 import { resolve } from '../supabase/functions/_shared/email/resolve.ts';
 import { PACKS } from '../supabase/functions/_shared/email/packs.ts';
 import { ANGLES } from '../q-index.js';
+import { MARKETS } from '../supabase/functions/_shared/markets.ts';
+
+/* Every market, not just the US one. A price literal left in a template renders
+   correctly for US and wrongly for the other four, so auditing US alone would
+   have passed the exact bug this pass exists to catch. */
+const MARKET_CODES = Object.keys(MARKETS);
 
 const real = JSON.parse(readFileSync(new URL('./_preview-rows.json', import.meta.url), 'utf8'));
 const issues = [];
@@ -38,9 +44,11 @@ for (const angle of Object.keys(PACKS)) {
 cases.push(['A99/unknown', 'A99', { barrier: 'x' }]);
 cases.push(['null-angle', null, {}]);
 
-for (const [label, angle, answers] of cases) {
+for (const marketCode of MARKET_CODES) {
+for (const [label0, angle, answers] of cases) {
+  const label = `${label0} [${marketCode}]`;
   let v;
-  try { v = resolve({ email: 'a@b.com', angle, answers }); }
+  try { v = resolve({ email: 'a@b.com', angle, market: marketCode, answers }); }
   catch (e) { flag('FATAL', label, 'resolve threw: ' + e.message); continue; }
 
   for (let i = 0; i < STEPS.length; i++) {
@@ -73,14 +81,16 @@ for (const [label, angle, answers] of cases) {
     if (/undefined|NaN|\[object/.test(body + r.subject)) flag('FATAL', where, 'placeholder leak');
     if (/—|–/.test(body + r.subject)) flag('BUG', where, 'em dash');
     if (!/quiz\.dayspine\.com\/paywall/.test(body)) flag('FATAL', where, 'no offer link');
-    if (!/\$49/.test(body)) flag('BUG', where, 'no price stated');
+    /* The price must appear in the READER'S currency, whatever that is. */
+    if (!body.includes(v.core)) flag('BUG', where, `price ${v.core} not stated`);
   }
 }
+}   // markets
 
 const order = { FATAL: 0, BUG: 1, WARN: 2 };
 issues.sort((a, b) => order[a.sev] - order[b.sev]);
 const counts = issues.reduce((m, i) => (m[i.sev] = (m[i.sev] || 0) + 1, m), {});
-console.log(`CASES: ${cases.length} rows x ${STEPS.length} steps = ${cases.length * STEPS.length} emails`);
+console.log(`CASES: ${cases.length} rows x ${STEPS.length} steps x ${MARKET_CODES.length} markets = ${cases.length * STEPS.length * MARKET_CODES.length} emails`);
 console.log('ISSUES:', JSON.stringify(counts));
 console.log();
 const seen = new Set();

@@ -58,33 +58,43 @@ export interface Market {
   taxRate: number;
   /** True only where registration is required from the first sale. */
   taxFromFirstSale: boolean;
+  /**
+   * Units of this currency per 1 USD, for APPROXIMATE figures only.
+   *
+   * Our own prices are never converted -- they are round retail numbers in
+   * `prices`. This exists so the emails can quote what a COMPETITOR charges in
+   * the reader's own currency: telling an Australian that Noom is "$209 a year"
+   * is either wrong or ambiguous, and quoting USD at them undercuts the whole
+   * comparison. Rounded hard on use, because nobody believes "A$294.02".
+   */
+  fxFromUsd: number;
 }
 
 export const MARKETS: Record<MarketCode, Market> = {
   US: {
     code: 'US', currency: 'usd', symbol: '$', iso: 'USD', host: 'quiz.dayspine.com',
     prices: { core: 4900, anchor: 9900, 'printed-plan': 900, 'partner-seat': 3900, 'grocery-pro': 2900 },
-    taxRate: 0, taxFromFirstSale: false,
+    taxRate: 0, taxFromFirstSale: false, fxFromUsd: 1,
   },
   AU: {
     code: 'AU', currency: 'aud', symbol: 'A$', iso: 'AUD', host: 'au.dayspine.com',
     prices: { core: 7900, anchor: 15900, 'printed-plan': 1500, 'partner-seat': 5900, 'grocery-pro': 4500 },
-    taxRate: 0.10, taxFromFirstSale: false,   // GST above A$75k turnover
+    taxRate: 0.10, taxFromFirstSale: false, fxFromUsd: 1.4068,   // GST above A$75k turnover
   },
   CA: {
     code: 'CA', currency: 'cad', symbol: 'C$', iso: 'CAD', host: 'ca.dayspine.com',
     prices: { core: 7900, anchor: 15900, 'printed-plan': 1500, 'partner-seat': 5900, 'grocery-pro': 4500 },
-    taxRate: 0.13, taxFromFirstSale: false,   // GST/HST above C$30k, rate varies by province
+    taxRate: 0.13, taxFromFirstSale: false, fxFromUsd: 1.3865,   // GST/HST above C$30k, rate varies by province
   },
   NZ: {
     code: 'NZ', currency: 'nzd', symbol: 'NZ$', iso: 'NZD', host: 'nz.dayspine.com',
     prices: { core: 9900, anchor: 19900, 'printed-plan': 1900, 'partner-seat': 7900, 'grocery-pro': 5500 },
-    taxRate: 0.15, taxFromFirstSale: false,   // GST above NZ$60k turnover
+    taxRate: 0.15, taxFromFirstSale: false, fxFromUsd: 1.6926,   // GST above NZ$60k turnover
   },
   GB: {
     code: 'GB', currency: 'gbp', symbol: '£', iso: 'GBP', host: 'uk.dayspine.com',
     prices: { core: 4500, anchor: 8900, 'printed-plan': 900, 'partner-seat': 3500, 'grocery-pro': 2500 },
-    taxRate: 0.20, taxFromFirstSale: true,    // ⚠️ UK VAT applies from the first sale
+    taxRate: 0.20, taxFromFirstSale: true, fxFromUsd: 0.7379,    // ⚠️ UK VAT applies from the first sale
   },
 };
 
@@ -133,4 +143,28 @@ export function formatPrice(market: Market, amount: number): string {
   const major = amount / 100;
   const shown = Number.isInteger(major) ? String(major) : major.toFixed(2);
   return `${market.symbol}${shown}`;
+}
+
+/**
+ * A USD figure expressed roughly in the market's currency, for competitor
+ * prices in copy. Rounded to something a person would actually say.
+ */
+export function approxLocal(market: Market, usd: number): string {
+  const raw = usd * market.fxFromUsd;
+  const rounded = raw >= 100 ? Math.round(raw / 10) * 10
+    : raw >= 20 ? Math.round(raw)
+    : Math.round(raw * 2) / 2;
+  return `${market.symbol}${Number.isInteger(rounded) ? rounded : rounded.toFixed(2)}`;
+}
+
+/** "forty five pounds" -- for the one line that spells the price out. */
+export function priceInWords(market: Market): string {
+  const n = Math.round(market.prices.core / 100);
+  const ones = ['zero','one','two','three','four','five','six','seven','eight','nine','ten',
+    'eleven','twelve','thirteen','fourteen','fifteen','sixteen','seventeen','eighteen','nineteen'];
+  const tens = ['','','twenty','thirty','forty','fifty','sixty','seventy','eighty','ninety'];
+  const words = n < 20 ? ones[n]
+    : `${tens[Math.floor(n / 10)]}${n % 10 ? ' ' + ones[n % 10] : ''}`;
+  const unit = market.iso === 'GBP' ? 'pounds' : 'dollars';
+  return `${words} ${unit}`;
 }
