@@ -1,6 +1,7 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import Stripe from 'npm:stripe@22.4.0';
 import { CATALOGUE, CORS, cleanEmail, json, normalise, totalForMarket } from '../_shared/catalogue.ts';
+import { MARKETS, marketFromRequest } from '../_shared/markets.ts';
 
 /**
  * Opens a checkout: a draft order and a PaymentIntent to pay it with.
