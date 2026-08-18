@@ -141,7 +141,21 @@
     identify: function (email, name) {
       var em = (email || '').trim().toLowerCase();
       if (!em) return;
-      var data = { em: em };
+      /*
+       * external_id alongside em, and deliberately the SAME value.
+       *
+       * The server half sets external_id to the hashed email (meta.ts), because
+       * `orders` holds no visitor_id and the email is the only identifier that
+       * survives from the ad click to a purchase made days later in a different
+       * browser. The browser half was sending em but no external_id at all, so
+       * Meta's coverage read 100% email against 33% external_id and the two
+       * halves were joinable on one key fewer than they should have been.
+       *
+       * Raw, like every other value here: the pixel normalises and hashes it
+       * itself, landing on the same sha256(lowercased email) the server sends.
+       * Hashing here would double-hash and match nothing.
+       */
+      var data = { em: em, external_id: em };
       if (name) {
         var parts = String(name).trim().split(/\s+/);
         if (parts.length > 1) {

@@ -306,7 +306,35 @@ Deno.serve(async (req: Request) => {
              so the order carries no fbc. Recover the one we stored at click time
              before sending, or the sale is never joined back to its ad. */
           const click = await recoverClickIds(admin, order.email, { fbp: order.fbp, fbc: order.fbc });
-          if (click.recovered) console.log('purchase: recovered stored click id for', orderId);
+          if (click.recovered) {
+            console.log('purchase: recovered stored click id for', orderId);
+            /*
+             * Write it down, do not just spend it.
+             *
+             * This recovery used to happen purely in flight: the id went into
+             * the Meta payload and the order still read fbc=null afterwards, so
+             * whether a sale carried its click was only answerable from the
+             * edge logs — and those age out in 24h. Worse, a webhook retry
+             * lands in this block only when capi_sent_at is unset, so a resend
+             * would have gone out WITHOUT the id the first attempt found.
+             *
+             * Persisting makes it idempotent too: recoverClickIds returns early
+             * the moment fbc is present, so a retry does no lookup at all.
+             *
+             * Non-fatal on purpose. This is bookkeeping attached to a path that
+             * has already taken money and granted the product.
+             */
+            const { error: wbErr } = await admin
+              .from('orders')
+              .update({
+                fbc: click.fbc,
+                fbp: click.fbp,
+                fbc_recovered_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', orderId);
+            if (wbErr) console.error('click write-back failed (non-fatal)', wbErr.message);
+          }
 
           const sent = await sendMetaEvent({
             eventName: 'Purchase',
