@@ -147,6 +147,18 @@ h2.sec{font-size:21px;margin-bottom:14px}
 .faq summary::after{content:"+";color:var(--brand);font-weight:800}
 .faq details[open] summary::after{content:"\2212"}
 .faq p{color:var(--muted);font-size:14.5px;margin-top:9px}
+/* Proof, below the FAQ. Last thing before the footer, for anyone who scrolled
+   the whole page and is still deciding. */
+.proof{margin-top:34px;padding-top:26px;border-top:1px solid var(--line)}
+.proof h3{margin:0;font-size:18px;font-weight:800;letter-spacing:-.01em}
+.proof .lead{margin:8px 0 0;color:var(--muted);font-size:14.5px}
+.proof .truths{margin:18px 0 0;padding:0;list-style:none;display:grid;gap:11px}
+.proof .truths li{display:flex;gap:10px;align-items:flex-start;font-size:15px;line-height:1.45}
+.proof .truths .mk{color:var(--brand);font-weight:800;flex:0 0 auto}
+.proof .quotes{margin-top:20px;display:grid;gap:12px}
+.proof .quote{border:1px solid var(--line);border-radius:14px;padding:15px 16px;background:#FBF9F7}
+.proof .quote p{margin:0;font-size:15px;line-height:1.5}
+.proof .quote .who{margin-top:8px;font-size:13px;color:var(--muted)}
 
 footer{padding:34px 0 20px;color:var(--faint);font-size:12.5px;text-align:center}
 footer a{color:var(--faint)}
@@ -288,6 +300,34 @@ footer a{color:var(--faint)}
     <details><summary>Why is it cheaper than the apps I've been paying for?</summary>
       <p>It isn't, over a month. It is far cheaper over a year, because those apps are built to
         charge you forever and this one is built to be bought once.</p></details>
+  </section>
+
+  <!--
+    Proof section.
+
+    Everything in `truths` is a checkable fact about the product, not a claim
+    about anyone's results, and none of it is attributed to a person.
+
+    The quotes list is EMPTY on purpose and the block does not render while it is
+    empty. Real buyers exist; their words go here once they have given them, with
+    permission and in their own wording. Do not fill this with written-for-purpose
+    testimonials -- an invented review on the page that takes the money is not a
+    copywriting decision.
+  -->
+  <section class="proof">
+    <h3>Before you decide</h3>
+    <p class="lead">Four things that are true about what you are buying, and easy to check
+      once you are inside.</p>
+    <ul class="truths">
+      <li><span class="mk">&#8212;</span><span><b>One charge.</b> Nothing renews, there is no
+        subscription and there is nothing to cancel later. The price you see is the whole price.</span></li>
+      <li><span class="mk">&#8212;</span><span><b>Your plan already exists.</b> It was written from
+        the answers you just gave, not picked from a shelf, and it is waiting the moment you pay.</span></li>
+      <li><span class="mk">&#8212;</span><span><b>Both halves talk to each other.</b> Train harder
+        this week and the food moves with it. That is the thing two separate apps cannot do.</span></li>
+      <li><span class="mk">&#8212;</span><span><b>Thirty days to change your mind.</b> One email to
+        support@dayspine.com and you are refunded in full, no questions asked.</span></li>
+    </ul>
   </section>
 
   <!-- "Exotix creators LLC" has a LOWERCASE c. That is the name as filed with Wyoming,

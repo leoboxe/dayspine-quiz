@@ -38,24 +38,98 @@ export const PLAN_FIELDS = [
  * any of the fifteen flows and it is only ever asked of someone who has just
  * volunteered for it.
  */
-export function bodyBlock({ when, title, why, targetQ, paceWhy }) {
+/* ----------------------------------------------------------------- OPENER -- */
+/**
+ * The first two screens: age band, then sex.
+ *
+ * ### Why these two, and why first
+ *
+ * They were previously screens 22 and 23, at the very back of the quiz, behind
+ * a goal bridge. They are now the front door, for three reasons.
+ *
+ * 1. **They cost nothing to move.** Every one of the 48 people who finished A4
+ *    answered both. Bringing them forward adds no question to the quiz; it only
+ *    changes where the cheapest ones sit.
+ * 2. **They are the only questions here that need no thought.** A cold visitor
+ *    two seconds off an ad click can tap an age band without reading four long
+ *    sentences and deciding which describes their life. The old first question
+ *    asked exactly that, and 66% of arrivals never answered anything at all.
+ * 3. **Every large quiz funnel in this category opens this way.** BetterMe,
+ *    FitMe and Effecto all open on age or sex; none of them shows a step
+ *    counter. Checked in-browser 2026-08-18.
+ *
+ * ### Why a band and not the old slider
+ *
+ * A slider cannot be answered with one tap, and one tap is the entire point.
+ * The band is converted back to a number in `withDerived()` so the plan builder
+ * still receives `p.age` exactly as before.
+ *
+ * The precision cost is real and small: Mifflin-St Jeor moves about 5 kcal per
+ * year of age, so a worst-case five-year error inside a band is ~25 kcal against
+ * a ~2000 kcal target. That is far below the error in anybody's self-reported
+ * weight.
+ */
+export function openerBlock({ kicker, title, sub, ageQ, sexQ } = {}) {
+  return [
+    {
+      id: 'ageBand', type: 'question', key: 'p.ageBand',
+      kicker: kicker || '2-minute quiz',
+      title: title || 'Your training and food, one plan',
+      sub: sub || 'Build my plan',
+      question: ageQ || 'How old are you?',
+      why: 'It sets your calories. One tap and we are moving.',
+      options: [
+        { v: '18-29', label: '18 to 29' },
+        { v: '30-39', label: '30 to 39' },
+        { v: '40-49', label: '40 to 49' },
+        { v: '50-59', label: '50 to 59' },
+        { v: '60+', label: '60 or over' },
+      ],
+    },
+    {
+      id: 'sex', type: 'question', key: 'p.sex',
+      question: sexQ || 'And are you male or female?',
+      why: 'Men and women get different calorie and protein targets. Nothing else changes.',
+      options: [
+        { v: 'female', label: 'Female' },
+        { v: 'male', label: 'Male' },
+      ],
+    },
+  ];
+}
+
+/** Band midpoints. `60+` resolves low on purpose -- see openerBlock. */
+export const AGE_BAND_MIDPOINT = {
+  '18-29': 24, '30-39': 34, '40-49': 44, '50-59': 54, '60+': 64,
+};
+
+/**
+ * Height, weight, goal weight and pace.
+ *
+ * `omitAgeSex` is set by any angle that opened with `openerBlock`, which has
+ * already collected both. Without it the visitor is asked their age twice --
+ * once as a band on screen 1 and again on a slider twenty screens later.
+ */
+export function bodyBlock({ when, title, why, targetQ, paceWhy, omitAgeSex }) {
   return [
     {
       id: 'profile', type: 'profile', showIf: when,
-      title: title || 'Then it needs four numbers.',
+      title: title || (omitAgeSex ? 'Two numbers left.' : 'Then it needs four numbers.'),
       question: 'A little about you',
       why: why || 'Only used to set your calories and protein. Nothing here is shown to anyone.',
-      sexKey: 'p.sex',
+      /* Undefined when the opener collected it; renderProfile then skips the
+         segmented control and stops gating Continue on it. */
+      sexKey: omitAgeSex ? null : 'p.sex',
       fields: [
         { key: 'p.heightIn', label: 'Height', min: 54, max: 84, start: 65, format: 'feet' },
         { key: 'p.weightLb', label: 'Weight', min: 90, max: 400, start: 165, suffix: 'lb' },
       ],
     },
-    {
+    ...(omitAgeSex ? [] : [{
       id: 'age', type: 'slider', key: 'p.age', showIf: when,
       question: 'How old are you?',
       min: 18, max: 75, step: 1, start: 34, suffix: 'years old',
-    },
+    }]),
     {
       id: 'target', type: 'slider', key: 'p.targetLb', showIf: when,
       question: targetQ || 'And where do you want to get to?',

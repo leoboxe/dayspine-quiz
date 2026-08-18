@@ -24,7 +24,7 @@
  * teardown and it is what makes a long quiz feel short.
  */
 import {
-  bodyBlock, trainingBlock, foodBlock, goalBridge, offerBridge, emailScreen,
+  openerBlock, bodyBlock, trainingBlock, foodBlock, goalBridge, offerBridge, emailScreen,
   WHEN_TRAINING, WHEN_FOOD, WHEN_AIMED,
 } from './q-kit.js';
 
@@ -318,13 +318,24 @@ A3: {
 A4: {
   ad: 'One plan, not two apps',
   screens: [
-    ask({ id: 'split', key: 'split', kicker: '2-minute quiz', title: 'Build my plan',
-      sub: 'Training and food, finally the same plan.',
+    /* Screens 1 and 2: the two questions that need no thought. See openerBlock.
+       The headline names what you get; the subhead keeps the old command, which
+       is the line the ad's viewer is expecting to see. */
+    ...openerBlock({
+      title: 'Your training and food, one plan',
+      sub: 'Build my plan',
+    }),
+    /* The ad's own premise, now screen 3 rather than screen 1 -- asked once the
+       visitor is already moving instead of as the price of entry. Half of all
+       finishers pick "two apps", so it stays as the qualifier it always was.
+       Options cut from up to eight words to two or three: the old set made a
+       cold reader parse roughly thirty words before their first tap. */
+    ask({ id: 'split', key: 'split',
       question: 'Where do your training and your food live right now?',
       options: [
-        { v: 'two', label: 'Two different apps' },
-        { v: 'apphead', label: 'An app for training, my head for food' },
-        { v: 'paper', label: 'A program on paper, food improvised' },
+        { v: 'two', label: 'Two apps' },
+        { v: 'apphead', label: 'An app, then guesswork' },
+        { v: 'paper', label: 'Paper, food improvised' },
         { v: 'one', label: 'One place', hint: 'Which one?' }] }),
     ask({ id: 'programs', key: 'programs', question: 'How many training programs have you run through?',
       why: 'It tells us how much structure you are used to.',
@@ -372,7 +383,7 @@ A4: {
           + 'same thing and they stop cancelling out.',
       loseLabel: 'Losing fat, keeping strength', gainLabel: 'Building muscle',
       noneLabel: 'Neither — just make it coherent' }),
-    ...bodyBlock({ when: WHEN_AIMED }),
+    ...bodyBlock({ when: WHEN_AIMED, omitAgeSex: true }),
     emailScreen({}),
   ],
   building: ['Reading your answers…', 'Writing your training week…', 'Matching calories to it…',

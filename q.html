@@ -54,6 +54,12 @@ main{flex:1;padding:26px 0 12px}
   background:var(--brand-tint);padding:6px 11px;border-radius:var(--r-pill);margin-bottom:14px}
 h1.big{font-size:clamp(28px,7.5vw,36px);margin-bottom:8px}
 .sub{color:var(--muted);font-size:16px;margin-bottom:22px}
+/* The opener's subhead carries "Build my plan" -- the exact line the ad's
+   viewer arrived expecting -- so it is set as a second headline rather than as
+   muted supporting text. Only applies where a sub follows the h1 directly,
+   which is the opener and nothing else. */
+.big + .sub{color:var(--text);font-size:clamp(19px,4.8vw,22px);font-weight:600;
+  margin-top:-2px;margin-bottom:26px}
 h2.q{font-size:clamp(21px,5.4vw,26px);margin-bottom:8px}
 .why{color:var(--muted);font-size:14.5px;margin-bottom:18px;line-height:1.45}
 
@@ -161,6 +167,21 @@ input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;bac
   display:flex;align-items:center;justify-content:center;font-size:11px;color:transparent}
 .build li.on .tick{background:var(--brand);border-color:var(--brand);color:#fff}
 .build ul{margin:22px 0 0;padding:0}
+/* Proof, shown while the plan is being written. */
+.proof{margin-top:30px;border-top:1px solid var(--line);padding-top:22px}
+.proof .lab{font:600 11px/1 Outfit,sans-serif;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--muted)}
+.proof .facts{margin:14px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px}
+.proof .facts li{display:flex;gap:10px;align-items:flex-start;font-size:15px;color:var(--text);
+  opacity:0;transform:translateY(6px);transition:opacity .45s ease,transform .45s ease}
+.proof .facts li.on{opacity:1;transform:none}
+.proof .facts b{color:var(--brand);flex:0 0 auto;font-weight:700}
+.quotes{margin-top:22px;display:flex;flex-direction:column;gap:12px}
+.quote{background:var(--surface,#FBF9F7);border:1px solid var(--line);border-radius:14px;padding:14px 16px;
+  opacity:0;transform:translateY(6px);transition:opacity .45s ease,transform .45s ease}
+.quote.on{opacity:1;transform:none}
+.quote p{margin:0;font-size:15px;line-height:1.5}
+.quote .who{margin-top:7px;font-size:13px;color:var(--muted)}
 
 footer.cta{position:sticky;bottom:0;background:linear-gradient(transparent,var(--canvas) 22%);
   padding:16px 0 calc(16px + env(safe-area-inset-bottom))}
@@ -193,11 +214,42 @@ footer.cta{position:sticky;bottom:0;background:linear-gradient(transparent,var(-
 
 <script type="module">
 import { ANGLES, pickAngle } from './q-index.js';
+import { AGE_BAND_MIDPOINT } from './q-kit.js';
 
 /* Which of the fifteen ads sent her here. */
 const ANGLE = pickAngle(location.search);
 const SCREENS = ANGLES[ANGLE].screens;
 const BUILDING = ANGLES[ANGLE].building;
+
+/*
+ * Shown while the plan is written, because that screen is several seconds of
+ * dead time in front of somebody who has just answered twenty questions and is
+ * about to be asked for money.
+ *
+ * Every line here is a plain fact about the product and can be checked against
+ * it. Nothing is a claim about results, and nothing is attributed to a person.
+ */
+const BUILD_FACTS = [
+  ['One plan.', 'Your calories move with the sessions you actually did, not with a guess.'],
+  ['Pay once.', 'Nothing renews and there is nothing to cancel later.'],
+  ['On your home screen.', 'It opens full screen and keeps working with no signal.'],
+  ['Yours, not a template.', 'Every answer you just gave is in the week being written.'],
+];
+
+/*
+ * REAL customer quotes only.
+ *
+ * Deliberately empty. This block renders nothing while the array is empty, so
+ * shipping it as-is shows no testimonials rather than invented ones. Dayspine
+ * has real buyers; their words go here once they have given them, with their
+ * permission and in their own wording.
+ *
+ * Do not populate this with written-for-purpose quotes. A fabricated review on
+ * a page taking money is not a copywriting decision.
+ *
+ *   { text: 'what they actually wrote', who: 'First name, city' }
+ */
+const BUILD_QUOTES = [];
 
 const SUPABASE_URL = 'https://guixatihuqwfhzvnrkvb.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_HsWRfggaqcEPxG5CHT1wvg_9ImA8qZc';
@@ -205,6 +257,30 @@ const SUPABASE_ANON = 'sb_publishable_HsWRfggaqcEPxG5CHT1wvg_9ImA8qZc';
 const main = document.getElementById('main');
 const nextBtn = document.getElementById('next');
 const legal = document.getElementById('legal');
+/**
+ * Perceived progress, which is deliberately not linear progress.
+ *
+ * The early screens move the bar a long way and the later ones barely move it,
+ * so the quiz reads as "nearly done" while there is still real work left. The
+ * first two questions -- an age band and male/female -- cost one tap each and
+ * take the bar to roughly a quarter; screen eight of twenty-eight sits at about
+ * 60%, and the last stretch crawls.
+ *
+ * This is a presentation choice, not a lie about the length: the bar is
+ * monotonic, always advances, and still reaches 100% exactly at the end. What it
+ * refuses to do is tell somebody who has answered nothing that they are 1/18 of
+ * the way through eighteen screens.
+ *
+ * x^0.45 rather than a piecewise ramp so there is no visible kink at the
+ * hand-over point.
+ */
+function perceived(t) {
+  /* A small floor so the very first screen shows a bar that has already started
+     rather than an empty track, which reads as "nothing done, everything left"
+     -- the impression the old 1/18 counter gave in words. */
+  return 0.04 + 0.96 * Math.pow(Math.min(1, Math.max(0, t)), 0.45);
+}
+
 const fill = document.getElementById('fill');
 const count = document.getElementById('count');
 
@@ -254,6 +330,18 @@ function withDerived() {
   const out = Object.assign({}, A);
   out['p.goal'] = A.aim === 'lose' ? 'lose' : A.aim === 'gain' ? 'gain' : 'maintain';
   if (out['p.goal'] === 'maintain') out['p.targetLb'] = A['p.weightLb'];
+
+  /* The opener asks for an age BAND, because a band is one tap and a slider is
+     not. The app's plan builder wants `p.age` as a number, so the band is
+     resolved back to its midpoint here rather than in the app -- the row that
+     lands is already in the shape the plan builder expects, exactly as with
+     p.goal above.
+
+     Only fills a gap: an angle that still asks the slider has already set
+     p.age, and that real answer always wins over a midpoint. */
+  if (out['p.age'] == null && A['p.ageBand']) {
+    out['p.age'] = AGE_BAND_MIDPOINT[A['p.ageBand']] ?? 34;
+  }
   return out;
 }
 
@@ -293,10 +381,17 @@ function render() {
   /* Progress is measured against every screen that could exist, not the ones
      currently visible. Otherwise accepting the training bridge grows the
      denominator mid-flow and the bar slides backwards -- and someone who
-     declines simply leaps forward, which reads as a reward rather than a bug. */
+     declines simply leaps forward, which reads as a reward rather than a bug.
+
+     The "n/18" counter that used to sit beside this bar is GONE, and should not
+     come back. It read from `list.length`, the visible-screen count, so the
+     denominator grew as the visitor said yes: 1/18 on arrival, 11/19 after
+     accepting Pilates, 14/26 after accepting food. Answering three more
+     questions moved them from 58% done to 54% done. It also announced an
+     eighteen-step commitment to someone who had invested nothing -- and none of
+     BetterMe, FitMe, Effecto or Il Makiage shows a step counter at all. */
   const pos = SCREENS.indexOf(s);
-  fill.style.width = Math.round((pos / SCREENS.length) * 100) + '%';
-  count.textContent = (i + 1) + '/' + list.length;
+  fill.style.width = Math.round(perceived(pos / SCREENS.length) * 100) + '%';
   document.getElementById('back').style.visibility = i ? 'visible' : 'hidden';
   main.innerHTML = '';
   const add = (h) => { main.insertAdjacentHTML('beforeend', h); };
@@ -405,20 +500,24 @@ function renderSteppers(s) {
 
 function renderProfile(s) {
   if (pending === null || typeof pending !== 'object') pending = {};
-  if (pending[s.sexKey] === undefined) pending[s.sexKey] = A[s.sexKey] || null;
+  /* Angles that open with the age/sex block pass sexKey: null. Without this
+     guard the segmented control renders against an undefined key and Continue
+     never enables, which strands the visitor on the last screen before email. */
+  const wantsSex = !!s.sexKey;
+  if (wantsSex && pending[s.sexKey] === undefined) pending[s.sexKey] = A[s.sexKey] || null;
   s.fields.forEach((f) => { if (pending[f.key] === undefined) pending[f.key] = A[f.key] ?? f.start; });
   const show = (f, n) => f.format === 'feet' ? fmtFeet(n) : n + (f.suffix ? ' ' + f.suffix : '');
   main.insertAdjacentHTML('beforeend',
-    '<div class="seg">'
-    + ['female', 'male'].map((v) => '<button data-sex="' + v + '"'
-        + (pending[s.sexKey] === v ? ' class="on"' : '') + '>'
-        + (v === 'female' ? 'Female' : 'Male') + '</button>').join('') + '</div>'
+    (wantsSex ? '<div class="seg">'
+      + ['female', 'male'].map((v) => '<button data-sex="' + v + '"'
+          + (pending[s.sexKey] === v ? ' class="on"' : '') + '>'
+          + (v === 'female' ? 'Female' : 'Male') + '</button>').join('') + '</div>' : '')
     + s.fields.map((f) => '<div class="mini"><div class="row"><b>' + f.label
         + '</b><span class="v mono" id="v-' + f.key.replace(/\W/g, '') + '">'
         + show(f, pending[f.key]) + '</span></div>'
         + '<input type="range" data-k="' + f.key + '" min="' + f.min + '" max="' + f.max
         + '" step="1" value="' + pending[f.key] + '"></div>').join(''));
-  const ok = () => setCta('Continue', !!pending[s.sexKey]);
+  const ok = () => setCta('Continue', wantsSex ? !!pending[s.sexKey] : true);
   main.querySelectorAll('.seg button').forEach((b) => {
     b.onclick = () => {
       pending[s.sexKey] = b.dataset.sex;
@@ -567,18 +666,35 @@ function renderBuilding() {
   main.innerHTML = '<h1 class="big">Building your week</h1>'
     + '<p class="sub">Every answer you just gave is going into it.</p>'
     + '<div class="build"><ul>' + BUILDING.map((t) =>
-        '<li><span class="tick">&#10003;</span>' + t + '</li>').join('') + '</ul></div>';
+        '<li><span class="tick">&#10003;</span>' + t + '</li>').join('') + '</ul></div>'
+    + '<div class="proof"><span class="lab">While that runs</span>'
+    + '<ul class="facts">' + BUILD_FACTS.map(([h, b]) =>
+        '<li><b>' + h + '</b><span>' + b + '</span></li>').join('') + '</ul>'
+    + (BUILD_QUOTES.length
+        ? '<div class="quotes">' + BUILD_QUOTES.map((q) =>
+            '<div class="quote"><p>&ldquo;' + q.text + '&rdquo;</p>'
+            + '<div class="who">' + q.who + '</div></div>').join('') + '</div>'
+        : '')
+    + '</div>';
   nextBtn.style.display = 'none';
   legal.textContent = '';
   track('quiz_completed', { training: A.wantsTraining === 'yes' });
   persist(true);
 
   const items = main.querySelectorAll('.build li');
-  items.forEach((li, n) => setTimeout(() => li.classList.add('on'), 500 + n * 620));
+  items.forEach((li, n) => setTimeout(() => li.classList.add('on'), 500 + n * 700));
+  const buildMs = 700 + BUILDING.length * 700;
+
+  /* The proof reveals alongside the checklist rather than after it, so the
+     screen is doing two things at once instead of stalling. */
+  const reveals = main.querySelectorAll('.proof .facts li, .proof .quote');
+  reveals.forEach((el, n) => setTimeout(() => el.classList.add('on'), 900 + n * 620));
+  const proofMs = 1100 + reveals.length * 620;
+
   setTimeout(() => {
     try { sessionStorage.setItem('dayspine.answers', JSON.stringify({ answers: withDerived(), angle: ANGLE })); } catch {}
     renderReveal();
-  }, 700 + BUILDING.length * 620);
+  }, Math.max(buildMs, proofMs));
 }
 
 
