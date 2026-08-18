@@ -59,11 +59,57 @@ Deno.serve(async (req) => {
     return new Response('missing event_type, event_id or visitor_id', { status: 400, headers: cors });
   }
 
+
   /* The proxy forwards the real client IP and UA; without them Meta's match
      quality drops and every event looks like it came from Supabase. */
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? null;
   const ua = req.headers.get('x-real-user-agent') ?? req.headers.get('user-agent') ?? null;
   const bot = isBot(ua);
+
+  /*
+   * quiz_progress -- the backup of every answer, including abandoned quizzes.
+   *
+   * `save-quiz` is keyed on email and rejects anything without one, so until a
+   * visitor reaches the email screen their answers exist only in that browser's
+   * sessionStorage. Anyone who leaves before it takes every answer with them:
+   * checked 2026-08-18, `quiz_answers` held 48 A4 rows, all complete, zero
+   * partials. Two thirds of arrivals never finish, so that is the majority of
+   * the data being dropped.
+   *
+   * This rides the existing /api/t pipeline rather than adding an endpoint,
+   * which means it inherits the first-party proxy (ad blockers cannot see it),
+   * the `_ds_vid` cookie as a key, and the bot filter -- none of which would
+   * exist on something new.
+   *
+   * It writes to its OWN table and deliberately does not touch `events`. The
+   * quiz saves on every answer, so folding these into `events` would add ~27
+   * rows per visitor and drown the funnel counts everything else is measured on.
+   *
+   * Backup only. Nothing reads this table; the funnel still runs entirely off
+   * `quiz_answers`, so a failure here can never affect a visitor.
+   */
+  if (event_type === 'quiz_progress') {
+    if (bot) return new Response('ok', { headers: cors });
+    try {
+      const answers = metadata && typeof metadata === 'object' ? metadata : {};
+      // A quiz is a few dozen short answers. Anything larger is not a quiz.
+      if (JSON.stringify(answers).length <= 20000) {
+        await admin.from('quiz_progress').upsert({
+          visitor_id,
+          angle: angle ?? null,
+          answers,
+          screen_index: typeof body.screen_index === 'number' ? body.screen_index : null,
+          screen_id: typeof body.screen_id === 'string' ? body.screen_id.slice(0, 64) : null,
+          email: typeof email === 'string' && email.includes('@') ? email.toLowerCase() : undefined,
+          complete: body.quiz_complete === true,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'visitor_id' });
+      }
+    } catch (_e) {
+      // A backup that breaks the thing it is backing up is worse than no backup.
+    }
+    return new Response('ok', { headers: cors });
+  }
 
   const row = {
     event_type, event_id, visitor_id,

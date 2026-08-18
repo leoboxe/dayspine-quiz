@@ -313,6 +313,39 @@ try {
 } catch {}
 const save = () => { try { sessionStorage.setItem(SAVE, JSON.stringify({ i, A })); } catch {} };
 
+/*
+ * Back the answers up to the server as they are given.
+ *
+ * `save()` above only writes to sessionStorage, and `save-quiz` refuses anything
+ * without an email -- so until the email screen a visitor's answers exist in one
+ * browser tab and nowhere else. Two thirds of arrivals never reach that screen,
+ * which means the majority of everything anyone has ever told us was being
+ * dropped on the floor. Verified 2026-08-18: 48 stored A4 quizzes, all complete,
+ * zero partials.
+ *
+ * Routed through dayspineTrack so it inherits the first-party /api/t proxy: the
+ * `_ds_vid` cookie is attached server side and becomes the key, ad blockers
+ * cannot see it, and the bot filter already applies. `quiz_progress` is not in
+ * META_NAME, so nothing is sent to Meta and no pixel fires.
+ *
+ * Nothing is awaited and every error is swallowed. This is a backup: it must
+ * never be able to slow down, block or break the quiz it is backing up. The
+ * front end reads none of it back.
+ */
+function backup(extra) {
+  try {
+    if (!window.dayspineTrack) return;
+    const list = visible();
+    const s = list[i];
+    window.dayspineTrack('quiz_progress', Object.assign({
+      metadata: A,
+      screen_index: i,
+      screen_id: s && s.id ? s.id : null,
+      email: A.email || undefined,
+    }, extra || {}));
+  } catch {}
+}
+
 /* Routed through pixel.js so every event goes out both ways -- browser pixel
    and first-party proxy -- under one event_id. The old version called fbq
    directly behind a `window.fbq &&` guard, and since the pixel was never
@@ -659,6 +692,7 @@ function commit() {
 
   i++;
   save();
+  backup();
   render();
 }
 
@@ -685,6 +719,7 @@ function renderBuilding() {
   nextBtn.style.display = 'none';
   legal.textContent = '';
   track('quiz_completed', { training: A.wantsTraining === 'yes' });
+  backup({ quiz_complete: true });
   persist(true);
 
   const items = main.querySelectorAll('.build li');
