@@ -12,6 +12,19 @@
  * Supabase's data centre, which costs match quality and defeats bot filtering.
  */
 
+/* Exact hosts only, mirroring markets.ts. Kept small and local because this
+   runs on Vercel's edge runtime and cannot import the shared TypeScript. */
+const MARKET_BY_HOST = {
+  'quiz.dayspine.com': 'US',
+  'au.dayspine.com': 'AU',
+  'ca.dayspine.com': 'CA',
+  'nz.dayspine.com': 'NZ',
+  'uk.dayspine.com': 'GB',
+};
+function marketFromHost(host) {
+  return MARKET_BY_HOST[String(host || '').toLowerCase().split(':')[0]] || 'US';
+}
+
 export const config = { runtime: 'edge' };
 
 const UPSTREAM = 'https://guixatihuqwfhzvnrkvb.supabase.co/functions/v1/track';
@@ -71,11 +84,25 @@ export default async function handler(request) {
     put('_fbp', fbp, NINETY);
   }
 
+  /*
+   * The market, decided HERE and nowhere else.
+   *
+   * This proxy runs on the market's own hostname; the Supabase function it
+   * forwards to does not. That function was reading Origin, which a browser
+   * sets but a server-to-server fetch does not -- so every international event
+   * was being written as US. Caught on the first live AU run: page_view and
+   * quiz_started both landed market=US on au.dayspine.com.
+   *
+   * Overwritten, not defaulted: whatever the client put in the body is
+   * discarded, exactly as visitor_id and fbp are above. The client cannot
+   * choose which market its events are attributed to.
+   */
   const enriched = {
     ...body,
     fbp,
     fbc: body.fbc || cookie('_fbc'),
     visitor_id: vid,
+    market: marketFromHost(new URL(request.url).hostname),
   };
 
   const ip = (request.headers.get('x-forwarded-for') || '').split(',')[0].trim();
