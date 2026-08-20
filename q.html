@@ -201,6 +201,93 @@ footer.cta{position:sticky;bottom:0;background:linear-gradient(transparent,var(-
 .fine{text-align:center;font-size:11px;color:var(--faint);margin-top:8px}
 .fine a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ==========================================================================
+   Visual pass, 2026-08-20. CSS ONLY -- no markup, copy or question changes.
+
+   The quiz already shared the app's tokens, so it was never inconsistent; what
+   it lacked was any sense of touch. Screens swapped instantly, nothing moved
+   under a finger, and selection was signalled by a 20px dot. The reference app
+   reads as more expensive almost entirely because of these three things, and
+   all three are reachable without touching a line of quiz logic -- which is the
+   point, because this page is taking live paid traffic.
+   ========================================================================== */
+
+/* -- entrance -------------------------------------------------------------
+   The render replaces #main's innerHTML wholesale, so brand-new elements are
+   created on every screen. A CSS animation on those children therefore
+   re-triggers by itself, with no JS hook and no state to keep in sync. */
+@keyframes dsRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+/* `backwards`, deliberately NOT `both`.
+   `both` holds the LAST keyframe after the animation ends, which means a screen
+   whose animation is skipped or interrupted can strand itself at opacity 0 --
+   an invisible quiz, on a page taking paid traffic. `backwards` only applies
+   the first keyframe during the delay; the resting state afterwards is the
+   element's own, which is visible. Identical on screen, and it cannot fail
+   closed. */
+#main>*{animation:dsRise .34s cubic-bezier(.22,.9,.3,1) backwards}
+
+/* Options arrive just behind the headline, and just behind each other. Capped
+   at six: past that the stagger stops reading as poise and starts reading as
+   waiting. Any list longer than six lands together on the sixth beat. */
+.opts .opt,.tiles .tile{animation:dsRise .32s cubic-bezier(.22,.9,.3,1) backwards}
+.opts .opt:nth-child(1),.tiles .tile:nth-child(1){animation-delay:.04s}
+.opts .opt:nth-child(2),.tiles .tile:nth-child(2){animation-delay:.07s}
+.opts .opt:nth-child(3),.tiles .tile:nth-child(3){animation-delay:.10s}
+.opts .opt:nth-child(4),.tiles .tile:nth-child(4){animation-delay:.13s}
+.opts .opt:nth-child(5),.tiles .tile:nth-child(5){animation-delay:.16s}
+.opts .opt:nth-child(n+6),.tiles .tile:nth-child(n+6){animation-delay:.19s}
+
+/* -- touch ----------------------------------------------------------------
+   Every tappable thing dips. 0.98 is small enough that it reads as the surface
+   giving way rather than as an effect, which is the difference between feeling
+   responsive and feeling animated. */
+.opt,.tile,.seg button,.btn,.pm button{
+  transition:transform .11s ease,border-color .12s ease,background .12s ease,box-shadow .16s ease;
+  -webkit-tap-highlight-color:transparent}
+.opt:active,.tile:active,.seg button:active{transform:scale(.985)}
+.btn:not(:disabled):active{transform:scale(.985)}
+.pm button:not(:disabled):active{transform:scale(.92)}
+
+/* -- selection ------------------------------------------------------------
+   A tick, not a dot. The dot said "this radio is filled"; a tick says "yes,
+   that one" -- and it is the same mark the app uses on a completed day, so the
+   two halves of the product agree about what done looks like. */
+.opt.on{box-shadow:0 0 0 1px var(--brand) inset}
+.dot{position:relative;transition:background .14s ease,border-color .14s ease}
+.opt.on .dot{box-shadow:none}
+.opt.on .dot::after{content:"";position:absolute;left:6.5px;top:3px;width:5px;height:9.5px;
+  border:solid #fff;border-width:0 2px 2px 0;transform:rotate(43deg)}
+
+/* -- lift -----------------------------------------------------------------
+   Cards and the primary button come off the page. The shadow is warm rather
+   than grey (same #5B4636 the app uses) so it sits under an orange brand
+   instead of fighting it. */
+.card,.rev{box-shadow:0 3px 14px rgba(91,70,54,.07)}
+.btn:not(:disabled){box-shadow:0 6px 18px rgba(242,106,17,.28)}
+.btn:not(:disabled):active{box-shadow:0 2px 8px rgba(242,106,17,.30)}
+.quote{box-shadow:0 2px 8px rgba(91,70,54,.05)}
+
+/* -- progress -------------------------------------------------------------
+   6px instead of 4px, and the fill carries a soft trail. At 4px on a white
+   ground the one element telling you how far you have come was the faintest
+   thing on the screen. */
+.track{height:6px}
+.fill{box-shadow:0 0 8px rgba(242,106,17,.45);
+  transition:width .45s cubic-bezier(.22,.9,.3,1)}
+
+/* -- headline -------------------------------------------------------------
+   Optical sizing and tighter tracking at display sizes. Free, and the whole
+   reason large type on the reference app looks set rather than scaled up. */
+h1,h2{font-optical-sizing:auto}
+h1.big{letter-spacing:-.035em}
+
+/* Everything above is decoration over a page that already worked, so all of it
+   comes off together for anyone who has asked for less motion. */
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important;animation:none!important}
+  #main>*,.opts .opt,.tiles .tile{opacity:1!important;transform:none!important}
+}
 </style>
 </head>
 <body>
