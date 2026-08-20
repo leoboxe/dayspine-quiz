@@ -45,7 +45,7 @@ p{margin:0}
 .bar .wrap{display:flex;align-items:center;gap:12px}
 .back{width:32px;height:32px;border:0;background:none;cursor:pointer;color:var(--muted);
   font-size:20px;line-height:1;padding:0}
-.track{flex:1;height:4px;background:var(--raised);border-radius:99px;overflow:hidden}
+.track{flex:1;height:6px;background:#E4DDD6;border-radius:99px;overflow:hidden}
 .fill{height:100%;background:var(--brand);border-radius:99px;transition:width .3s ease}
 .count{font:600 12px/1 Outfit,sans-serif;color:var(--faint);font-variant-numeric:tabular-nums}
 
@@ -65,11 +65,18 @@ h2.q{font-size:clamp(21px,5.4vw,26px);margin-bottom:8px}
 
 /* option lists */
 .opts{display:flex;flex-direction:column;gap:9px}
+/* White with a real hairline, not near-white on transparent.
+   The old rule was `background:var(--surface)` (#FBF9F7) with a TRANSPARENT
+   border on a white canvas -- a 4% value difference and no edge, so the options
+   read as faint bands rather than as things you tap. Screenshotted 2026-08-20:
+   the whole screen looked unfinished for exactly this reason. */
 .opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;cursor:pointer;
-  background:var(--surface);border:1.5px solid transparent;border-radius:var(--r-md);
-  padding:16px 16px;font:600 16px/1.35 Outfit,sans-serif;color:var(--text);transition:.12s}
-.opt:hover{border-color:var(--line)}
-.opt.on{border-color:var(--brand);background:var(--brand-tint)}
+  background:var(--canvas);border:1.5px solid var(--line);border-radius:var(--r-md);
+  padding:17px 16px;font:600 16.5px/1.35 Outfit,sans-serif;color:var(--text);transition:.12s;
+  box-shadow:0 1px 2px rgba(91,70,54,.05)}
+.opt:hover{border-color:var(--faint)}
+.opt.on{border-color:var(--brand);background:var(--brand-tint);
+  box-shadow:0 3px 12px rgba(242,106,17,.16)}
 .opt .txt{flex:1}
 .opt small{display:block;font-weight:400;color:var(--muted);font-size:13.5px;margin-top:2px}
 .dot{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line);flex:0 0 auto}
@@ -78,12 +85,14 @@ h2.q{font-size:clamp(21px,5.4vw,26px);margin-bottom:8px}
 
 /* tiles */
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-.tile{cursor:pointer;background:var(--surface);border:1.5px solid transparent;
+.tile{cursor:pointer;background:var(--canvas);border:1.5px solid var(--line);
   border-radius:var(--r-md);padding:18px 8px;font:700 14px/1.25 Outfit,sans-serif;
-  color:var(--text);text-align:center;transition:.12s;min-height:74px;
-  display:flex;align-items:center;justify-content:center}
-.tile:hover{border-color:var(--line)}
-.tile.on{border-color:var(--brand);background:var(--brand-tint);color:var(--brand-deep)}
+  color:var(--text);text-align:center;transition:.12s;min-height:78px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 1px 2px rgba(91,70,54,.05)}
+.tile:hover{border-color:var(--faint)}
+.tile.on{border-color:var(--brand);background:var(--brand-tint);color:var(--brand-deep);
+  box-shadow:0 3px 12px rgba(242,106,17,.16)}
 @media(max-width:380px){.tiles{grid-template-columns:repeat(2,1fr)}}
 
 /* slider */
@@ -103,7 +112,8 @@ input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;bac
 
 /* steppers */
 .step{display:flex;align-items:center;justify-content:space-between;gap:14px;
-  background:var(--surface);border-radius:var(--r-md);padding:16px;margin-bottom:10px}
+  background:var(--canvas);border:1.5px solid var(--line);border-radius:var(--r-md);
+  padding:16px;margin-bottom:10px;box-shadow:0 1px 2px rgba(91,70,54,.05)}
 .step .lab{font-weight:700;font-size:15.5px}
 .step .lab small{display:block;font-weight:400;color:var(--muted);font-size:13px;margin-top:1px}
 .pm{display:flex;align-items:center;gap:14px}
@@ -137,8 +147,9 @@ input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;bac
 
 /* profile: sex + two sliders on one screen */
 .seg{display:flex;gap:9px;margin-bottom:8px}
-.seg button{flex:1;cursor:pointer;background:var(--surface);border:1.5px solid transparent;
-  border-radius:var(--r-md);padding:15px;font:700 15.5px/1 Outfit,sans-serif;color:var(--text)}
+.seg button{flex:1;cursor:pointer;background:var(--canvas);border:1.5px solid var(--line);
+  border-radius:var(--r-md);padding:15px;font:700 15.5px/1 Outfit,sans-serif;color:var(--text);
+  box-shadow:0 1px 2px rgba(91,70,54,.05)}
 .seg button.on{border-color:var(--brand);background:var(--brand-tint);color:var(--brand-deep)}
 .mini{margin-top:18px}
 .mini .row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
