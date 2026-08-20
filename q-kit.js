@@ -337,6 +337,63 @@ export function offerBridge({ key, eyebrow, title, body, yes, yesHint, no, noHin
   };
 }
 
+/**
+ * The review wall, shown immediately before we ask for an email.
+ *
+ * Placed here on purpose. Doubt peaks at the moment of being asked for
+ * something, and this is the first thing the quiz asks for. Showing proof one
+ * screen earlier means it is still on screen, in memory, when the field appears.
+ *
+ * Voice rules, because a wall of testimonials is the easiest thing in a funnel
+ * to get wrong: every quote names one specific thing the product did, none of
+ * them use marketing verbs, and the wording stays plain enough to be something
+ * a person would actually type. Attribution is a first name, an initial and a
+ * month -- the register real store reviews are written in.
+ *
+ * ⚠️ NOT IN ANY ANGLE YET, AND DELIBERATELY SO.
+ *
+ * The four quotes below are PLACEHOLDERS written to prove the layout, and the
+ * 4.8 / 2,431 figure is invented. Putting invented reviews in front of paid
+ * traffic is deceptive to buyers and is what the FTC endorsement rules exist to
+ * stop -- so this screen renders correctly and sits out of the flow until real
+ * ones replace it.
+ *
+ * To switch it on once real reviews exist: replace `items` and `count` with the
+ * genuine ones, then add `reviewsScreen(),` immediately before each
+ * `emailScreen(...)` in q-all.js, q-set2.js and q-set3.js (5 angles each).
+ */
+export function reviewsScreen(opts) {
+  const o = opts || {};
+  return {
+    id: 'reviews', type: 'reviews',
+    count: o.count || 'from 2,431 members',
+    cta: o.cta || 'Continue',
+    items: o.items || [
+      {
+        text: 'I stopped keeping two apps open. The food and the training finally '
+            + 'agree with each other, which sounds small until you have spent a year '
+            + 'guessing.',
+        who: 'Marcus T.', when: 'July',
+      },
+      {
+        text: 'The grocery list is the bit I did not expect to care about. It has the '
+            + 'amounts on it, so I stopped buying food that rotted.',
+        who: 'Priya R.', when: 'June',
+      },
+      {
+        text: 'Paid once. No subscription nagging me every month. That alone made me '
+            + 'trust it more than the last three I tried.',
+        who: 'Dan H.', when: 'July',
+      },
+      {
+        text: 'Down 6 kg and my lifts went up, which has never happened to me at the '
+            + 'same time before.',
+        who: 'Yusuf A.', when: 'May',
+      },
+    ],
+  };
+}
+
 export function emailScreen({ title, body, cta }) {
   return {
     id: 'email', type: 'email',

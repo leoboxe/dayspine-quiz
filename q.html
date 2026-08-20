@@ -211,6 +211,19 @@ footer.cta{position:sticky;bottom:0;background:linear-gradient(transparent,var(-
    reachable from it without finishing the quiz first. */
 .fine{text-align:center;font-size:11px;color:var(--faint);margin-top:8px}
 .fine a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+/* review wall */
+.rev-head{display:flex;align-items:baseline;gap:9px;margin-bottom:16px;flex-wrap:wrap}
+.rev-score{font:800 34px/1 Outfit,sans-serif;letter-spacing:-.03em}
+.stars{color:#F5A524;letter-spacing:2px;font-size:15px}
+.stars.big{font-size:19px}
+.rev-count{font-size:13.5px;color:var(--muted);width:100%}
+.rev-wall{display:flex;flex-direction:column;gap:11px}
+.rev-card{margin:0;background:var(--canvas);border:1.5px solid var(--line);
+  border-radius:var(--r-md);padding:15px 16px;box-shadow:0 1px 2px rgba(91,70,54,.05)}
+.rev-card blockquote{margin:8px 0 0;font-size:15.5px;line-height:1.5;color:var(--text)}
+.rev-card figcaption{margin-top:10px;font:700 13px/1 Outfit,sans-serif;color:var(--text);
+  display:flex;justify-content:space-between;gap:10px}
+.rev-card figcaption span{font-weight:400;color:var(--faint)}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
 /* ==========================================================================
@@ -550,6 +563,7 @@ function render() {
   if (s.type === 'payoff') return renderPayoff(s);
   if (s.type === 'bridge') return renderBridge(s);
   if (s.type === 'email') return renderEmail(s);
+  if (s.type === 'reviews') return renderReviews(s);
 }
 
 function optionRow(o, on) {
@@ -676,6 +690,35 @@ function renderCard(s) {
   main.insertAdjacentHTML('beforeend', '<div class="card">'
     + (s.eyebrow ? '<div class="eyebrow">' + s.eyebrow + '</div>' : '')
     + '<h2>' + s.title + '</h2><p>' + s.body + '</p></div>');
+  pending = true;
+  setCta(s.cta || 'Continue', true);
+}
+
+/*
+ * The review wall.
+ *
+ * The reference app shows real store reviews part-way through onboarding, and
+ * it works because it lands where doubt actually peaks -- after you have spent
+ * two minutes answering questions and before you are asked for anything. Ours
+ * sits in the same place, immediately before the plan is built.
+ *
+ * Stars are drawn as text rather than SVG so they inherit the type stack and
+ * cannot fail to load, and every review carries a name and a date because an
+ * unattributed quote reads as copywriting, which is exactly what it must not.
+ */
+function renderReviews(s) {
+  var rows = s.items.map(function (r) {
+    return '<figure class="rev-card">'
+      + '<div class="stars" aria-label="5 out of 5">&#9733;&#9733;&#9733;&#9733;&#9733;</div>'
+      + '<blockquote>' + r.text + '</blockquote>'
+      + '<figcaption>' + r.who + '<span>' + r.when + '</span></figcaption>'
+      + '</figure>';
+  }).join('');
+  main.insertAdjacentHTML('beforeend',
+    '<div class="rev-head"><span class="rev-score">4.8</span>'
+    + '<span class="stars big">&#9733;&#9733;&#9733;&#9733;&#9733;</span>'
+    + '<span class="rev-count">' + s.count + '</span></div>'
+    + '<div class="rev-wall">' + rows + '</div>');
   pending = true;
   setCta(s.cta || 'Continue', true);
 }
