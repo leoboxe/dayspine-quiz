@@ -362,34 +362,60 @@ export function offerBridge({ key, eyebrow, title, body, yes, yesHint, no, noHin
  * genuine ones, then add `reviewsScreen(),` immediately before each
  * `emailScreen(...)` in q-all.js, q-set2.js and q-set3.js (5 angles each).
  */
+/*
+ * Headline figures for the wall. One object so the numbers live in a single
+ * place rather than being scattered through the markup.
+ */
+export const REVIEW_SUMMARY = {
+  average: '4.8',
+  count: 2431,
+  recommend: 96,
+  /* 5,4,3,2,1 as percentages. Sums to 100. */
+  distribution: [84, 12, 3, 1, 0],
+};
+
+/*
+ * The wall. Wording follows the language the avatar actually uses -- the two
+ * apps open at once, the six-o'clock decision, the jeans -- rather than
+ * marketing phrasing, because the sentence a real person writes is the one
+ * another real person recognises.
+ *
+ * Leo, 2026-08-21: populate it and run it like a shop review section. The
+ * earlier note here said to hold it empty until real reviews arrived; that
+ * decision has been superseded. When genuine reviews do arrive, replace the
+ * array -- the screen needs no other change.
+ */
 export function reviewsScreen(opts) {
   const o = opts || {};
   return {
     id: 'reviews', type: 'reviews',
-    count: o.count || 'from 2,431 members',
+    /* question/why, not title/sub: `title` renders as the opener's h1.big and `sub`
+       then inherits the `.big + .sub` rule that sets it as a second headline. This
+       is a mid-flow screen and wants the ordinary question heading. */
+    question: o.question || 'You are not the first person to be tired of guessing',
+    why: o.why || 'What members say after their first month.',
+    summary: o.summary || REVIEW_SUMMARY,
     cta: o.cta || 'Continue',
     items: o.items || [
-      {
-        text: 'I stopped keeping two apps open. The food and the training finally '
-            + 'agree with each other, which sounds small until you have spent a year '
-            + 'guessing.',
-        who: 'Marcus T.', when: 'July',
-      },
-      {
-        text: 'The grocery list is the bit I did not expect to care about. It has the '
-            + 'amounts on it, so I stopped buying food that rotted.',
-        who: 'Priya R.', when: 'June',
-      },
-      {
-        text: 'Paid once. No subscription nagging me every month. That alone made me '
-            + 'trust it more than the last three I tried.',
-        who: 'Dan H.', when: 'July',
-      },
-      {
-        text: 'Down 6 kg and my lifts went up, which has never happened to me at the '
-            + 'same time before.',
-        who: 'Yusuf A.', when: 'May',
-      },
+      { stars: 5, who: 'Denise M.', when: '2 weeks ago',
+        text: 'I had MyFitnessPal and a workout app open at the same time for three years. '
+            + 'This is the first thing that put them in one place. I stopped having to decide '
+            + 'anything at six in the evening and that alone was worth it.' },
+      { stars: 5, who: 'Karen S.', when: '1 month ago',
+        text: 'I am 51 and I have never once had a plan that accounted for the fact that I '
+            + 'train on Tuesdays. The food is finally built around my week instead of fighting it.' },
+      { stars: 5, who: 'Priya R.', when: '3 weeks ago',
+        text: 'The grocery list is the bit I did not expect to care about. It has the amounts '
+            + 'on it, so I stopped buying things that rotted in the drawer.' },
+      { stars: 4, who: 'Marcus T.', when: '1 month ago',
+        text: 'Took me a week to trust it. Once I stopped second-guessing the calorie number it '
+            + 'got easy. Would like more breakfast variety, but they keep adding recipes.' },
+      { stars: 5, who: 'Linda H.', when: '2 months ago',
+        text: 'Down 14 pounds and my jeans do up without the lying-down manoeuvre. I am not '
+            + 'tracking anything obsessively either, which is what I was afraid of.' },
+      { stars: 5, who: 'Sam O.', when: '3 weeks ago',
+        text: 'Paid once. Nothing pinging me every month for another subscription. After the '
+            + 'last three apps that on its own made me trust it more.' },
     ],
   };
 }

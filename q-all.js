@@ -25,6 +25,7 @@
  */
 import {
   openerBlock, bodyBlock, trainingBlock, foodBlock, goalBridge, offerBridge, emailScreen,
+  reviewsScreen,
   WHEN_TRAINING, WHEN_FOOD, WHEN_AIMED,
 } from './q-kit.js';
 
@@ -388,7 +389,10 @@ A4: {
       loseLabel: 'Losing fat, keeping strength', gainLabel: 'Building muscle',
       noneLabel: 'Neither — just make it coherent' }),
     ...bodyBlock({ when: WHEN_AIMED, omitAgeSex: true }),
-    emailScreen({}),
+    /* The review wall sits immediately before the build — the last moment she is
+       still deciding whether to finish rather than whether to buy. Email is NOT
+       here any more: it renders after the reveal, at peak investment. */
+    reviewsScreen(),
   ],
   building: ['Reading your answers…', 'Writing your training week…', 'Matching calories to it…',
     'Choosing meals that fit…', 'Writing your grocery list…'],
