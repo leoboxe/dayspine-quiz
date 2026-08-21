@@ -418,6 +418,7 @@ h1.big{letter-spacing:-.035em}
 
 <script type="module">
 import { ANGLES, pickAngle } from './q-index.js';
+import { showWeight, showHeight, showDelta, weightUnit, isMetric } from './units.js';
 import { AGE_BAND_MIDPOINT } from './q-kit.js';
 
 /* Which of the fifteen ads sent her here. */
@@ -706,10 +707,16 @@ function renderSlider(s) {
   }
   const v = pending === null ? start : pending;
   pending = v;
-  const show = (n) => s.format === 'feet' ? fmtFeet(n) : (s.prefix || '') + n;
+  /* A weight slider is authored with suffix 'lb'. showWeight() returns the
+     number in the market's own unit, so the authored suffix is replaced
+     rather than appended -- otherwise a Briton sees "11st 11 lb". */
+  const isWeight = s.suffix === 'lb';
+  const show = (n) => s.format === 'feet' ? showHeight(n, fmtFeet)
+    : isWeight ? showWeight(n, true) : (s.prefix || '') + n;
+  const unitWord = isWeight ? weightUnit() : s.suffix;
   main.insertAdjacentHTML('beforeend',
     '<div class="sl"><div class="val mono" id="sv">' + show(v) + '</div>'
-    + (s.suffix ? '<span class="unit">' + s.suffix + '</span>' : '')
+    + (unitWord ? '<span class="unit">' + unitWord + '</span>' : '')
     + '<input type="range" id="sr" min="' + s.min + '" max="' + s.max + '" step="' + (s.step || 1)
     + '" value="' + v + '"><div class="ends"><span>' + show(s.min) + '</span><span>'
     + show(s.max) + '</span></div></div>');
@@ -744,7 +751,9 @@ function renderProfile(s) {
   const wantsSex = !!s.sexKey;
   if (wantsSex && pending[s.sexKey] === undefined) pending[s.sexKey] = A[s.sexKey] || null;
   s.fields.forEach((f) => { if (pending[f.key] === undefined) pending[f.key] = A[f.key] ?? f.start; });
-  const show = (f, n) => f.format === 'feet' ? fmtFeet(n) : n + (f.suffix ? ' ' + f.suffix : '');
+  const show = (f, n) => f.format === 'feet' ? showHeight(n, fmtFeet)
+    : f.suffix === 'lb' ? showWeight(n)
+    : n + (f.suffix ? ' ' + f.suffix : '');
   main.insertAdjacentHTML('beforeend',
     (wantsSex ? '<div class="seg">'
       + ['female', 'male'].map((v) => '<button data-sex="' + v + '"'
@@ -1060,9 +1069,9 @@ function revealHtml() {
 
   const hero = aimed && t.toLose
     ? '<div class="pr-hero"><div class="pr-lab">Your goal</div>'
-      + '<h2 class="pr-goal"><span class="n">' + target + ' lb</span> by <span class="n">'
+      + '<h2 class="pr-goal"><span class="n">' + showWeight(target) + '</span> by <span class="n">'
       + date + '</span></h2>'
-      + '<p class="pr-sub">That is <b>' + t.toLose + ' lb</b> at the pace you chose. '
+      + '<p class="pr-sub">That is <b>' + showDelta(t.toLose) + '</b> at the pace you chose. '
       + 'Your plan is built to land there.</p>'
       + '<div class="pr-curve"><svg viewBox="0 0 320 96" preserveAspectRatio="none" aria-hidden="true">'
       + '<defs><linearGradient id="prg" x1="0" y1="0" x2="0" y2="1">'
@@ -1073,8 +1082,8 @@ function revealHtml() {
       + 'stroke-width="3" stroke-linecap="round"/>'
       + '<circle cx="4" cy="18" r="5" fill="#fff" stroke="#F26A11" stroke-width="3"/>'
       + '<circle cx="316" cy="77" r="6" fill="#F26A11" stroke="#fff" stroke-width="3"/></svg>'
-      + '<div class="pr-cx"><span>TODAY &middot; ' + (Number(A['p.weightLb']) || 0) + ' lb</span>'
-      + '<span>' + date.toUpperCase() + ' &middot; ' + target + ' lb</span></div></div></div>'
+      + '<div class="pr-cx"><span>TODAY &middot; ' + showWeight(Number(A['p.weightLb']) || 0) + '</span>'
+      + '<span>' + date.toUpperCase() + ' &middot; ' + showWeight(target) + '</span></div></div></div>'
     : '<div class="pr-hero"><div class="pr-lab">Your plan is built</div>'
       + '<h2 class="pr-goal">Here is your week.</h2>'
       + '<p class="pr-sub">Written against what you actually told us.</p></div>';

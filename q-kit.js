@@ -22,6 +22,8 @@
  * Decline any bridge and the block vanishes. Nothing is lost — the app offers
  * the missing half later and only asks what was skipped.
  */
+import { showRate } from './units.js';
+
 
 /** Every field the app's plan builder needs, so a buyer never sees plan-setup. */
 export const PLAN_FIELDS = [
@@ -141,9 +143,9 @@ export function bodyBlock({ when, title, why, targetQ, paceWhy, omitAgeSex }) {
       question: 'How fast?',
       why: paceWhy || 'These are real rates — the plan holds you to whichever you pick.',
       options: [
-        { v: 'steady', label: 'Steady', hint: 'About 0.7 lb a week' },
-        { v: 'balanced', label: 'Balanced', hint: 'About 1 lb a week' },
-        { v: 'aggressive', label: 'Aggressive', hint: 'About 1.3 lb a week' },
+        { v: 'steady', label: 'Steady', hint: 'About ' + showRate(0.7) },
+        { v: 'balanced', label: 'Balanced', hint: 'About ' + showRate(1) },
+        { v: 'aggressive', label: 'Aggressive', hint: 'About ' + showRate(1.3) },
       ],
     },
   ];
