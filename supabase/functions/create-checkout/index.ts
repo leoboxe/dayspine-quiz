@@ -1,6 +1,7 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import Stripe from 'npm:stripe@22.4.0';
-import { CATALOGUE, CORS, cleanEmail, json, normalise, totalFor } from '../_shared/catalogue.ts';
+import { CATALOGUE, CORS, cleanEmail, json, normalise, totalForMarket } from '../_shared/catalogue.ts';
+import { MARKETS, marketFromRequest } from '../_shared/markets.ts';
 
 /**
  * Opens a checkout: a draft order and a PaymentIntent to pay it with.
@@ -75,7 +76,12 @@ Deno.serve(async (req: Request) => {
   const selection = normalise(['core', ...(Array.isArray(body.addons) ? body.addons : [])]).filter(
     (s) => CATALOGUE[s].slot === 'core' || CATALOGUE[s].slot === 'bump',
   );
-  const amount = totalFor(selection);
+  /* The market is decided by the hostname the request came from, never by the
+     body. A client that could name its own market could name its own price
+     list, which is the same hole as letting it send an amount. */
+  const marketCode = marketFromRequest(req);
+  const market = MARKETS[marketCode];
+  const amount = totalForMarket(marketCode, selection);
   if (amount <= 0) return json({ error: 'empty_order' }, 400);
 
   const partnerEmail = cleanEmail(body.partnerEmail);
@@ -161,6 +167,10 @@ Deno.serve(async (req: Request) => {
         status: 'draft',
         items: selection,
         amount_cents: amount,
+        /* Recorded on the row, not re-derived later: the price list will change
+           and revenue for a past order must not change with it. */
+        market: marketCode,
+        currency_code: market.currency,
         customer_name: customerName,
         stripe_customer_id: customer.id,
         partner_email: partnerEmail,
@@ -176,7 +186,7 @@ Deno.serve(async (req: Request) => {
 
     const intent = await stripe.paymentIntents.create({
       amount,
-      currency: 'usd',
+      currency: market.currency,
       customer: customer.id,
       receipt_email: email,
       // ⭐ Saves the card so the upsell can be one click. Without it the buyer

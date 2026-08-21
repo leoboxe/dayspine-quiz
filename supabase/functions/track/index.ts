@@ -11,6 +11,7 @@
  * more thorough.
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
+import { MARKETS, isMarketCode, marketFromRequest } from '../_shared/markets.ts';
 import { forwardToMeta, isBot, sha256, type TrackEvent } from '../_shared/forwarding.ts';
 
 const cors = {
@@ -66,6 +67,15 @@ Deno.serve(async (req) => {
   const ua = req.headers.get('x-real-user-agent') ?? req.headers.get('user-agent') ?? null;
   const bot = isBot(ua);
 
+  /* Which funnel this event belongs to, from the hostname it was sent from.
+     Every row carries it so a market can be read on its own without unpicking
+     URLs after the fact. */
+  /* api/t.js is the only caller and it runs on the market's own hostname, so
+     the value it sets is authoritative. Origin is the fallback and is absent on
+     a server-to-server fetch -- relying on it wrote every international event as
+     US. The client cannot influence this: the proxy overwrites the body field. */
+  const marketCode = isMarketCode(body.market) ? body.market : marketFromRequest(req);
+
   /*
    * quiz_progress -- the backup of every answer, including abandoned quizzes.
    *
@@ -96,6 +106,7 @@ Deno.serve(async (req) => {
       if (JSON.stringify(answers).length <= 20000) {
         await admin.from('quiz_progress').upsert({
           visitor_id,
+          market: marketCode,
           angle: angle ?? null,
           answers,
           screen_index: typeof body.screen_index === 'number' ? body.screen_index : null,
@@ -121,6 +132,7 @@ Deno.serve(async (req) => {
 
   const row = {
     event_type, event_id, visitor_id,
+    market: marketCode,
     session_id: session_id ?? null,
     angle: angle ?? null,
     page_slug: page_slug ?? null,

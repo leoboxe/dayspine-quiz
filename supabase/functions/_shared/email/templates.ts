@@ -101,7 +101,7 @@ export const STEPS: Step[] = [
         ? `The shopping list comes with it. Real quantities, grouped the way a shop is laid out, and priced so you can see the whole till before you leave the house. You said you shop at ${v.store}.`
         : 'The shopping list comes with it. Real quantities, grouped the way a shop is laid out, and priced so you can see the whole till before you leave the house.',
       'That is the part nothing else does. Most plans hand you recipes and stop, and the plan quietly dies somewhere between the recipe and the aisle.',
-      'It is one payment of $49 and then it is yours. Nothing renews, there is no subscription, and there is nothing to cancel later.',
+      `It is one payment of ${v.core} and then it is yours. Nothing renews, there is no subscription, and there is nothing to cancel later.`,
     ],
     cta: () => 'Open my plan',
   },
@@ -121,7 +121,7 @@ export const STEPS: Step[] = [
       ...(on(v, 'hasSignal') ? [`${v.signalLead} "${v.signal.toLowerCase()}". That is the thing this replaces.`] : []),
       `Then on ${nights(v)}, you make the thing the plan said, and the recipe is written at the quantity the plan promised. Not "serves 4, adjust as needed". The actual amount.`,
       'The training side sits on the same week, so what you lift and what you eat are one document instead of two apps that have never spoken to each other.',
-      'That is the whole product. One payment, $49, and it does not renew.',
+      `That is the whole product. One payment, ${v.core}, and it does not renew.`,
     ],
     cta: () => 'See my week',
   },
@@ -146,7 +146,7 @@ export const STEPS: Step[] = [
       on(v, 'hasSunday')
         ? `You said the whole job takes you ${v.sunday.toLowerCase()}. The plan does the deciding, the costing and the list before you open your eyes.`
         : 'The plan does the deciding, the costing and the list before you open your eyes.',
-      'One payment of $49. Nothing renews.',
+      `One payment of ${v.core}. Nothing renews.`,
     ],
     cta: () => 'Get my plan',
   },
@@ -155,14 +155,14 @@ export const STEPS: Step[] = [
   {
     day: 3,
     subject: () => 'Buy it once instead of renting it forever',
-    preheader: () => '$49, once. There is no second year of it.',
-    paragraphs: () => [
-      'Every app in this category is built to charge you forever. That is not an accident, it is the business model: a low first month, then $39 to $70 every month after, and a cancel flow designed to be slightly harder than giving up.',
-      'Fastic is $79.99 a year. Noom is $209 a year. Reverse Health rebills at $39.99 a month. You have almost certainly paid one of them and forgotten about it for a few months.',
-      'Dayspine is $49. Once. There is no second year of it, no card kept on file for later, nothing to remember to cancel, and no plan that quietly upgrades itself.',
-      'I can do that because I am one person who built a tool, not a company that has to keep you subscribed to survive. The regular price is $99 and it will go back to that.',
+    preheader: (v) => `${v.core}, once. There is no second year of it.`,
+    paragraphs: (v) => [
+      `Every app in this category is built to charge you forever. That is not an accident, it is the business model: a low first month, then ${v.rivalLow} to ${v.rivalHigh} every month after, and a cancel flow designed to be slightly harder than giving up.`,
+      `Fastic is ${v.fasticYear} a year. Noom is ${v.noomYear} a year. Reverse Health rebills at ${v.reverseMonth} a month. You have almost certainly paid one of them and forgotten about it for a few months.`,
+      `Dayspine is ${v.core}. Once. There is no second year of it, no card kept on file for later, nothing to remember to cancel, and no plan that quietly upgrades itself.`,
+      `I can do that because I am one person who built a tool, not a company that has to keep you subscribed to survive. The regular price is ${v.anchor} and it will go back to that.`,
     ],
-    cta: () => 'Buy it once, $49',
+    cta: (v) => `Buy it once, ${v.core}`,
   },
 
   /* ── DAY 5 ─ trust. Real instructor, real classes. ───────────────────────── */
@@ -176,7 +176,7 @@ export const STEPS: Step[] = [
       'There is a lot of AI slop in fitness apps right now. Generated recipe photos of food nobody cooked. Plans written by a model that has never met anybody. You can usually tell, and it is the fastest way to stop trusting an app.',
       ...trustFor(v),
       'AI does the scheduling. It does not do the authoring. That distinction is the whole difference between a plan you follow and a plan you catch out.',
-      'One payment, $49, and it is yours.',
+      `One payment, ${v.core}, and it is yours.`,
     ],
     cta: () => 'Get the app',
   },
@@ -195,7 +195,7 @@ export const STEPS: Step[] = [
       on(v, 'hasListHow')
         ? `You said you handle it "${v.listhow.toLowerCase()}" right now. This is that job, done, every week, without you.`
         : 'That job, done, every week, without you.',
-      'One payment of $49. It does not renew.',
+      `One payment of ${v.core}. It does not renew.`,
     ],
     cta: () => 'See it work',
   },
@@ -203,15 +203,15 @@ export const STEPS: Step[] = [
   /* ── DAY 8 ─ the price objection, head on. ───────────────────────────────── */
   {
     day: 8,
-    subject: (v) => (on(v, 'hasWeightGoal') ? `Is $49 worth ${v.poundsToGo} lb` : 'Is it worth $49'),
+    subject: (v) => (on(v, 'hasWeightGoal') ? `Is ${v.core} worth ${v.poundsToGo} lb` : 'Is it worth ${v.core}'),
     preheader: () => 'A fair question. Here is the honest answer.',
     paragraphs: (v) => [
       'Fair question, so here is the straight answer.',
       `What you get: ${v.getList}. Plus the fasting timer, the diary, and the plan adapting itself when the scale stops moving.`,
-      'What it costs: $49, one time. Not $49 a month. Not $49 now and $39 later. Forty nine dollars, and then never again.',
-      'The nearest thing to it that you can actually buy is four separate subscriptions at roughly $27 a month between them. That is $324 a year, every year, forever.',
+      `What it costs: ${v.core}, one time. Not ${v.core} a month. Not ${v.core} now and less later. ${v.coreWords}, and then never again.`,
+      `The nearest thing to it that you can actually buy is four separate subscriptions at roughly ${v.fourSubsMonth} a month between them. That is ${v.fourSubsYear} a year, every year, forever.`,
     ],
-    cta: () => 'Get it for $49',
+    cta: (v) => `Get it for ${v.core}`,
   },
 
   /* ── DAY 10 ─ last call. ─────────────────────────────────────────────────── */
@@ -228,7 +228,7 @@ export const STEPS: Step[] = [
         ? `${v.barrierLead} "${v.barrier}". That is the exact thing it fixes.`
         : 'It exists to fix the specific thing you said goes wrong.',
       ...(on(v, 'hasWeightGoal') ? [`You put ${v.weightLb} lb now and ${v.targetLb} lb as the target. The plan is dated for that, and it re dates itself if the scale disagrees.`] : []),
-      '$49, once, nothing renews. The regular price is $99 and it goes back to that.',
+      `${v.core}, once, nothing renews. The regular price is ${v.anchor} and it goes back to that.`,
       'If it is not for you, that is genuinely fine, and you will not hear from me again either way.',
     ],
     cta: () => 'Open my plan',

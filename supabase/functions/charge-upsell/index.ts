@@ -1,6 +1,7 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 import Stripe from 'npm:stripe@22.4.0';
-import { CATALOGUE, CORS, cleanEmail, isAddonSlug, json } from '../_shared/catalogue.ts';
+import { isMarketCode, MARKETS, DEFAULT_MARKET } from '../_shared/markets.ts';
+import { CATALOGUE, priceFor, CORS, cleanEmail, isAddonSlug, json } from '../_shared/catalogue.ts';
 
 /**
  * One-click upsell: charge the card the buyer already paid with.
@@ -54,7 +55,17 @@ Deno.serve(async (req: Request) => {
     return json({ error: 'bad_request' }, 400);
   }
 
-  const item = CATALOGUE[addon];
+  const item = CATALOGUE[addon];   // name only; the price comes from the order's market
+
+  /*
+   * The upsell inherits its market from the ORDER, not from the request.
+   *
+   * This charges a card the buyer saved minutes ago against a PaymentIntent in
+   * a specific currency. Pricing it from the request origin would let an
+   * Australian who lands on the US upsell page be charged USD against an AUD
+   * customer, and pricing it from CATALOGUE would charge every market the US
+   * price. The order already knows what was charged and in what -- use that.
+   */
   if (item.slot !== 'upsell' && item.slot !== 'downsell') {
     return json({ error: 'not_an_upsell' }, 400);
   }
@@ -64,7 +75,7 @@ Deno.serve(async (req: Request) => {
   try {
     const { data: order } = await admin
       .from('orders')
-      .select('id, email, status, stripe_customer_id, stripe_payment_method_id')
+      .select('id, email, status, stripe_customer_id, stripe_payment_method_id, market, currency_code')
       .eq('id', orderId)
       .single();
 
@@ -76,6 +87,17 @@ Deno.serve(async (req: Request) => {
       return json({ error: 'no_saved_card' }, 409);
     }
 
+    /* Falls back to US only if an old row predates the market column. Those rows
+       are genuinely US -- it is the only market that has run.
+
+       These sat INSIDE the guard above, after its return: unreachable, and the
+       names were then used out of scope further down. Every upsell threw, in
+       every market. esbuild parses that happily -- it is a type/scope error, not
+       a syntax one -- which is why it reached production. */
+    const upsellMarket = isMarketCode(order.market) ? order.market : DEFAULT_MARKET;
+    const upsellAmount = priceFor(upsellMarket, addon);
+    const upsellCurrency = order.currency_code || MARKETS[upsellMarket].currency;
+
     /**
      * Rule 2: claim the slot BEFORE charging.
      *
@@ -85,7 +107,7 @@ Deno.serve(async (req: Request) => {
      */
     const { data: claim, error: claimError } = await admin
       .from('order_upsells')
-      .insert({ order_id: order.id, addon, amount_cents: item.amount, status: 'pending' })
+      .insert({ order_id: order.id, addon, amount_cents: upsellAmount, status: 'pending' })
       .select('id')
       .single();
 
@@ -100,8 +122,8 @@ Deno.serve(async (req: Request) => {
     let intent: Stripe.PaymentIntent;
     try {
       intent = await stripe.paymentIntents.create({
-        amount: item.amount,
-        currency: 'usd',
+        amount: upsellAmount,
+        currency: upsellCurrency,
         customer: order.stripe_customer_id,
         payment_method: order.stripe_payment_method_id,
         // Cardholder is not at the keyboard — see the note above.

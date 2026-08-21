@@ -24,11 +24,14 @@
  */
 import LABELS from './labels.json' with { type: 'json' };
 import { packFor } from './packs.ts';
+import { MARKETS, DEFAULT_MARKET, isMarketCode, formatPrice, approxLocal, priceInWords } from '../markets.ts';
 
 export interface QuizRow {
   email: string;
   angle?: string | null;
   answers: Record<string, unknown>;
+  /** Which funnel this lead came from. Decides the currency in every email. */
+  market?: string | null;
 }
 
 export type Vars = Record<string, string>;
@@ -78,6 +81,35 @@ const num = (v: unknown): number | null => {
 
 export function resolve(row: QuizRow): Vars {
   const a = row.answers || {};
+
+  /*
+   * Money, in the reader's own currency.
+   *
+   * Every price here used to be a dollar literal, which is right for exactly one
+   * of five funnels. An Australian who paid A$79 being emailed "one payment of
+   * $49" is quoted a number they never saw.
+   *
+   * Two kinds of figure, handled differently on purpose:
+   *   - OURS come from the market's price list, never converted. A$79 is a
+   *     chosen retail price, not 49 times an exchange rate.
+   *   - COMPETITORS' are USD facts about other apps, so they ARE converted and
+   *     rounded hard. "Noom is about A$290 a year" is the honest register;
+   *     false precision would be worse than the approximation.
+   */
+  const market = MARKETS[isMarketCode(row.market) ? row.market : DEFAULT_MARKET];
+  const money = {
+    core: formatPrice(market, market.prices.core),
+    anchor: formatPrice(market, market.prices.anchor),
+    coreWords: priceInWords(market),
+    partnerSeat: formatPrice(market, market.prices['partner-seat']),
+    rivalLow: approxLocal(market, 39),
+    rivalHigh: approxLocal(market, 70),
+    fasticYear: approxLocal(market, 79.99),
+    noomYear: approxLocal(market, 209),
+    reverseMonth: approxLocal(market, 39.99),
+    fourSubsMonth: approxLocal(market, 27),
+    fourSubsYear: approxLocal(market, 324),
+  };
   const angle = row.angle || 'default';
   const pack = packFor(row.angle);
 
@@ -174,6 +206,21 @@ export function resolve(row: QuizRow): Vars {
 
     hasCookTime: String(Boolean(label(angle, 'x.cookTime', pick(a, 'cookTime')) || pick(a, 'cookTime'))),
     cookTime: label(angle, 'x.cookTime', pick(a, 'cookTime')) || label(angle, 'p.cookTime', pick(a, 'cookTime')),
+
+    /* Money, in the reader's currency. Templates must use these and never a
+       literal -- a dollar sign in a template is correct for one funnel in five. */
+    core: money.core,
+    anchor: money.anchor,
+    coreWords: money.coreWords,
+    partnerSeat: money.partnerSeat,
+    rivalLow: money.rivalLow,
+    rivalHigh: money.rivalHigh,
+    fasticYear: money.fasticYear,
+    noomYear: money.noomYear,
+    reverseMonth: money.reverseMonth,
+    fourSubsMonth: money.fourSubsMonth,
+    fourSubsYear: money.fourSubsYear,
+    market: market.code,
   };
 
   /* Belt and braces. A single undefined reaching a template renders the literal

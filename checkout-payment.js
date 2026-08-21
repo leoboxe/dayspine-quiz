@@ -21,6 +21,8 @@
    form together, so the Apple Pay total can never disagree with the button.
 --------------------------------------------------------------------------- */
 
+import { currentMarket } from './markets.js';
+
 const SUPABASE_URL = 'https://guixatihuqwfhzvnrkvb.supabase.co';
 const SUPABASE_ANON = 'sb_publishable_HsWRfggaqcEPxG5CHT1wvg_9ImA8qZc';
 /*
@@ -31,8 +33,14 @@ const SUPABASE_ANON = 'sb_publishable_HsWRfggaqcEPxG5CHT1wvg_9ImA8qZc';
 const STRIPE_PK =
   'pk_live_51SM9r7CV0B2KOmXXq0LDIO174zhFEaMqO3slq8HW8yFoZKedWrwIAYczzxCxQPYrVxoV6M3h1pjdUFoeMBAo71vL00coL89fee';
 
-const CORE = 49;
-const BUMP = 9;
+/* Market prices, not US constants. These set the amount on the Stripe Element,
+   so a stale number here shows one total in the wallet sheet and charges
+   another. The server prices the order independently from the same config --
+   this only has to agree with it, never to be trusted by it. */
+const MARKET = currentMarket();
+const CORE = MARKET.prices.core / 100;
+const BUMP = MARKET.prices['printed-plan'] / 100;
+const CURRENCY = MARKET.currency;
 
 const bump = document.getElementById('bump');
 const bumpRow = document.getElementById('bumpRow');
@@ -47,7 +55,7 @@ const stripe = Stripe(STRIPE_PK);
 const elements = stripe.elements({
   mode: 'payment',
   amount: CORE * 100,
-  currency: 'usd',
+  currency: CURRENCY,
   // Must match what the server sets on the intent, or confirmation fails with a
   // mismatch error no buyer could act on.
   setupFutureUsage: 'off_session',
@@ -90,8 +98,8 @@ function total() {
 function repaint() {
   const t = total();
   bumpRow.hidden = !bump.checked;
-  totalEl.textContent = '$' + t.toFixed(2);
-  btnTotal.textContent = '$' + t;
+  totalEl.textContent = MARKET.symbol + t.toFixed(2);
+  btnTotal.textContent = MARKET.symbol + t;
   // Re-prices the wallet sheet and the card form in one call.
   elements.update({ amount: t * 100 });
 }
@@ -109,7 +117,7 @@ function fail(message) {
   errEl.textContent = message;
   errEl.hidden = false;
   btn.disabled = false;
-  btn.textContent = 'Pay $' + total() + ' once';
+  btn.textContent = 'Pay ' + MARKET.symbol + total() + ' once';
 }
 
 document.getElementById('pay').addEventListener('submit', async (e) => {
@@ -204,7 +212,7 @@ document.getElementById('pay').addEventListener('submit', async (e) => {
       window.fbq(
         'track',
         'Purchase',
-        { value: total(), currency: 'USD' },
+        { value: total(), currency: MARKET.iso },
         { eventID: window.dayspineMeta ? window.dayspineMeta.purchaseEventId() : undefined },
       );
     }

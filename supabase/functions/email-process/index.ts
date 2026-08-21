@@ -44,7 +44,7 @@ Deno.serve(async () => {
 
   const { data: due, error } = await supabase
     .from('email_enrollments')
-    .select('id, email, angle, step, status, quiz_answers, created_at')
+    .select('id, email, angle, market, step, status, quiz_answers, created_at')
     .eq('status', 'active')
     .eq('flow', FLOW)
     .lte('next_due_at', new Date().toISOString())
@@ -84,7 +84,7 @@ Deno.serve(async () => {
       continue;
     }
 
-    const v = resolve({ email: e.email, angle: e.angle, answers: e.quiz_answers ?? {} });
+    const v = resolve({ email: e.email, angle: e.angle, market: e.market, answers: e.quiz_answers ?? {} });
     const unsubUrl = `${UNSUB_BASE}?u=${e.id}`;
     const r = renderStep(step, v, unsubUrl);
 

@@ -19,6 +19,7 @@
  * recoverable from the client on next open.
  */
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { marketFromRequest } from '../_shared/markets.ts';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -47,6 +48,9 @@ Deno.serve(async (req) => {
   if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json({ error: 'bad email' }, 400);
 
   const angle = (body.angle || 'A3').slice(0, 8);
+  /* Which funnel this lead came from. Decides the currency in every email they
+     are about to receive -- an AU lead quoted "$49" was never shown that price. */
+  const market = marketFromRequest(req);
   const answers = body.answers && typeof body.answers === 'object' ? body.answers : {};
 
   // A quiz is a few dozen short answers. Anything larger is not a quiz.
@@ -65,6 +69,7 @@ Deno.serve(async (req) => {
         email,
         angle,
         answers,
+        market,
         complete: body.complete === true,
         updated_at: new Date().toISOString(),
       },
@@ -96,6 +101,7 @@ Deno.serve(async (req) => {
         {
           email,
           angle,
+          market,
           quiz_answers: answers,
           flow: 'lead-nurture-v1',
           step: 0,
